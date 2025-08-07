@@ -1,0 +1,24 @@
+{
+    "idf.espIdfPathWin": "C:\\Users\\RUCO1621\\esp\\v5.4.2\\esp-idf",
+    "idf.toolsPathWin": "C:\\Espressif",
+    "idf.pythonInstallPath": "C:\\Espressif\\tools\\idf-python\\3.11.2\\python.exe",
+    "files.associations": {
+        "lvgl.h": "c",
+        "semphr.h": "c",
+        "main_menu.h": "c",
+        "rad_mask.h": "c",
+        "arc_menu.h": "c",
+        "encoder.h": "c",
+        "time_scale.h": "c",
+        "header.h": "c",
+        "screen_co.h": "c",
+        "stdio.h": "c",
+        "esp_sntp.h": "c",
+        "yes_no_screen.h": "c",
+        "string.h": "c",
+        "esp_heap_caps.h": "c",
+        "screen_podp.h": "c"
+    },
+    "idf.flashType": "UART",
+    "idf.portWin": "COM13"
+}

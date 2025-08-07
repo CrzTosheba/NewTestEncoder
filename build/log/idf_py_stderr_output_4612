@@ -1,0 +1,31 @@
+[0;33m--- Warning: GDB cannot open serial ports accessed as COMx[0m
+[0;33m--- Using \\.\COM13 instead...[0m
+[0;33m--- esp-idf-monitor 1.6.2 on \\.\COM13 115200[0m
+[0;33m--- Quit: Ctrl+] | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H[0m
+[0;33m--- 0x40375fd5: panic_abort at C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_system/panic.c:469
+--- 0x4038ad41: esp_system_abort at C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_system/port/esp_system_chip.c:87
+--- 0x40390ff1: __assert_func at C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/newlib/assert.c:80
+--- 0x403766f2: heap_caps_free at C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/heap/heap_caps_base.c:75
+--- 0x40391049: free at C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/newlib/heap.c:39
+--- 0x4201cd4d: lv_free_core at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/stdlib/clib/lv_mem_core_clib.c:74
+--- 0x4201ce45: lv_free at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/stdlib/lv_mem.c:125
+--- 0x42026c4f: lv_label_set_text at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/widgets/label/lv_label.c:161
+--- 0x4200a920: screen_Uv_create at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/screens/S_Uv/screen_Uv.c:9
+--- 0x4200a057: app_main at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/main.c:140
+--- 0x42049c6f: main_task at C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/freertos/app_startup.c:208
+[0m
+[0;33m--- 0x40375f38: esp_restart_noos at C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c:162
+[0m
+[0;33m--- 0x40375fd5: panic_abort at C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_system/panic.c:469
+--- 0x4038ad41: esp_system_abort at C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_system/port/esp_system_chip.c:87
+--- 0x40390ff1: __assert_func at C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/newlib/assert.c:80
+--- 0x403766f2: heap_caps_free at C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/heap/heap_caps_base.c:75
+--- 0x40391049: free at C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/newlib/heap.c:39
+--- 0x4201cd4d: lv_free_core at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/stdlib/clib/lv_mem_core_clib.c:74
+--- 0x4201ce45: lv_free at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/stdlib/lv_mem.c:125
+--- 0x42026c4f: lv_label_set_text at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/widgets/label/lv_label.c:161
+--- 0x4200a920: screen_Uv_create at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/screens/S_Uv/screen_Uv.c:9
+--- 0x4200a057: app_main at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/main.c:140
+--- 0x42049c6f: main_task at C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/freertos/app_startup.c:208
+[0m
+[0m

@@ -1,0 +1,50 @@
+[0;33m--- Warning: GDB cannot open serial ports accessed as COMx[0m
+[0;33m--- Using \\.\COM13 instead...[0m
+[0;33m--- esp-idf-monitor 1.6.2 on \\.\COM13 115200[0m
+[0;33m--- Quit: Ctrl+] | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H[0m
+[0;33m--- 0x4200f7b4: lv_obj_update_layout at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_pos.c:304
+---  (inlined by) lv_obj_update_layout at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_pos.c:293
+[0m
+[0;33m--- 0x42012242: lv_obj_get_display at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_tree.c:315
+--- 0x4201224a: lv_obj_get_display at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_tree.c:312
+[0m
+[0;33m--- 0x4200f7b1: lv_obj_update_layout at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_pos.c:302
+---  (inlined by) lv_obj_update_layout at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_pos.c:293
+--- 0x4201020a: lv_obj_scroll_to_view at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_scroll.c:392
+--- 0x4200a7e9: Main_Menu_List at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/screens/main_menu/main_menu.c:149
+--- 0x4200a02c: app_main at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/main.c:138
+--- 0x4204987b: main_task at C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/freertos/app_startup.c:208
+[0m
+[0;33m--- 0x40375f38: esp_restart_noos at C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c:162
+[0m
+[0;33m--- 0x4200f7b4: lv_obj_update_layout at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_pos.c:304
+---  (inlined by) lv_obj_update_layout at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_pos.c:293
+[0m
+[0;33m--- 0x42012242: lv_obj_get_display at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_tree.c:315
+--- 0x4201224a: lv_obj_get_display at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_tree.c:312
+[0m
+[0;33m--- 0x4200f7b1: lv_obj_update_layout at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_pos.c:302
+---  (inlined by) lv_obj_update_layout at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_pos.c:293
+--- 0x4201020a: lv_obj_scroll_to_view at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_scroll.c:392
+--- 0x4200a7e9: Main_Menu_List at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/screens/main_menu/main_menu.c:149
+--- 0x4200a02c: app_main at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/main.c:138
+--- 0x4204987b: main_task at C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/freertos/app_startup.c:208
+[0m
+[0;33m--- 0x40375f38: esp_restart_noos at C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c:162
+[0m
+[0;33m--- 0x4200f7b4: lv_obj_update_layout at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_pos.c:304
+---  (inlined by) lv_obj_update_layout at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_pos.c:293
+[0m
+[0;33m--- 0x42012242: lv_obj_get_display at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_tree.c:315
+--- 0x4201224a: lv_obj_get_display at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_tree.c:312
+[0m
+[0;33m--- 0x4200f7b1: lv_obj_update_layout at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_pos.c:302
+---  (inlined by) lv_obj_update_layout at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_pos.c:293
+--- 0x4201020a: lv_obj_scroll_to_view at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_scroll.c:392
+--- 0x4200a7e9: Main_Menu_List at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/screens/main_menu/main_menu.c:149
+--- 0x4200a02c: app_main at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/main.c:138
+--- 0x4204987b: main_task at C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/freertos/app_startup.c:208
+[0m
+[0;33m--- 0x40375f38: esp_restart_noos at C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c:162
+[0m
+[0m

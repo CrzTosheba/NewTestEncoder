@@ -1,0 +1,38 @@
+-- ccache will be used for faster recompilation
+-- git rev-parse returned 'fatal: not a git repository (or any of the parent directories): .git'
+-- Could not use 'git describe' to determine PROJECT_VER.
+-- Building ESP-IDF components for target esp32s3
+NOTICE: Processing 2 dependencies:
+NOTICE: [1/2] lvgl/lvgl (9.3.0)
+NOTICE: [2/2] idf (5.4.2)
+NOTICE: lvgl overrides lvgl__lvgl since "project_components" type got higher priority than "project_managed_components"
+-- Project sdkconfig file C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/sdkconfig
+Loading defaults file C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/sdkconfig.defaults...
+warning: unknown kconfig symbol 'LV_COLOR_16_SWAP' assigned to 'y' in C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/sdkconfig.defaults
+warning: unknown kconfig symbol 'LV_MEM_CUSTOM' assigned to 'y' in C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/sdkconfig.defaults
+warning: unknown kconfig symbol 'LV_MEMCPY_MEMSET_STD' assigned to 'y' in C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/sdkconfig.defaults
+-- Compiler supported targets: xtensa-esp-elf
+-- USING O3
+-- App "display_lvgl_demos" version: 1
+-- Adding linker script C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/esp-idf/esp_system/ld/memory.ld
+-- Adding linker script C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/esp-idf/esp_system/ld/sections.ld.in
+-- Adding linker script C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.ld
+-- Adding linker script C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.api.ld
+-- Adding linker script C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.bt_funcs.ld
+-- Adding linker script C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.libgcc.ld
+-- Adding linker script C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.wdt.ld
+-- Adding linker script C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.version.ld
+-- Adding linker script C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.ble_master.ld
+-- Adding linker script C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.ble_50.ld
+-- Adding linker script C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.ble_smp.ld
+-- Adding linker script C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.ble_dtm.ld
+-- Adding linker script C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.ble_test.ld
+-- Adding linker script C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.ble_scan.ld
+-- Adding linker script C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_rom/esp32s3/ld/esp32s3.rom.newlib.ld
+-- Adding linker script C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/soc/esp32s3/ld/esp32s3.peripherals.ld
+-- LVGL version: 9.2.0
+-- Components: app_update bootloader bootloader_support cmake_utilities cxx driver efuse esp32_s3_lcd_ev_board esp_adc esp_app_format esp_bootloader_format esp_common esp_driver_ana_cmpr esp_driver_dac esp_driver_gpio esp_driver_gptimer esp_driver_i2c esp_driver_i2s esp_driver_ledc esp_driver_mcpwm esp_driver_parlio esp_driver_pcnt esp_driver_rmt esp_driver_sdio esp_driver_sdm esp_driver_sdmmc esp_driver_sdspi esp_driver_spi esp_driver_tsens esp_driver_uart esp_driver_usb_serial_jtag esp_hw_support esp_lcd esp_lvgl_port esp_mm esp_partition esp_pm esp_psram esp_ringbuf esp_rom esp_security esp_system esp_timer esp_vfs_console esptool_py freertos hal heap log lvgl main mbedtls newlib partition_table pthread sdmmc soc spi_flash spiffs vfs xtensa
+-- Component paths: C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/app_update C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/bootloader C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/bootloader_support C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/cmake_utilities C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/cxx C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/driver C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/efuse C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/esp32_s3_lcd_ev_board C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_adc C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_app_format C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_bootloader_format C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_common C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_driver_ana_cmpr C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_driver_dac C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_driver_gpio C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_driver_gptimer C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_driver_i2c C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_driver_i2s C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_driver_ledc C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_driver_mcpwm C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_driver_parlio C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_driver_pcnt C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_driver_rmt C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_driver_sdio C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_driver_sdm C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_driver_sdmmc C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_driver_sdspi C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_driver_spi C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_driver_tsens C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_driver_uart C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_driver_usb_serial_jtag C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_hw_support C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_lcd C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/esp_lvgl_port C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_mm C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_partition C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_pm C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_psram C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_ringbuf C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_rom C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_security C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_system C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_timer C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_vfs_console C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esptool_py C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/freertos C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/hal C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/heap C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/log C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/mbedtls C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/newlib C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/partition_table C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/pthread C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/sdmmc C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/soc C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/spi_flash C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/spiffs C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/vfs C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/xtensa
+-- Configuring done (11.8s)
+-- Generating done (2.6s)
+-- Build files have been written to: C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build
