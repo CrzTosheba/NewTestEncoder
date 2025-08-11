@@ -9,22 +9,41 @@
 
 static const char *TAG = "Main_Menu_main";
 
+// Глобальные указатели на экраны
+lv_obj_t *screens[6] = {NULL};
+
 // Структура элемента меню
 typedef struct {
-    const char *label_text;       // Основной текст
-    const char *sensor_text;      // Дополнительный текст
-    const void *img_src;          // Основная иконка
-    const void *status_img_src;   // Иконка статуса
+    const char *label_text;
+    const char *sensor_text;
+    const void *img_src;
+    const void *status_img_src;
 } MenuItem;
 
 // Глобальные переменные
-lv_obj_t *_cont = NULL;          // Контейнер меню
-uint32_t current_index = 0;       // Текущий индекс списка
-uint32_t current_selected_point = 0; // Текущая выбранная точка
-void (*current_function)(void) = NULL; // Текущая функция меню
+lv_obj_t *_cont = NULL;
+uint32_t current_index = 0;
+uint32_t current_selected_point = 0;
+void (*current_function)(void) = NULL;
 
 // Используем глобальную переменную курсора из arc_menu
 extern uint32_t current_cursor_index;
+
+// Контейнер для контента экрана
+static lv_obj_t *content_container = NULL;
+
+// Тип для функций создания экранов
+typedef void (*screen_create_func_t)(lv_obj_t*);
+
+// Массив функций создания экранов
+static screen_create_func_t screen_funcs[] = {
+    screen_Pass_create,       // 0: "Открыть доступ"
+    screen_Heat_create,       // 1: "ГВС"
+    screen_CO_create,         // 2: "Отопление"
+    screen_Podp_create,       // 3: "Подпитка"
+    screen_Uv_create,         // 4: "Узел ввода"
+    screen_In_Out_create      // 5: "Входы/выходы"
+};
 
 // Функция подсветки выбранного элемента
 static void highlight_box(lv_obj_t *cont, uint32_t cursor_index) {
@@ -33,39 +52,33 @@ static void highlight_box(lv_obj_t *cont, uint32_t cursor_index) {
     for (uint32_t i = 0; i < child_cnt; i++) {
         lv_obj_t *child = lv_obj_get_child(cont, i);
         
-        // Находим дочерние элементы (предполагаем фиксированный порядок)
-        lv_obj_t *label = lv_obj_get_child(child, 0);        // Основной текст
-        lv_obj_t *sensor = lv_obj_get_child(child, 1);       // Дополнительный текст
-        lv_obj_t *img = lv_obj_get_child(child, 2);          // Основная иконка
+        // Находим дочерние элементы
+        lv_obj_t *label = lv_obj_get_child(child, 0);
+        lv_obj_t *sensor = lv_obj_get_child(child, 1);
+        lv_obj_t *img = lv_obj_get_child(child, 2);
         lv_obj_t *status_img = NULL;
         
-        // Проверяем наличие статусной иконки (4-й элемент, если есть)
         if (lv_obj_get_child_cnt(child) > 3) {
             status_img = lv_obj_get_child(child, 3);
         }
         
         if (i == cursor_index) {
-            // Подсветка выбранного элемента
-            lv_obj_set_style_bg_color(child, lv_color_hex(0xFFCC00), LV_PART_MAIN); // Желтый фон
-            if (label) lv_obj_set_style_text_color(label, lv_color_hex(0x000000), LV_PART_MAIN); // Черный текст
-            if (sensor) lv_obj_set_style_text_color(sensor, lv_color_hex(0x000000), LV_PART_MAIN); // Черный текст
+            lv_obj_set_style_bg_color(child, lv_color_hex(0xFFCC00), LV_PART_MAIN);
+            if (label) lv_obj_set_style_text_color(label, lv_color_hex(0x000000), LV_PART_MAIN);
+            if (sensor) lv_obj_set_style_text_color(sensor, lv_color_hex(0x000000), LV_PART_MAIN);
             
-            // Основную иконку окрашиваем в черный
             if (img) {
                 lv_obj_set_style_img_recolor(img, lv_color_black(), 0);
                 lv_obj_set_style_img_recolor_opa(img, LV_OPA_COVER, 0);
             }
         } else {
-            // Стиль для невыбранных элементов
-            lv_obj_set_style_bg_color(child, lv_color_hex(0x2B3639), LV_PART_MAIN); // Темный фон
-            if (label) lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), LV_PART_MAIN); // Белый текст
-            if (sensor) lv_obj_set_style_text_color(sensor, lv_color_hex(0xFFFFFF), LV_PART_MAIN); // Белый текст
+            lv_obj_set_style_bg_color(child, lv_color_hex(0x2B3639), LV_PART_MAIN);
+            if (label) lv_obj_set_style_text_color(label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+            if (sensor) lv_obj_set_style_text_color(sensor, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
             
-            // Сбрасываем окрашивание иконки
             if (img) lv_obj_set_style_img_recolor_opa(img, LV_OPA_TRANSP, 0);
         }
         
-        // Статусная иконка никогда не меняет цвет
         if (status_img) {
             lv_obj_set_style_img_recolor_opa(status_img, LV_OPA_TRANSP, 0);
         }
@@ -79,26 +92,32 @@ void main_menu_encoder_event_cb(uint8_t e) {
         return;
     }
     
-    // Сохраняем предыдущее положение курсора
     uint32_t prev_cursor = current_cursor_index;
-    
-    // Обрабатываем движение энкодера
     arc_menu_handle_encoder(e, _cont, &current_index);
     
-    // Обновляем подсветку, если позиция курсора изменилась
     if (prev_cursor != current_cursor_index) {
         highlight_box(_cont, current_cursor_index);
+        
+        // Скрываем все экраны
+        for (int i = 0; i < 6; i++) {
+            if (screens[i]) lv_obj_add_flag(screens[i], LV_OBJ_FLAG_HIDDEN);
+        }
+        
+        // Показываем выбранный экран
+        if (screens[current_cursor_index]) {
+            lv_obj_clear_flag(screens[current_cursor_index], LV_OBJ_FLAG_HIDDEN);
+        }
     }
 }
 
 // Элементы меню
 static const MenuItem menu_items[] = {
-    {"Открыть доступ", "", &lv_im_module_lock, ""},                // Элемент 0
-    {"ГВС", "40.6(56.5)°C", &lv_im_module_hotwater, &lv_im_module_on},  // Элемент 1
-    {"Отопление", "40.6(56.5)°C", &lv_im_module_heat, &lv_im_module_on}, // Элемент 2
-    {"Подпитка", "Н1", &lv_im_module_podp, &lv_im_module_off},     // Элемент 3
-    {"Узел ввода", "71°C|-13°C", &lv_im_module_input_output, &lv_im_module_on}, // Элемент 4
-    {"Входы/выходы", "", &lv_im_module_inout, ""},                 // Элемент 5
+    {"Открыть доступ", "", &lv_im_module_lock, ""},
+    {"ГВС", "40.6(56.5)°C", &lv_im_module_hotwater, &lv_im_module_on},
+    {"Отопление", "40.6(56.5)°C", &lv_im_module_heat, &lv_im_module_on},
+    {"Подпитка", "Н1", &lv_im_module_podp, &lv_im_module_off},
+    {"Узел ввода", "71°C|-13°C", &lv_im_module_input_output, &lv_im_module_on},
+    {"Входы/выходы", "", &lv_im_module_inout, ""},
 };
 
 // Создание элемента меню
@@ -142,14 +161,36 @@ static void create_menu_item(lv_obj_t *cont, const MenuItem *item) {
 void Main_Menu_List(void) {
     ESP_LOGI(TAG, "Инициализация главного меню");
     
-    // Инициализация стилей
     static lv_style_t style;
     lv_style_init(&style);
     
-    // Регистрация обработчика энкодера
     enc_register_event(main_menu_encoder_event_cb);
     
-    // Создание контейнера меню
+    // Создаем контейнер для контента (левая часть экрана)
+    content_container = lv_obj_create(lv_scr_act());
+    lv_obj_set_size(content_container, 300, 300);
+    lv_obj_set_pos(content_container, 0, 50);
+    //lv_obj_remove_style_all(content_container);
+    // lv_obj_set_style_bg_opa(content_container, LV_OPA_TRANSP, 0);
+    // lv_obj_set_style_border_opa(content_container, LV_OPA_TRANSP, 0);
+    lv_obj_set_scrollbar_mode(content_container, LV_SCROLLBAR_MODE_OFF);
+// Устанавливаем стиль фона
+lv_obj_set_style_bg_color(content_container, lv_color_hex(0x1e2528), LV_PART_MAIN);
+lv_obj_set_style_bg_opa(content_container, LV_OPA_COVER, LV_PART_MAIN);
+    
+    // Создаем все экраны заранее
+    for (int i = 0; i < 6; i++) {
+        screens[i] = lv_obj_create(content_container);
+        lv_obj_set_size(screens[i], LV_PCT(100), LV_PCT(100));
+        screen_funcs[i](screens[i]);
+        lv_obj_add_flag(screens[i], LV_OBJ_FLAG_HIDDEN); // Скрываем все
+    }
+    
+    // Показываем первый экран
+    lv_obj_clear_flag(screens[0], LV_OBJ_FLAG_HIDDEN);
+    
+  
+    // Создание контейнера меню (правая часть)
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
     lv_obj_set_size(cont, 1200, 1200);
     lv_obj_center(cont);
@@ -164,30 +205,23 @@ void Main_Menu_List(void) {
     lv_obj_set_style_bg_color(cont, lv_color_hex(0x1E2528), 0);
     lv_obj_set_style_border_color(cont, lv_color_hex(0x000000), 0);
     lv_obj_set_style_pad_row(cont, 1, 0);
+
     
-    // Создание элементов меню
     for (uint32_t i = 0; i < sizeof(menu_items) / sizeof(MenuItem); i++) {
         create_menu_item(cont, &menu_items[i]);
     }
-    
-    // Создание радиальной маски
+        // Создание радиальной маски
     lv_obj_t *mask = radial();
     lv_obj_set_pos(mask, 440, 70);
-    
-    // Сохранение глобальных ссылок
     _cont = cont;
-   // Рассчитываем начальный индекс списка
     uint32_t child_count = lv_obj_get_child_cnt(cont);
-    current_index = (child_count > 3) ? 2 : 0; // Стартуем с индекса 2, если элементов достаточно
-    
-    // Курсор начинаем с 0
+    current_index = (child_count > 3) ? 2 : 0;
     current_cursor_index = 0;
     
-    // Прокрутка к начальной позиции и подсветка
     lv_obj_scroll_to_view(lv_obj_get_child(cont, current_index), LV_ANIM_OFF);
     highlight_box(cont, current_cursor_index);
     current_function = Main_Menu_List;
-    
+        
     ESP_LOGI(TAG, "Главное меню успешно инициализировано");
     fflush(NULL);
 }

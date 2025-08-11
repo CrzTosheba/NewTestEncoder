@@ -1,0 +1,35 @@
+[0;33m--- Warning: GDB cannot open serial ports accessed as COMx[0m
+[0;33m--- Using \\.\COM13 instead...[0m
+[0;33m--- esp-idf-monitor 1.6.2 on \\.\COM13 115200[0m
+[0;33m--- Quit: Ctrl+] | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H[0m
+[0;33m--- 0x42045dac: get_prop_core at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_style.c:722
+[0m
+[0;33m--- 0x400570e8: memset in ROM
+--- 0x400570f3: memset in ROM
+[0m
+[0;33m--- 0x42045da9: lv_style_is_const at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/misc/lv_style.h:405
+---  (inlined by) lv_style_get_prop_inlined at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/misc/lv_style.h:500
+---  (inlined by) get_prop_core at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_style.c:735
+--- 0x42010b0d: get_selector_style_prop at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_style.c:1065
+--- 0x420114b5: lv_obj_get_style_prop at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_style.c:334
+---  (inlined by) lv_obj_get_style_prop at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_style.c:326
+--- 0x4200c7dd: lv_obj_get_style_clip_corner at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_style_gen.h:582
+---  (inlined by) lv_obj_draw at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj.c:556
+---  (inlined by) lv_obj_event at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj.c:872
+--- 0x42045c35: lv_obj_event_base at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_event.c:89
+--- 0x4200d6d0: event_send_core at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_event.c:364
+--- 0x4200d758: lv_obj_send_event at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_event.c:67
+--- 0x42012525: lv_refr_get_top_obj at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_refr.c:782
+--- 0x4201254d: lv_refr_get_top_obj at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_refr.c:789
+--- 0x42012d38: refr_area_part at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_refr.c:725
+--- 0x420135fd: refr_area at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_refr.c:679
+---  (inlined by) refr_invalid_areas at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_refr.c:586
+---  (inlined by) lv_display_refr_timer at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_refr.c:398
+--- 0x4201bf4e: lv_timer_exec at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/misc/lv_timer.c:326
+---  (inlined by) lv_timer_handler at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/misc/lv_timer.c:107
+--- 0x4201c0b1: lv_timer_handler at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/misc/lv_timer.c:71
+--- 0x42009eed: lvgl_timer_task at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/main.c:113
+[0m
+[0;33m--- 0x40375f38: esp_restart_noos at C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c:162
+[0m
+[0m

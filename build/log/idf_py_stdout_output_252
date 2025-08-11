@@ -1,0 +1,301 @@
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0x1 (POWERON),boot:0x8 (SPI_FAST_FLASH_BOOT)
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x16d0
+load:0x403c8700,len:0x4
+load:0x403c8704,len:0xec8
+load:0x403cb700,len:0x3160
+entry 0x403c8950
+[0;32mI (27) boot: ESP-IDF v5.4.2 2nd stage bootloader[0m
+[0;32mI (27) boot: compile time Jul 31 2025 11:44:49[0m
+[0;32mI (27) boot: Multicore bootloader[0m
+[0;32mI (27) boot: chip revision: v0.2[0m
+[0;32mI (30) boot: efuse block revision: v1.3[0m
+[0;32mI (33) qio_mode: Enabling default flash chip QIO[0m
+[0;32mI (38) boot.esp32s3: Boot SPI Speed : 80MHz[0m
+[0;32mI (42) boot.esp32s3: SPI Mode       : QIO[0m
+[0;32mI (45) boot.esp32s3: SPI Flash Size : 2MB[0m
+[0;32mI (49) boot: Enabling RNG early entropy source...[0m
+[0;32mI (54) boot: Partition Table:[0m
+[0;32mI (56) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (63) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (69) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (76) boot:  2 factory          factory app      00 00 00010000 00160000[0m
+[0;32mI (82) boot: End of partition table[0m
+[0;32mI (85) esp_image: segment 0: paddr=00010020 vaddr=3c050020 size=3bd70h (245104) map[0m
+[0;32mI (129) esp_image: segment 1: paddr=0004bd98 vaddr=3fca2f00 size=033cch ( 13260) load[0m
+[0;32mI (132) esp_image: segment 2: paddr=0004f16c vaddr=40374000 size=00each (  3756) load[0m
+[0;32mI (134) esp_image: segment 3: paddr=00050020 vaddr=42000020 size=4a1b0h (303536) map[0m
+[0;32mI (186) esp_image: segment 4: paddr=0009a1d8 vaddr=40374eac size=1dfbch (122812) load[0m
+[0;32mI (209) esp_image: segment 5: paddr=000b819c vaddr=600fe000 size=0001ch (    28) load[0m
+[0;32mI (221) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (221) boot: Disabling RNG early entropy source...[0m
+[0;32mI (231) octal_psram: vendor id    : 0x0d (AP)[0m
+[0;32mI (231) octal_psram: dev id       : 0x02 (generation 3)[0m
+[0;32mI (231) octal_psram: density      : 0x03 (64 Mbit)[0m
+[0;32mI (236) octal_psram: good-die     : 0x01 (Pass)[0m
+[0;32mI (241) octal_psram: Latency      : 0x01 (Fixed)[0m
+[0;32mI (246) octal_psram: VCC          : 0x01 (3V)[0m
+[0;32mI (251) octal_psram: SRF          : 0x01 (Fast Refresh)[0m
+[0;32mI (257) octal_psram: BurstType    : 0x01 (Hybrid Wrap)[0m
+[0;32mI (263) octal_psram: BurstLen     : 0x01 (32 Byte)[0m
+[0;32mI (269) octal_psram: Readlatency  : 0x02 (10 cycles@Fixed)[0m
+[0;32mI (275) octal_psram: DriveStrength: 0x00 (1/1)[0m
+[0;32mI (281) MSPI Timing: PSRAM timing tuning index: 5[0m
+[0;32mI (285) esp_psram: Found 8MB PSRAM device[0m
+[0;32mI (290) esp_psram: Speed: 80MHz[0m
+[0;32mI (308) mmu_psram: Read only data copied and mapped to SPIRAM[0m
+[0;32mI (330) mmu_psram: Instructions copied and mapped to SPIRAM[0m
+[0;32mI (330) cpu_start: Multicore app[0m
+[0;32mI (595) esp_psram: SPI SRAM memory test OK[0m
+[0;32mI (604) cpu_start: Pro cpu start user code[0m
+[0;32mI (604) cpu_start: cpu freq: 240000000 Hz[0m
+[0;32mI (604) app_init: Application information:[0m
+[0;32mI (607) app_init: Project name:     display_lvgl_demos[0m
+[0;32mI (613) app_init: App version:      1[0m
+[0;32mI (617) app_init: Compile time:     Jul 31 2025 11:49:02[0m
+[0;32mI (623) app_init: ELF file SHA256:  03af31742...[0m
+[0;32mI (628) app_init: ESP-IDF:          v5.4.2[0m
+[0;32mI (633) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (638) efuse_init: Max chip rev:     v0.99 [0m
+[0;32mI (643) efuse_init: Chip rev:         v0.2[0m
+[0;32mI (648) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (655) heap_init: At 3FCA6E98 len 00042878 (266 KiB): RAM[0m
+[0;32mI (661) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM[0m
+[0;32mI (667) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM[0m
+[0;32mI (673) heap_init: At 600FE01C len 00001FCC (7 KiB): RTCRAM[0m
+[0;32mI (680) esp_psram: Adding pool of 7616K of PSRAM memory to heap allocator[0m
+[0;32mI (687) esp_psram: Adding pool of 16K of PSRAM memory gap generated due to end address alignment of drom to the heap allocator[0m
+[0;32mI (699) spi_flash: detected chip: gd[0m
+[0;32mI (703) spi_flash: flash io: qio[0m
+[0;33mW (707) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.[0m
+[0;32mI (721) sleep_gpio: Configure to isolate all GPIO pins in sleep state[0m
+[0;32mI (728) sleep_gpio: Enable automatic switching of GPIO sleep configuration[0m
+[0;32mI (735) main_task: Started on CPU0[0m
+[0;32mI (739) esp_psram: Reserving pool of 32K of internal memory for DMA/internal allocations[0m
+[0;32mI (748) main_task: Calling app_main()[0m
+[0;32mI (752) gpio: GPIO[4]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (761) gpio: GPIO[8]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (770) gpio: GPIO[16]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (780) app_main: Encoder initialized[0m
+[0;32mI (784) LVGL: Starting LVGL task[0m
+[0;32mI (788) bsp_sub_board: Initialize I80 panel (NEW LCD)[0m
+[0;32mI (794) bsp_sub_board: st7701_reg_init[0m
+[0;32mI (798) gpio: GPIO[15]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (807) gpio: GPIO[7]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (817) gpio: GPIO[6]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (826) st7701: st7701 register init[0m
+[0;32mI (1031) bsp_sub_board: Initialize Intel 8080 bus[0m
+[0;32mI (1031) gpio: GPIO[10]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (1034) bsp_sub_board: GPIO_LCD4_PIN_NUM_RD=1 always...[0m
+[0;32mI (1040) bsp_sub_board: Install SSD1963 panel driver[0m
+[0;32mI (1046) ssd1963: LCD panel create success[0m
+[0;33mW (1336) ssd1963: The 36h command has been used and will be overwritten by external initialization sequence[0m
+[0;33mW (1336) ssd1963: The F0h command has been used and will be overwritten by external initialization sequence[0m
+[0;32mI (1361) LVGL PORT: Register io panel event callback for LVGL flush ready notification[0m
+[0;33mW (1435) S3-LCD-BOARD: This board doesn't support to change brightness of LCD[0m
+[0;32mI (1435) app_main: ++Display LVGL demo[0m
+[0;32mI (1436) Main_Menu_main: Инициализация главного меню[0m
+[0;32mI (1469) Main_Menu_main: Главное меню успешно инициализировано[0m
+[0;32mI (1674) app_main: Encoder driver initialized[0m
+[0;32mI (25435) app_main: Encoder (1): RIGHT rotation[0m
+[0;32mI (26405) app_main: Encoder (2): RIGHT rotation[0m
+[0;32mI (27165) app_main: Encoder (3): RIGHT rotation[0m
+[0;32mI (27885) app_main: Encoder (4): RIGHT rotation[0m
+[0;32mI (28605) app_main: Encoder (5): RIGHT rotation[0m
+[0;32mI (28605) ARC_MENU: Список сдвинут вниз: новый idx 3[0m
+[0;32mI (30765) app_main: Encoder (6): RIGHT rotation[0m
+[0;32mI (33045) app_main: Encoder (7): LEFT rotation[0m
+[0;32mI (33675) app_main: Encoder (8): LEFT rotation[0m
+[0;32mI (34295) app_main: Encoder (9): LEFT rotation[0m
+[0;32mI (34895) app_main: Encoder (10): LEFT rotation[0m
+[0;32mI (35525) app_main: Encoder (11): LEFT rotation[0m
+[0;32mI (37515) app_main: Encoder (12): LEFT rotation[0m
+[0;32mI (38045) app_main: Encoder (13): LEFT rotation[0m
+[0;32mI (38635) app_main: Encoder (14): LEFT rotation[0m
+[0;32mI (40635) app_main: Encoder (15): RIGHT rotation[0m
+[0;32mI (40812) app_main: Encoder (16): RIGHT rotation[0m
+[0;32mI (41635) app_main: Encoder (17): RIGHT rotation[0m
+[0;32mI (42375) app_main: Encoder (18): LEFT rotation[0m
+[0;32mI (42537) app_main: Encoder (19): LEFT rotation[0m
+[0;32mI (43005) app_main: Encoder (20): RIGHT rotation[0m
+[0;32mI (43159) app_main: Encoder (21): RIGHT rotation[0m
+[0;32mI (43695) app_main: Encoder (22): LEFT rotation[0m
+[0;32mI (43850) app_main: Encoder (23): LEFT rotation[0m
+[0;32mI (44306) app_main: Encoder (24): RIGHT rotation[0m
+[0;32mI (44559) app_main: Encoder (25): RIGHT rotation[0m
+[0;32mI (44595) app_main: Encoder (26): LEFT rotation[0m
+[0;32mI (44778) app_main: Encoder (27): RIGHT rotation[0m
+[0;32mI (44974) app_main: Encoder (28): RIGHT rotation[0m
+[0;32mI (45129) app_main: Encoder (29): LEFT rotation[0m
+[0;32mI (45407) app_main: Encoder (30): LEFT rotation[0m
+[0;32mI (45671) app_main: Encoder (31): RIGHT rotation[0m
+[0;32mI (45776) app_main: Encoder (32): RIGHT rotation[0m
+[0;32mI (45776) app_main: Encoder (33): RIGHT rotation[0m
+[0;32mI (45956) app_main: Encoder (34): RIGHT rotation[0m
+[0;32mI (46116) app_main: Encoder (35): RIGHT rotation[0m
+[0;32mI (46116) ARC_MENU: Список сдвинут вниз: новый idx 3[0m
+[0;32mI (46922) app_main: Encoder (36): RIGHT rotation[0m
+[0;32mI (47350) app_main: Encoder (37): RIGHT rotation[0m
+[0;32mI (47585) app_main: Encoder (38): RIGHT rotation[0m
+[0;32mI (48455) app_main: Encoder (39): RIGHT rotation[0m
+[0;32mI (48628) app_main: Encoder (40): RIGHT rotation[0m
+[0;32mI (48820) app_main: Encoder (41): LEFT rotation[0m
+[0;32mI (49036) app_main: Encoder (42): LEFT rotation[0m
+[0;32mI (49725) app_main: Encoder (43): LEFT rotation[0m
+[0;32mI (50135) app_main: Encoder (44): LEFT rotation[0m
+[0;32mI (50406) app_main: Encoder (45): LEFT rotation[0m
+[0;32mI (50694) app_main: Encoder (46): LEFT rotation[0m
+[0;32mI (51379) app_main: Encoder (47): LEFT rotation[0m
+[0;32mI (51413) app_main: Encoder (48): LEFT rotation[0m
+[0;32mI (52125) app_main: Encoder (49): RIGHT rotation[0m
+[0;32mI (52555) app_main: Encoder (50): RIGHT rotation[0m
+[0;32mI (53025) app_main: Encoder (51): RIGHT rotation[0m
+[0;32mI (53895) app_main: Encoder (52): LEFT rotation[0m
+[0;32mI (54164) app_main: Encoder (53): LEFT rotation[0m
+[0;32mI (54496) app_main: Encoder (54): LEFT rotation[0m
+[0;32mI (55085) app_main: Encoder (55): LEFT rotation[0m
+[0;32mI (59415) app_main: Encoder (56): RIGHT rotation[0m
+[0;32mI (59590) app_main: Encoder (57): RIGHT rotation[0m
+[0;32mI (59598) app_main: Encoder (58): RIGHT rotation[0m
+[0;32mI (59799) app_main: Encoder (59): RIGHT rotation[0m
+[0;32mI (61195) app_main: Encoder (60): LEFT rotation[0m
+[0;32mI (61367) app_main: Encoder (61): LEFT rotation[0m
+[0;32mI (61375) app_main: Encoder (62): LEFT rotation[0m
+[0;32mI (61558) app_main: Encoder (63): LEFT rotation[0m
+[0;32mI (61713) app_main: Encoder (64): LEFT rotation[0m
+[0;32mI (61986) app_main: Encoder (65): LEFT rotation[0m
+[0;32mI (61987) app_main: Encoder (66): LEFT rotation[0m
+[0;32mI (62199) app_main: Encoder (67): LEFT rotation[0m
+[0;32mI (62328) app_main: Encoder (68): LEFT rotation[0m
+[0;32mI (62513) app_main: Encoder (69): LEFT rotation[0m
+[0;32mI (62647) app_main: Encoder (70): LEFT rotation[0m
+[0;32mI (62805) app_main: Encoder (71): LEFT rotation[0m
+[0;32mI (62808) app_main: Encoder (72): LEFT rotation[0m
+[0;32mI (62988) app_main: Encoder (73): LEFT rotation[0m
+[0;32mI (64365) app_main: Encoder (74): RIGHT rotation[0m
+[0;32mI (64549) app_main: Encoder (75): RIGHT rotation[0m
+Guru Meditation Error: Core  0 panic'ed (LoadProhibited). Exception was unhandled.
+
+Core  0 register dump:
+PC      : 0x42045efc  PS      : 0x00060e30  A0      : 0x82010c74  A1      : 0x3fcbe210  
+A2      : 0x00000004  A3      : 0xffffffff  A4      : 0x00000060  A5      : 0x000000ff  
+A6      : 0x3fcb953c  A7      : 0x00000000  A8      : 0x00000001  A9      : 0x3fcb9544  
+A10     : 0x0000ffff  A11     : 0x00000000  A12     : 0x3fcb9544  A13     : 0x000005a0  
+A14     : 0x00000000  A15     : 0x01000000  SAR     : 0x00000008  EXCCAUSE: 0x0000001c  
+EXCVADDR: 0x000005a4  LBEG    : 0x40382ba4  LEND    : 0x40382ba9  LCOUNT  : 0x00000000  
+
+
+Backtrace: 0x42045ef9:0x3fcbe210 0x42010c71:0x3fcbe240 0x42011619:0x3fcbe260 0x420129f3:0x3fcbe290 0x420127f9:0x3fcbe390 0x42012a11:0x3fcbe4d0 0x42012d9c:0x3fcbe5d0 0x42012f08:0x3fcbe600 0x4201374d:0x3fcbe630 0x4201c09e:0x3fcbe6c0 0x4201c201:0x3fcbe6f0 0x42009ee5:0x3fcbe710
+
+
+
+
+ELF file SHA256: 03af31742
+
+Rebooting...
+���ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0xc (RTC_SW_CPU_RST),boot:0x8 (SPI_FAST_FLASH_BOOT)
+Saved PC:0x40375f38
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x16d0
+load:0x403c8700,len:0x4
+load:0x403c8704,len:0xec8
+load:0x403cb700,len:0x3160
+entry 0x403c8950
+[0;32mI (31) boot: ESP-IDF v5.4.2 2nd stage bootloader[0m
+[0;32mI (31) boot: compile time Jul 31 2025 11:44:49[0m
+[0;32mI (31) boot: Multicore bootloader[0m
+[0;32mI (31) boot: chip revision: v0.2[0m
+[0;32mI (34) boot: efuse block revision: v1.3[0m
+[0;32mI (38) qio_mode: Enabling default flash chip QIO[0m
+[0;32mI (42) boot.esp32s3: Boot SPI Speed : 80MHz[0m
+[0;32mI (46) boot.esp32s3: SPI Mode       : QIO[0m
+[0;32mI (50) boot.esp32s3: SPI Flash Size : 2MB[0m
+[0;32mI (54) boot: Enabling RNG early entropy source...[0m
+[0;32mI (58) boot: Partition Table:[0m
+[0;32mI (61) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (67) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (73) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (80) boot:  2 factory          factory app      00 00 00010000 00160000[0m
+[0;32mI (87) boot: End of partition table[0m
+[0;32mI (90) esp_image: segment 0: paddr=00010020 vaddr=3c050020 size=3bd70h (245104) map[0m
+[0;32mI (134) esp_image: segment 1: paddr=0004bd98 vaddr=3fca2f00 size=033cch ( 13260) load[0m
+[0;32mI (136) esp_image: segment 2: paddr=0004f16c vaddr=40374000 size=00each (  3756) load[0m
+[0;32mI (138) esp_image: segment 3: paddr=00050020 vaddr=42000020 size=4a1b0h (303536) map[0m
+[0;32mI (190) esp_image: segment 4: paddr=0009a1d8 vaddr=40374eac size=1dfbch (122812) load[0m
+[0;32mI (213) esp_image: segment 5: paddr=000b819c vaddr=600fe000 size=0001ch (    28) load[0m
+[0;32mI (225) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (225) boot: Disabling RNG early entropy source...[0m
+[0;32mI (235) octal_psram: vendor id    : 0x0d (AP)[0m
+[0;32mI (235) octal_psram: dev id       : 0x02 (generation 3)[0m
+[0;32mI (235) octal_psram: density      : 0x03 (64 Mbit)[0m
+[0;32mI (240) octal_psram: good-die     : 0x01 (Pass)[0m
+[0;32mI (246) octal_psram: Latency      : 0x01 (Fixed)[0m
+[0;32mI (251) octal_psram: VCC          : 0x01 (3V)[0m
+[0;32mI (256) octal_psram: SRF          : 0x01 (Fast Refresh)[0m
+[0;32mI (262) octal_psram: BurstType    : 0x01 (Hybrid Wrap)[0m
+[0;32mI (268) octal_psram: BurstLen     : 0x01 (32 Byte)[0m
+[0;32mI (273) octal_psram: Readlatency  : 0x02 (10 cycles@Fixed)[0m
+[0;32mI (279) octal_psram: DriveStrength: 0x00 (1/1)[0m
+[0;32mI (285) MSPI Timing: PSRAM timing tuning index: 5[0m
+[0;32mI (290) esp_psram: Found 8MB PSRAM device[0m
+[0;32mI (294) esp_psram: Speed: 80MHz[0m
+[0;32mI (313) mmu_psram: Read only data copied and mapped to SPIRAM[0m
+[0;32mI (334) mmu_psram: Instructions copied and mapped to SPIRAM[0m
+[0;32mI (334) cpu_start: Multicore app[0m
+[0;32mI (600) esp_psram: SPI SRAM memory test OK[0m
+[0;32mI (608) cpu_start: Pro cpu start user code[0m
+[0;32mI (608) cpu_start: cpu freq: 240000000 Hz[0m
+[0;32mI (609) app_init: Application information:[0m
+[0;32mI (611) app_init: Project name:     display_lvgl_demos[0m
+[0;32mI (617) app_init: App version:      1[0m
+[0;32mI (622) app_init: Compile time:     Jul 31 2025 11:49:02[0m
+[0;32mI (628) app_init: ELF file SHA256:  03af31742...[0m
+[0;32mI (633) app_init: ESP-IDF:          v5.4.2[0m
+[0;32mI (638) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (642) efuse_init: Max chip rev:     v0.99 [0m
+[0;32mI (647) efuse_init: Chip rev:         v0.2[0m
+[0;32mI (652) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (659) heap_init: At 3FCA6E98 len 00042878 (266 KiB): RAM[0m
+[0;32mI (665) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM[0m
+[0;32mI (672) heap_init: At 3FCF0000 len 00008000 (32 KiB): DRAM[0m
+[0;32mI (678) heap_init: At 600FE01C len 00001FCC (7 KiB): RTCRAM[0m
+[0;32mI (684) esp_psram: Adding pool of 7616K of PSRAM memory to heap allocator[0m
+[0;32mI (691) esp_psram: Adding pool of 16K of PSRAM memory gap generated due to end address alignment of drom to the heap allocator[0m
+[0;32mI (704) spi_flash: detected chip: gd[0m
+[0;32mI (708) spi_flash: flash io: qio[0m
+[0;33mW (712) spi_flash: Detected size(16384k) larger than the size in the binary image header(2048k). Using the size in the binary image header.[0m
+[0;32mI (725) sleep_gpio: Configure to isolate all GPIO pins in sleep state[0m
+[0;32mI (732) sleep_gpio: Enable automatic switching of GPIO sleep configuration[0m
+[0;32mI (740) main_task: Started on CPU0[0m
+[0;32mI (744) esp_psram: Reserving pool of 32K of internal memory for DMA/internal allocations[0m
+[0;32mI (753) main_task: Calling app_main()[0m
+[0;32mI (757) gpio: GPIO[4]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (766) gpio: GPIO[8]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (775) gpio: GPIO[16]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (785) app_main: Encoder initialized[0m
+[0;32mI (789) LVGL: Starting LVGL task[0m
+[0;32mI (793) bsp_sub_board: Initialize I80 panel (NEW LCD)[0m
+[0;32mI (799) bsp_sub_board: st7701_reg_init[0m
+[0;32mI (803) gpio: GPIO[15]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (812) gpio: GPIO[7]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (822) gpio: GPIO[6]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (831) st7701: st7701 register init[0m
+[0;32mI (1036) bsp_sub_board: Initialize Intel 8080 bus[0m
+[0;32mI (1036) gpio: GPIO[10]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (1039) bsp_sub_board: GPIO_LCD4_PIN_NUM_RD=1 always...[0m
+[0;32mI (1045) bsp_sub_board: Install SSD1963 panel driver[0m
+[0;32mI (1051) ssd1963: LCD panel create success[0m
+[0;33mW (1341) ssd1963: The 36h command has been used and will be overwritten by external initialization sequence[0m
+[0;33mW (1341) ssd1963: The F0h command has been used and will be overwritten by external initialization sequence[0m
+[0;32mI (1366) LVGL PORT: Register io panel event callback for LVGL flush ready notification[0m
+[0;33mW (1440) S3-LCD-BOARD: This board doesn't support to change brightness of LCD[0m
+[0;32mI (1440) app_main: ++Display LVGL demo[0m
+[0;32mI (1441) Main_Menu_main: Инициализация главного меню[0m
+[0;32mI (1474) Main_Menu_main: Главное меню успешно инициализировано[0m
+[0;32mI (1679) app_main: Encoder driver initialized[0m

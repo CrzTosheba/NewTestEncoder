@@ -2,11 +2,13 @@
 #define SCREEN_PODP_H
 
 #include "lvgl.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+LV_FONT_DECLARE(Roboto_bold_24);
+void screen_Podp_create(lv_obj_t *parent);
 
-void screen_Podp_create(lv_scr_load_anim_t anim_type);
 
 #ifdef __cplusplus
 }

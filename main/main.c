@@ -139,10 +139,10 @@ void app_main(void)
     bsp_display_lock(0);
      main_screen_bg();
     // Создание экрана CO
-    main_CO_screen();
+    //main_CO_screen();
     // Создание главного меню
     Main_Menu_List();
-  screen_Uv_create(LV_SCR_LOAD_ANIM_FADE_ON); // подключение другого экрана, но обновление элементов, а именно экрана
+  //screen_Uv_create(LV_SCR_LOAD_ANIM_FADE_ON); // подключение другого экрана, но обновление элементов, а именно экрана
 
     // Разблокировка дисплея
     bsp_display_unlock();
