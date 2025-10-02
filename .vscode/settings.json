@@ -17,7 +17,14 @@
         "yes_no_screen.h": "c",
         "string.h": "c",
         "esp_heap_caps.h": "c",
-        "screen_podp.h": "c"
+        "screen_podp.h": "c",
+        "lv_bg_main_screen.h": "c",
+        "lv_demos.h": "c",
+        "esp-bsp.h": "c",
+        "b_big.h": "c",
+        "w_valve_off.h": "c",
+        "scale_marker_img.h": "c",
+        "scale_img.h": "c"
     },
     "idf.flashType": "UART",
     "idf.portWin": "COM13"

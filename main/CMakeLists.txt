@@ -44,6 +44,9 @@ idf_component_register(
     "lv_image/lv_im_light_red.c"
     "lv_image/lv_im_module_inout.c"
     "lv_image/lv_im_universal_in.c"
+    "lv_image/lv_im_radius_yellow.c"
+    "lv_image/module_unlock.c"
+    "lv_image/lv_im_radius_gray.c"
 
     
     
@@ -58,7 +61,6 @@ idf_component_register(
         # ------------My_WIDGETS---------------------
         "my_widgets/b_small.c"
         "my_widgets/b_big.c"
-        "my_widgets/header.c"
         "my_widgets/drop_label.c"
         "my_widgets/time_label.c"
         "my_widgets/rad_mask.c"
@@ -68,6 +70,7 @@ idf_component_register(
         "my_widgets/pump_off_img.c"
         "my_widgets/w_valve_on.c"
         "my_widgets/w_valve_off.c"
+        "my_widgets/heat_exch.c"
 
 
         #--------Screens-------------------------

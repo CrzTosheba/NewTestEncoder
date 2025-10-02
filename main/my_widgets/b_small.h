@@ -5,7 +5,9 @@
 
 #include "lvgl.h"
 
-lv_obj_t* bubble_s(void);
+LV_IMG_DECLARE(lv_im_bubble_01);
+lv_obj_t* bubble_s(lv_obj_t *parent);
+
 
 
 

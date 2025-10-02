@@ -85,7 +85,7 @@ void arc_menu_handle_encoder(uint8_t e, lv_obj_t *cont, uint32_t *current_index)
     }
     
     // Обработка движения ВЛЕВО
-    if (e & ENC_LEFT) {
+    if (e & ENC_RIGHT) {
         if (current_cursor_index > 0) {
             current_cursor_index--;  // Уменьшаем индекс курсора
             
@@ -97,11 +97,11 @@ void arc_menu_handle_encoder(uint8_t e, lv_obj_t *cont, uint32_t *current_index)
                 }
             }
         }
-        last_event = ENC_LEFT;
+        last_event = ENC_RIGHT;
         last_event_time = now;
     } 
     // Обработка движения ВПРАВО
-    else if (e & ENC_RIGHT) {
+    else if (e & ENC_LEFT) {
         if (current_cursor_index < child_count - 1) {
             current_cursor_index++;  // Увеличиваем индекс курсора
             
@@ -114,7 +114,7 @@ void arc_menu_handle_encoder(uint8_t e, lv_obj_t *cont, uint32_t *current_index)
             }
             
         }
-        last_event = ENC_RIGHT;
+        last_event = ENC_LEFT;
         last_event_time = now;
     }
     

@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include "esp_log.h"
 #include "freertos/task.h"
+#include "scale_logic_time/time_scale.h"
 
 static const char *TAG = "Main_Menu_main";
 
@@ -107,6 +108,24 @@ void main_menu_encoder_event_cb(uint8_t e) {
         if (screens[current_cursor_index]) {
             lv_obj_clear_flag(screens[current_cursor_index], LV_OBJ_FLAG_HIDDEN);
         }
+        
+        // Управление видимостью шкалы времени
+        if (current_cursor_index == 1 || current_cursor_index == 2) {
+            show_time_scale(true);
+            
+            // Устанавливаем разные временные интервалы и время для разных экранов
+            if (current_cursor_index == 1) {
+                // ГВС: линии с 08:15 до 10:45 и с 14:00 до 20:00
+                set_time_intervals(8, 15, 10, 45, 14, 0, 20, 0);
+                set_time(12, 0); // Время для ГВС
+            } else {
+                // Отопление: другие временные интервалы (например, с 06:00 до 12:00 и с 16:00 до 22:00)
+                set_time_intervals(6, 0, 12, 0, 16, 0, 22, 0);
+                set_time(15, 30); // Время для Отопления
+            }
+        } else {
+            show_time_scale(false);
+        }
     }
 }
 
@@ -124,7 +143,7 @@ static const MenuItem menu_items[] = {
 static void create_menu_item(lv_obj_t *cont, const MenuItem *item) {
     // Создаем контейнер для элемента
     lv_obj_t *box = lv_obj_create(cont);
-    lv_obj_set_size(box, 480, 70);
+    lv_obj_set_size(box, 462, 70);
     lv_obj_set_style_border_color(box, lv_color_hex(0x000000), 0);
     lv_obj_set_style_bg_color(box, lv_color_hex(0x2B3639), 0);
     
@@ -157,7 +176,6 @@ static void create_menu_item(lv_obj_t *cont, const MenuItem *item) {
     lv_obj_set_scrollbar_mode(box, LV_SCROLLBAR_MODE_OFF);
 }
 
-// Инициализация главного меню
 void Main_Menu_List(void) {
     ESP_LOGI(TAG, "Инициализация главного меню");
     
@@ -168,27 +186,24 @@ void Main_Menu_List(void) {
     
     // Создаем контейнер для контента (левая часть экрана)
     content_container = lv_obj_create(lv_scr_act());
-    lv_obj_set_size(content_container, 300, 300);
-    lv_obj_set_pos(content_container, 0, 50);
-    //lv_obj_remove_style_all(content_container);
-    // lv_obj_set_style_bg_opa(content_container, LV_OPA_TRANSP, 0);
-    // lv_obj_set_style_border_opa(content_container, LV_OPA_TRANSP, 0);
+    lv_obj_set_size(content_container, 492, 380);
+    lv_obj_set_pos(content_container, -20, 50);
+    lv_obj_set_style_bg_opa(content_container, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_opa(content_container, LV_OPA_TRANSP, 0);
     lv_obj_set_scrollbar_mode(content_container, LV_SCROLLBAR_MODE_OFF);
-// Устанавливаем стиль фона
-lv_obj_set_style_bg_color(content_container, lv_color_hex(0x1e2528), LV_PART_MAIN);
-lv_obj_set_style_bg_opa(content_container, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(content_container, lv_color_hex(0x1e2528), LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(content_container, LV_OPA_COVER, LV_PART_MAIN);
     
     // Создаем все экраны заранее
     for (int i = 0; i < 6; i++) {
         screens[i] = lv_obj_create(content_container);
         lv_obj_set_size(screens[i], LV_PCT(100), LV_PCT(100));
         screen_funcs[i](screens[i]);
-        lv_obj_add_flag(screens[i], LV_OBJ_FLAG_HIDDEN); // Скрываем все
+        lv_obj_add_flag(screens[i], LV_OBJ_FLAG_HIDDEN);
     }
     
     // Показываем первый экран
     lv_obj_clear_flag(screens[0], LV_OBJ_FLAG_HIDDEN);
-    
   
     // Создание контейнера меню (правая часть)
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
@@ -201,18 +216,22 @@ lv_obj_set_style_bg_opa(content_container, LV_OPA_COVER, LV_PART_MAIN);
     lv_obj_set_scroll_dir(cont, LV_DIR_VER);
     lv_obj_set_scroll_snap_y(cont, LV_SCROLL_SNAP_CENTER);
     lv_obj_set_flex_flow(cont, LV_FLEX_FLOW_COLUMN);
-    lv_obj_set_pos(cont, 640, 0);
+    lv_obj_set_pos(cont, 648, 0);
     lv_obj_set_style_bg_color(cont, lv_color_hex(0x1E2528), 0);
     lv_obj_set_style_border_color(cont, lv_color_hex(0x000000), 0);
     lv_obj_set_style_pad_row(cont, 1, 0);
-
     
     for (uint32_t i = 0; i < sizeof(menu_items) / sizeof(MenuItem); i++) {
         create_menu_item(cont, &menu_items[i]);
     }
-        // Создание радиальной маски
+    
+    // Создание радиальной маски
     lv_obj_t *mask = radial();
-    lv_obj_set_pos(mask, 440, 70);
+    lv_obj_set_pos(mask, 448, 70);
+    
+    // Инициализация шкалы времени (изначально скрыта)
+    time_scale_init();
+    
     _cont = cont;
     uint32_t child_count = lv_obj_get_child_cnt(cont);
     current_index = (child_count > 3) ? 2 : 0;
@@ -221,7 +240,7 @@ lv_obj_set_style_bg_opa(content_container, LV_OPA_COVER, LV_PART_MAIN);
     lv_obj_scroll_to_view(lv_obj_get_child(cont, current_index), LV_ANIM_OFF);
     highlight_box(cont, current_cursor_index);
     current_function = Main_Menu_List;
-        
+
     ESP_LOGI(TAG, "Главное меню успешно инициализировано");
     fflush(NULL);
 }

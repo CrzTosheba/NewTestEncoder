@@ -1,15 +1,12 @@
 #include "time_scale.h"
-//#include "esp_sntp.h" // Для синхронизации времени по SNTP
 #include <stdio.h>
-#include "esp_log.h" // Подключение библиотеки для логирования в ESP32
-
-static const char *TAG = "main"; 
+#include "esp_log.h"
 
 // Константы для границ шкалы
-#define SCALE_START_X 5    // Начало шкалы по оси X
-#define SCALE_END_X 461    // Конец шкалы по оси X
-#define LINE_Y 386         // Y-координата для линий
-#define TIME_LABEL_Y 358   // Y-координата для текста времени
+#define SCALE_START_X 5
+#define SCALE_END_X 461
+#define LINE_Y 386
+#define TIME_LABEL_Y 358
 
 // Создаем и настраиваем стиль линии
 static lv_style_t style_line;
@@ -17,97 +14,131 @@ static lv_style_t style_line;
 // Объекты шкалы и маркера
 static lv_obj_t *scale;
 static lv_obj_t *scale_marker;
-
-// Текстовый объект для отображения времени
 static lv_obj_t *time_label;
+static lv_obj_t *lines[2];
+
+// Точки для линий
+static lv_point_precise_t line_points[2];
+static lv_point_precise_t line_points1[2];
+
+// Флаг видимости шкалы
+static bool is_time_scale_visible = false;
 
 // Функция для вычисления X-координаты на основе времени
 static int calculate_x_from_time(int hours, int minutes) {
-    // Проверка корректности времени
     if (hours < 0) hours = 0;
     if (hours > 23) hours = 23;
     if (minutes < 0) minutes = 0;
     if (minutes > 59) minutes = 59;
 
-    // Вычисление общего количества минут
     int total_minutes = hours * 60 + minutes;
-
-    // Вычисление пропорции времени и соответствующей координаты X
     float time_ratio = (float)total_minutes / (24 * 60);
     return SCALE_START_X + (int)(time_ratio * (SCALE_END_X - SCALE_START_X));
 }
-
-// Функция преобразования времени в X-координату
-static int time_to_x(int hours, int minutes) {
-    return calculate_x_from_time(hours, minutes);
-}
-
-lv_point_precise_t line_points[] = {{30, LINE_Y}, {200, LINE_Y}}; // Первая линия
-lv_point_precise_t line_points1[] = {{280, LINE_Y}, {420, LINE_Y}}; // Вторая линия
 
 // Инициализация шкалы и маркера
 void time_scale_init(void) {
     // Инициализация стиля линии
     lv_style_init(&style_line);
-    lv_style_set_line_width(&style_line, 5); // Толщина линии
-    lv_style_set_line_color(&style_line, lv_color_hex(0xffffff)); // Белый цвет линии
-    lv_style_set_line_rounded(&style_line, true); // Закругленные концы линии
+    lv_style_set_line_width(&style_line, 5);
+    lv_style_set_line_color(&style_line, lv_color_hex(0xffffff));
+    lv_style_set_line_rounded(&style_line, true);
 
     // Создаем и позиционируем объекты
-    scale = scale_im(); // Создаем шкалу
-    scale_marker = scale_mark(); // Создаем маркер
-    lv_obj_set_pos(scale, 5, 380); // Позиция шкалы (начало шкалы: X=5, Y=380)
-    lv_obj_set_pos(scale_marker, 380, 361); // Позиция маркера (начальная позиция: X=380, Y=361)
+    scale = scale_im();
+    scale_marker = scale_mark();
+    lv_obj_set_pos(scale, 5, 380);
+    lv_obj_set_pos(scale_marker, 380, 361);
 
-    // Линия 1: от 08:15 до 10:45
-    int16_t line1_x1 = calculate_x_from_time(1, 15);  // Начало линии 1
-    int line1_x2 = calculate_x_from_time(10, 45); // Конец линии 1
-
-    int line2_x1 = calculate_x_from_time(14, 0); // Начало в 14:00
-    int line2_x2 = calculate_x_from_time(20, 0); // Конец в 20:00
+    // Инициализируем точки линий (по умолчанию)
+    line_points[0].y = LINE_Y;
+    line_points[1].y = LINE_Y;
+    line_points1[0].y = LINE_Y;
+    line_points1[1].y = LINE_Y;
 
     // Создаем линии и применяем стиль
-    lv_obj_t *lines[] = {
-        lv_line_create(lv_scr_act()), // Первая линия
-        lv_line_create(lv_scr_act())  // Вторая линия
-    };
-
-    ESP_LOGI(TAG, "line1_x1=%d, line1_x2=%d", line1_x1, line1_x2);
-    
-    line_points[0].x = line1_x1;
-    line_points[1].x = line1_x2;
-    line_points1[0].x = line2_x1;
-    line_points1[1].x = line2_x2;
-
-    lv_line_set_points(lines[0], line_points, 2); // Устанавливаем точки для первой линии
-    lv_line_set_points(lines[1], line_points1, 2); // Устанавливаем точки для второй линии
+    lines[0] = lv_line_create(lv_scr_act());
+    lines[1] = lv_line_create(lv_scr_act());
 
     for (int i = 0; i < 2; i++) {
-        lv_obj_add_style(lines[i], &style_line, 0); // Применяем стиль к линиям
+        lv_obj_add_style(lines[i], &style_line, 0);
     }
 
     // Создаем текстовый объект для отображения времени
-    time_label = lv_label_create(lv_scr_act()); // Создаем текстовый объект
-    lv_obj_set_style_text_color(time_label, lv_color_hex(0xffffff), 0); // Белый цвет текста
-    lv_obj_set_style_text_font(time_label, &Roboto_bold_18, 0); // Шрифт
-    lv_obj_set_pos(time_label, 350, 358); // Начальная позиция текста 
+    time_label = lv_label_create(lv_scr_act());
+    lv_obj_set_style_text_color(time_label, lv_color_hex(0xffffff), 0);
+    lv_obj_set_style_text_font(time_label, &Roboto_bold_18, 0);
+    lv_obj_set_pos(time_label, 350, 358);
+
+    // Изначально скрываем все элементы шкалы
+    show_time_scale(false);
+}
+
+// Установка временных интервалов для линий
+void set_time_intervals(int line1_start_h, int line1_start_m, int line1_end_h, int line1_end_m,
+                       int line2_start_h, int line2_start_m, int line2_end_h, int line2_end_m) {
+    // Линия 1
+    line_points[0].x = calculate_x_from_time(line1_start_h, line1_start_m);
+    line_points[1].x = calculate_x_from_time(line1_end_h, line1_end_m);
+
+    // Линия 2
+    line_points1[0].x = calculate_x_from_time(line2_start_h, line2_start_m);
+    line_points1[1].x = calculate_x_from_time(line2_end_h, line2_end_m);
+
+    // Обновляем точки на линиях
+    lv_line_set_points(lines[0], line_points, 2);
+    lv_line_set_points(lines[1], line_points1, 2);
+
 }
 
 // Установка времени и обновление позиции маркера
 void set_time(int hours, int minutes) {
-    // Вычисляем позицию маркера по оси X
+    if (!is_time_scale_visible) return;
+
     int marker_x = calculate_x_from_time(hours, minutes);
+    char time_str[10];
+    snprintf(time_str, sizeof(time_str), "%02d:%02d", hours, minutes);
 
-    // Форматируем время в строку "часы:минуты"
-    char time_str[10]; // Буфер для строки времени
-    snprintf(time_str, sizeof(time_str), "%02d:%02d", hours, minutes); // Форматируем время
-
-    // Обновляем текст на экране
     lv_label_set_text(time_label, time_str);
+    lv_obj_set_pos(scale_marker, marker_x, 361);
+    lv_obj_set_pos(time_label, marker_x + 20, TIME_LABEL_Y);
+}
 
-    // Обновляем позицию маркера
-    lv_obj_set_pos(scale_marker, marker_x, 361); // Устанавливаем новую позицию маркера
-
-    // Обновляем позицию текста (слева от маркера, на расстоянии 10 пикселей)
-    lv_obj_set_pos(time_label, marker_x + 20, TIME_LABEL_Y); // Текст справа от маркера
+// Показать/скрыть шкалу времени
+void show_time_scale(bool show) {
+    is_time_scale_visible = show;
+    
+    if (scale) {
+        if (show) {
+            lv_obj_clear_flag(scale, LV_OBJ_FLAG_HIDDEN);
+        } else {
+            lv_obj_add_flag(scale, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+    
+    if (scale_marker) {
+        if (show) {
+            lv_obj_clear_flag(scale_marker, LV_OBJ_FLAG_HIDDEN);
+        } else {
+            lv_obj_add_flag(scale_marker, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+    
+    if (time_label) {
+        if (show) {
+            lv_obj_clear_flag(time_label, LV_OBJ_FLAG_HIDDEN);
+        } else {
+            lv_obj_add_flag(time_label, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+    
+    for (int i = 0; i < 2; i++) {
+        if (lines[i]) {
+            if (show) {
+                lv_obj_clear_flag(lines[i], LV_OBJ_FLAG_HIDDEN);
+            } else {
+                lv_obj_add_flag(lines[i], LV_OBJ_FLAG_HIDDEN);
+            }
+        }
+    }
 }

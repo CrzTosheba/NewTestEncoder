@@ -1,0 +1,62 @@
+[1/5] C:\windows\system32\cmd.exe /C "cd /D C:\Users\RUCO1621\Desktop\ECL5\esp32s3_lcd_i80_ssd1963\build\esp-idf\esptool_py && C:\Espressif\python_env\idf5.4_py3.11_env\Scripts\python.exe C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 partition --type app C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/partition_table/partition-table.bin C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/display_lvgl_demos.bin"
+display_lvgl_demos.bin binary size 0xa81b0 bytes. Smallest app partition is 0x160000 bytes. 0xb7e50 bytes (52%) free.
+[2/5] Performing build step for 'bootloader'
+[1/1] C:\windows\system32\cmd.exe /C "cd /D C:\Users\RUCO1621\Desktop\ECL5\esp32s3_lcd_i80_ssd1963\build\bootloader\esp-idf\esptool_py && C:\Espressif\python_env\idf5.4_py3.11_env\Scripts\python.exe C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x0 C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/bootloader/bootloader.bin"
+Bootloader binary size 0x5760 bytes. 0x28a0 bytes (32%) free.
+[3/5] No install step for 'bootloader'
+[4/5] Completed 'bootloader'
+[4/5] C:\windows\system32\cmd.exe /C "cd /D C:\Users\RUCO1621\esp\v5.4.2\esp-idf\components\esptool_py && C:\Espressif\tools\cmake\3.30.2\bin\cmake.exe -D IDF_PATH=C:/Users/RUCO1621/esp/v5.4.2/esp-idf -D SERIAL_TOOL=C:/Espressif/python_env/idf5.4_py3.11_env/Scripts/python.exe;;C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esptool_py/esptool/esptool.py;--chip;esp32s3 -D SERIAL_TOOL_ARGS=--before=default_reset;--after=hard_reset;write_flash;@flash_args -D WORKING_DIRECTORY=C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build -P C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esptool_py/run_serial_tool.cmake"
+esptool.py --chip esp32s3 -p COM13 -b 460800 --before=default_reset --after=hard_reset write_flash --flash_mode dio --flash_freq 80m --flash_size 2MB 0x0 bootloader/bootloader.bin 0x10000 display_lvgl_demos.bin 0x8000 partition_table/partition-table.bin
+esptool.py v4.9.0
+Serial port COM13
+Connecting....
+Chip is ESP32-S3 (QFN56) (revision v0.2)
+Features: WiFi, BLE, Embedded PSRAM 8MB (AP_3v3)
+Crystal is 40MHz
+MAC: 84:fc:e6:6b:22:24
+Uploading stub...
+Running stub...
+Stub running...
+Changing baud rate to 460800
+Changed.
+Configuring flash size...
+Flash will be erased from 0x00000000 to 0x00005fff...
+Flash will be erased from 0x00010000 to 0x000b8fff...
+Flash will be erased from 0x00008000 to 0x00008fff...
+SHA digest in image updated
+Compressed 22368 bytes to 14201...
+Writing at 0x00000000... (100 %)
+Wrote 22368 bytes (14201 compressed) at 0x00000000 in 0.6 seconds (effective 294.1 kbit/s)...
+Hash of data verified.
+Compressed 688560 bytes to 348788...
+Writing at 0x00010000... (4 %)
+Writing at 0x00023914... (9 %)
+Writing at 0x00034b7b... (13 %)
+Writing at 0x0004afbd... (18 %)
+Writing at 0x00053702... (22 %)
+Writing at 0x0005903c... (27 %)
+Writing at 0x0005eb59... (31 %)
+Writing at 0x00064064... (36 %)
+Writing at 0x00069136... (40 %)
+Writing at 0x0006f1d3... (45 %)
+Writing at 0x000741e2... (50 %)
+Writing at 0x0007940f... (54 %)
+Writing at 0x0007e6bd... (59 %)
+Writing at 0x00083bb6... (63 %)
+Writing at 0x0008955e... (68 %)
+Writing at 0x000930e3... (72 %)
+Writing at 0x00099e46... (77 %)
+Writing at 0x0009f557... (81 %)
+Writing at 0x000a529a... (86 %)
+Writing at 0x000aa837... (90 %)
+Writing at 0x000b03cc... (95 %)
+Writing at 0x000b61ea... (100 %)
+Wrote 688560 bytes (348788 compressed) at 0x00010000 in 8.6 seconds (effective 636.9 kbit/s)...
+Hash of data verified.
+Compressed 3072 bytes to 105...
+Writing at 0x00008000... (100 %)
+Wrote 3072 bytes (105 compressed) at 0x00008000 in 0.0 seconds (effective 522.9 kbit/s)...
+Hash of data verified.
+
+Leaving...
+Hard resetting via RTS pin...
