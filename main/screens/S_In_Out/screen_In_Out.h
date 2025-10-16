@@ -7,6 +7,7 @@
 extern "C" {
 #endif
 LV_FONT_DECLARE(Roboto_bold_24);
+LV_IMAGE_DECLARE(lv_im_controller);
 void screen_In_Out_create(lv_obj_t *parent);
 
 

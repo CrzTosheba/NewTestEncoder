@@ -1,0 +1,11 @@
+
+
+#ifndef W_B_BIG_H_
+#define W_B_BIG_H_
+
+#include "lvgl.h"
+
+LV_IMG_DECLARE(lv_im_bubble_02);
+lv_obj_t* bubble_b(lv_obj_t *parent);
+
+#endif /*W_B_BIG_H_*/

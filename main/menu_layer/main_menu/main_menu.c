@@ -1,7 +1,7 @@
 // Файл: main_menu.c
 #include "main_menu.h"
 #include "encoder/encoder.h"
-#include "my_widgets/rad_mask.h"
+#include "my_widgets/w_rad_mask.h"
 #include "screen_logic/arc_menu.h"
 #include <stdint.h>
 #include "esp_log.h"

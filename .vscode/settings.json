@@ -24,7 +24,9 @@
         "b_big.h": "c",
         "w_valve_off.h": "c",
         "scale_marker_img.h": "c",
-        "scale_img.h": "c"
+        "scale_img.h": "c",
+        "encoder_manager.h": "c",
+        "lock_big_open.h": "c"
     },
     "idf.flashType": "UART",
     "idf.portWin": "COM13"

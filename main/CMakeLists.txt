@@ -47,6 +47,8 @@ idf_component_register(
     "lv_image/lv_im_radius_yellow.c"
     "lv_image/module_unlock.c"
     "lv_image/lv_im_radius_gray.c"
+    "lv_image/lv_im_big_lock_open.c"
+    "lv_image/lv_im_big_lock_close.c"
 
     
     
@@ -59,18 +61,20 @@ idf_component_register(
     "lv_fonts/Roboto_bold_48.c"
 
         # ------------My_WIDGETS---------------------
-        "my_widgets/b_small.c"
-        "my_widgets/b_big.c"
-        "my_widgets/drop_label.c"
-        "my_widgets/time_label.c"
-        "my_widgets/rad_mask.c"
-        "my_widgets/scale_img.c"
-        "my_widgets/scale_marker_img.c"
-        "my_widgets/pump_on_img.c"
-        "my_widgets/pump_off_img.c"
+        "my_widgets/w_b_small.c"
+        "my_widgets/w_b_big.c"
+        "my_widgets/w_drop_label.c"
+        "my_widgets/w_time_label.c"
+        "my_widgets/w_rad_mask.c"
+        "my_widgets/w_scale_img.c"
+        "my_widgets/w_scale_marker_img.c"
+        "my_widgets/w_pump_on_img.c"
+        "my_widgets/w_pump_off_img.c"
         "my_widgets/w_valve_on.c"
         "my_widgets/w_valve_off.c"
-        "my_widgets/heat_exch.c"
+        "my_widgets/w_heat_exch.c"
+        "my_widgets/w_lock_big_close.c"
+        "my_widgets/w_lock_big_open.c"
 
 
         #--------Screens-------------------------

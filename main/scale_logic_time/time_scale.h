@@ -2,8 +2,8 @@
 #define TIME_SCALE_H
 
 #include "lvgl.h"
-#include "my_widgets/scale_img.h"
-#include "my_widgets/scale_marker_img.h"
+#include "my_widgets/w_scale_img.h"
+#include "my_widgets/w_scale_marker_img.h"
 LV_FONT_DECLARE(Roboto_bold_18);
 
 // Инициализация шкалы и маркера
