@@ -5,6 +5,10 @@
 #include "lvgl.h"
 #include "encoder/encoder.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Объявления шрифтов
 LV_FONT_DECLARE(Roboto_bold_16);
 LV_FONT_DECLARE(Roboto_bold_18);
@@ -26,7 +30,7 @@ LV_IMG_DECLARE(lv_im_module_inout);
 
 // Прототипы функций экранов
 void screen_Pass_create(lv_obj_t *parent);
-void screen_Heat_create(lv_obj_t *parent);
+void screen_Gvs_create(lv_obj_t *parent);
 void screen_CO_create(lv_obj_t *parent);
 void screen_Podp_create(lv_obj_t *parent);
 void screen_Uv_create(lv_obj_t *parent);
@@ -36,7 +40,17 @@ void screen_In_Out_create(lv_obj_t *parent);
 void Main_Menu_List(void);
 void main_menu_encoder_event_cb(uint8_t e);
 
-// Глобальные указатели на экраны
+// Функции управления видимостью главного меню
+void main_menu_show(void);
+void main_menu_hide(void);
+
+// Глобальные указатели на экраны (объявлены в main_menu.c)
 extern lv_obj_t *screens[6];
+extern lv_obj_t *_cont;
+extern lv_obj_t *content_container;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // MAIN_MENU_H

@@ -75,23 +75,27 @@ idf_component_register(
         "my_widgets/w_heat_exch.c"
         "my_widgets/w_lock_big_close.c"
         "my_widgets/w_lock_big_open.c"
+        "my_widgets/w_in_out_main.c"
 
 
         #--------Screens-------------------------
    "screens/S_Co/screen_CO.c"
-   "screens/S_Heat/screen_Heat.c"
+   "screens/S_Gvs/screen_Gvs.c"
    "screens/S_In_Out/screen_In_Out.c"
    "screens/S_Pass/screen_Pass.c"
+    "screens/S_Pass/password_screen.c"
    "screens/S_Podp/screen_Podp.c"
    "screens/S_Uv/screen_Uv.c"
 
 
             # --------Other------------------------------
     "main.c"
-    "encoder/encoder.c"    
+    "encoder/encoder.c" 
+    "encoder/encoder_manager.c"    
     "lv_bg_color/lv_bg_main_screen.c"   
     "dialog_screen/screen_YES_NO/yes_no_screen.c"
-    "screen_logic/arc_menu.c"   
+    "screen_logic/arc_menu.c"
+    "screen_logic/screen_navigation.c"
     "counters/count_test.c"
     "menu_layer/main_menu/main_menu.c"
     "scale_logic_time/time_scale.c"

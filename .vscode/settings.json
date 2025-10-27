@@ -26,7 +26,14 @@
         "scale_marker_img.h": "c",
         "scale_img.h": "c",
         "encoder_manager.h": "c",
-        "lock_big_open.h": "c"
+        "lock_big_open.h": "c",
+        "screen_in_out.h": "c",
+        "gpio.h": "c",
+        "lv_examples.h": "c",
+        "w_rad_mask.h": "c",
+        "w_lock_big_open.h": "c",
+        "password_screen.h": "c",
+        "screen_pass.h": "c"
     },
     "idf.flashType": "UART",
     "idf.portWin": "COM13"

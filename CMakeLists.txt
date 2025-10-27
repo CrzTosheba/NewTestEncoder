@@ -17,6 +17,12 @@ set(EXTRA_COMPONENT_DIRS
 )
 
 set(COMPONENTS main) # "Trim" the build. Include the minimal set of components; main and anything it depends on.
+# Оптимизация для уменьшения размера кода
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Os -ffunction-sections -fdata-sections")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Os -ffunction-sections -fdata-sections")
+
+# Удаление неиспользуемых секций
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,--gc-sections")
 
 project(display_lvgl_demos)
 

@@ -62,7 +62,7 @@ CMAKE_CXX_COMPILER_AR:FILEPATH=C:/Espressif/tools/xtensa-esp-elf/esp-14.2.0_2024
 CMAKE_CXX_COMPILER_RANLIB:FILEPATH=C:/Espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/xtensa-esp32s3-elf-gcc-ranlib.exe
 
 //C++ Compiler Base Flags
-CMAKE_CXX_FLAGS:STRING=-mlongcalls  -fno-builtin-memcpy -fno-builtin-memset -fno-builtin-bzero -fno-builtin-stpcpy -fno-builtin-strncpy
+CMAKE_CXX_FLAGS:STRING=-mlongcalls  -fno-builtin-memcpy -fno-builtin-memset -fno-builtin-bzero -fno-builtin-stpcpy -fno-builtin-strncpy -Os -ffunction-sections -fdata-sections
 
 //Flags used by the CXX compiler during DEBUG builds.
 CMAKE_CXX_FLAGS_DEBUG:STRING=-g
@@ -85,7 +85,7 @@ CMAKE_C_COMPILER_AR:FILEPATH=C:/Espressif/tools/xtensa-esp-elf/esp-14.2.0_202411
 CMAKE_C_COMPILER_RANLIB:FILEPATH=C:/Espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/xtensa-esp32s3-elf-gcc-ranlib.exe
 
 //C Compiler Base Flags
-CMAKE_C_FLAGS:STRING=-mlongcalls  -fno-builtin-memcpy -fno-builtin-memset -fno-builtin-bzero -fno-builtin-stpcpy -fno-builtin-strncpy
+CMAKE_C_FLAGS:STRING=-mlongcalls  -fno-builtin-memcpy -fno-builtin-memset -fno-builtin-bzero -fno-builtin-stpcpy -fno-builtin-strncpy -Os -ffunction-sections -fdata-sections
 
 //Flags used by the C compiler during DEBUG builds.
 CMAKE_C_FLAGS_DEBUG:STRING=-g
@@ -357,9 +357,6 @@ PYTHON:UNINITIALIZED=C:\Espressif\python_env\idf5.4_py3.11_env\Scripts\python.ex
 
 //No help, variable specified on the command line.
 PYTHON_DEPS_CHECKED:UNINITIALIZED=1
-
-//No help, variable specified on the command line.
-SDKCONFIG:UNINITIALIZED=c:\Users\RUCO1621\Desktop\ECL5\esp32s3_lcd_i80_ssd1963\sdkconfig
 
 //Allow unsafe builds. These builds ARE NOT SECURE.
 UNSAFE_BUILD:BOOL=OFF
