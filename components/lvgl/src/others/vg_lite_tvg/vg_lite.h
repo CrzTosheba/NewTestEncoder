@@ -168,7 +168,7 @@ typedef unsigned int        vg_lite_color_t;
         VG_LITE_SUCCESS = 0,            /*! Success. */
         VG_LITE_INVALID_ARGUMENT,       /*! An invalid argument was specified. */
         VG_LITE_OUT_OF_MEMORY,          /*! Out of memory. */
-        VG_LITE_NO_CONTEXT,             /*! No context or an unintialized context specified. */
+        VG_LITE_NO_CONTEXT,             /*! No context or an uninitialized context specified. */
         VG_LITE_TIMEOUT,                /*! A timeout has occurred during a wait. */
         VG_LITE_OUT_OF_RESOURCES,       /*! Out of system resources. */
         VG_LITE_GENERIC_IO,             /*! Cannot communicate with the kernel driver. */
@@ -931,9 +931,9 @@ typedef unsigned int        vg_lite_color_t;
         vg_lite_uint8_t low_g;                  /*! The G channel of low_rgb. */
         vg_lite_uint8_t low_b;                  /*! The B channel of low_rgb. */
         vg_lite_uint8_t alpha;                  /*! The alpha channel to replace destination pixel alpha channel.*/
-        vg_lite_uint8_t hign_r;                 /*! The R channel of hign_rgb. */
-        vg_lite_uint8_t hign_g;                 /*! The G channel of hign_rgb. */
-        vg_lite_uint8_t hign_b;                 /*! The B channel of hign_rgb. */
+        vg_lite_uint8_t high_r;                 /*! The R channel of high_rgb. */
+        vg_lite_uint8_t high_g;                 /*! The G channel of high_rgb. */
+        vg_lite_uint8_t high_b;                 /*! The B channel of high_rgb. */
     } vg_lite_color_key_t;
 
     /* Four colorkey definition.
@@ -996,7 +996,7 @@ typedef unsigned int        vg_lite_color_t;
     /* Get the value of register from register's address. */
     vg_lite_error_t vg_lite_get_register(vg_lite_uint32_t address, vg_lite_uint32_t* result);
 
-    /* Generate a 3x3 homogenous matrix to transform 4 source coordinates to 4 target coordinates. */
+    /* Generate a 3x3 homogeneous matrix to transform 4 source coordinates to 4 target coordinates. */
     vg_lite_error_t vg_lite_get_transform_matrix(vg_lite_point4_t src, vg_lite_point4_t dst, vg_lite_matrix_t *mat);
 
     /* Allocate a buffer from GPU hardware accessible memory. */
