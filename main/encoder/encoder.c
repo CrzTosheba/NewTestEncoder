@@ -3,6 +3,7 @@
 #include "freertos/task.h"
 #include "esp_log.h"
 #include "driver/gpio.h"
+#include "esp_task_wdt.h"
 
 // Время задержки для определения длительного удержания кнопки (в миллисекундах)
 #define HOLD_DELAY (1000)
@@ -136,7 +137,13 @@ void enc_init(int delay, int gpio_sw, int gpio_a, int gpio_b){
 
 // Основной цикл обработки энкодера
 void enc_loop(){
+    // Регистрируем задачу в watchdog
+    esp_task_wdt_add(NULL);
+    
     while (1) {
+        // Сбрасываем watchdog на КАЖДОЙ итерации - ВАЖНО!
+        esp_task_wdt_reset();
+        
         // Задержка между опросами состояния энкодера
         vTaskDelay(_delay / portTICK_PERIOD_MS);
         

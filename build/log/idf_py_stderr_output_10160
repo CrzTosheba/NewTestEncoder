@@ -1,8 +1,0 @@
-CMake Error at C:/Users/RUCO1621/esp/v5.4.2/esp-idf/tools/cmake/project.cmake:472 (message):
-  Directory specified in EXTRA_COMPONENT_DIRS doesn't exist:
-  C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl
-Call Stack (most recent call first):
-  C:/Users/RUCO1621/esp/v5.4.2/esp-idf/tools/cmake/project.cmake:556 (__project_init)
-  CMakeLists.txt:27 (project)
-
-

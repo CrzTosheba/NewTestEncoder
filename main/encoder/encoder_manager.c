@@ -4,6 +4,7 @@
 #include "freertos/task.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/queue.h"
+#include "esp_task_wdt.h"
 
 static const char *TAG = "EncoderManager";
 
@@ -12,9 +13,8 @@ static QueueHandle_t encoder_queue = NULL;
 static uint32_t event_counter = 0;
 static encoder_event_callback_t current_callback = NULL;
 
-// Обработчик прерываний от энкодера
-static void IRAM_ATTR encoder_event_handler(uint8_t event) {
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+// Обработчик событий от энкодера (НЕ ISR!)
+static void encoder_event_handler(uint8_t event) {
     encoder_event_t encoder_event;
     
     // Преобразуем событие драйвера в нашу структуру
@@ -36,19 +36,15 @@ static void IRAM_ATTR encoder_event_handler(uint8_t event) {
     encoder_event.counter = ++event_counter;
     
     if (encoder_queue != NULL) {
-        if (xQueueSendFromISR(encoder_queue, &encoder_event, &xHigherPriorityTaskWoken) == pdTRUE) {
-            // Корректный вызов с аргументом
-            if (xHigherPriorityTaskWoken == pdTRUE) {
-                portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-            }
-        }
+        // Отправляем в очередь без прерываний (это не ISR!)
+        xQueueSend(encoder_queue, &encoder_event, pdMS_TO_TICKS(10));
     }
 }
 
 // Инициализация менеджера энкодера
 void encoder_manager_init(void) {
     if (encoder_queue == NULL) {
-        encoder_queue = xQueueCreate(40, sizeof(encoder_event_t));
+        encoder_queue = xQueueCreate(20, sizeof(encoder_event_t));
         if (encoder_queue == NULL) {
             ESP_LOGE(TAG, "Failed to create encoder queue");
             return;
@@ -68,7 +64,7 @@ QueueHandle_t encoder_manager_get_queue(void) {
 // Регистрация callback-функции для обработки событий
 void encoder_manager_register_callback(encoder_event_callback_t callback) {
     current_callback = callback;
-    ESP_LOGI(TAG, "Encoder callback registered");
+    ESP_LOGI(TAG, "Encoder callback registered: %p", callback);
 }
 
 // Отмена регистрации callback-функции
@@ -82,25 +78,30 @@ void encoder_manager_task(void* arg) {
     encoder_event_t event;
     uint8_t raw_event;
     
+    // Регистрируем задачу в watchdog
+    esp_task_wdt_add(NULL);
+    
+    ESP_LOGI(TAG, "Encoder manager task started");
+    
     while (1) {
-        if (xQueueReceive(encoder_queue, &event, portMAX_DELAY) == pdTRUE) {
+        // Сбрасываем watchdog на каждой итерации
+        esp_task_wdt_reset();
+        
+        // Ждем событие с таймаутом 100 мс вместо portMAX_DELAY
+        if (xQueueReceive(encoder_queue, &event, pdMS_TO_TICKS(100)) == pdTRUE) {
             // Преобразуем обратно в raw event для совместимости
             switch (event.type) {
                 case ENCODER_EVENT_LEFT:
                     raw_event = ENC_LEFT;
-                    ESP_LOGI(TAG, "Encoder (%lu): LEFT rotation", event.counter);
                     break;
                 case ENCODER_EVENT_RIGHT:
                     raw_event = ENC_RIGHT;
-                    ESP_LOGI(TAG, "Encoder (%lu): RIGHT rotation", event.counter);
                     break;
                 case ENCODER_EVENT_CLICK:
                     raw_event = ENC_CLICK;
-                    ESP_LOGI(TAG, "Encoder: BUTTON click");
                     break;
                 default:
                     raw_event = 0;
-                    ESP_LOGI(TAG, "Unknown encoder event: %d", event.type);
                     continue; // Пропускаем неизвестные события
             }
             
@@ -109,5 +110,8 @@ void encoder_manager_task(void* arg) {
                 current_callback(raw_event);
             }
         }
+        
+        // Короткая задержка для предотвращения полного загрузки CPU
+        vTaskDelay(pdMS_TO_TICKS(5));
     }
 }

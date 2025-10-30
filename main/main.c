@@ -11,8 +11,7 @@
 #include "menu_layer/main_menu/main_menu.h"
 #include "esp_heap_caps.h"
 #include "encoder/encoder_manager.h"
-#include "screen_logic/screen_navigation.h"  // Добавляем навигацию
-
+#include "screen_logic/screen_navigation.h"
 
 // Тег для логирования
 static const char *TAG = "app_main";
@@ -45,9 +44,12 @@ void main_screen_bg(void)
 
 // Задача обработки таймеров LVGL
 void lvgl_timer_task(void* arg) {
+    // Регистрируем задачу в watchdog
     esp_task_wdt_add(NULL);
+    
     while (1) {
         lv_timer_handler();
+        // Сбрасываем watchdog
         esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(LVGL_TASK_DELAY_MS));
     }
@@ -56,6 +58,17 @@ void lvgl_timer_task(void* arg) {
 // Главная функция приложения
 void app_main(void)
 {
+    // Инициализация watchdog с настройками по умолчанию
+    esp_task_wdt_config_t wdt_config = {
+        .timeout_ms = 5000,
+        .idle_core_mask = (1 << portNUM_PROCESSORS) - 1,
+        .trigger_panic = true
+    };
+    ESP_ERROR_CHECK(esp_task_wdt_reconfigure(&wdt_config));
+    
+    // Регистрируем главную задачу в watchdog
+    esp_task_wdt_add(NULL);
+    
     // Инициализация GPIO энкодера
     rotary_encoder_gpio_init();
     ESP_LOGI(TAG, "Encoder GPIO initialized");
@@ -123,8 +136,10 @@ void app_main(void)
     
     // Основной цикл приложения
     while (1) {
+        // Сбрасываем watchdog в главной задаче
+        esp_task_wdt_reset();
         // Периодическая задержка
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 
     // Сообщение о запуске приложения (не достижимо из-за бесконечного цикла)
