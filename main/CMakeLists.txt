@@ -50,6 +50,17 @@ idf_component_register(
     "lv_image/lv_im_big_lock_open.c"
     "lv_image/lv_im_big_lock_close.c"
 
+    "lv_image/lv_im_valve_alarm.c"
+    "lv_image/lv_im_status_alarm.c"
+    "lv_image/lv_im_pump_alarm.c"
+    "lv_image/lv_im_module_alarms.c"
+    "lv_image/lv_im_line_v_yellow.c"
+    "lv_image/lv_im_line_v_white.c"
+    "lv_image/lv_im_line_h_yellow.c"
+    "lv_image/lv_im_line_h_white.c"
+    "lv_image/lv_im_alarm_status.c"
+    "lv_image/lv_im_service_icon.c"
+
     
     
     # ------------FONTS-----------------------
@@ -61,31 +72,39 @@ idf_component_register(
     "lv_fonts/Roboto_bold_48.c"
 
         # ------------My_WIDGETS---------------------
-        "my_widgets/w_b_small.c"
-        "my_widgets/w_b_big.c"
-        "my_widgets/w_drop_label.c"
-        "my_widgets/w_time_label.c"
-        "my_widgets/w_rad_mask.c"
-        "my_widgets/w_scale_img.c"
-        "my_widgets/w_scale_marker_img.c"
-        "my_widgets/w_pump_on_img.c"
-        "my_widgets/w_pump_off_img.c"
-        "my_widgets/w_valve_on.c"
-        "my_widgets/w_valve_off.c"
-        "my_widgets/w_heat_exch.c"
-        "my_widgets/w_lock_big_close.c"
-        "my_widgets/w_lock_big_open.c"
-        "my_widgets/w_in_out_main.c"
+    "my_widgets/w_b_small.c"
+    "my_widgets/w_b_big.c"
+    "my_widgets/w_drop_label.c"
+    "my_widgets/w_time_label.c"
+    "my_widgets/w_rad_mask.c"
+    "my_widgets/w_scale_img.c"
+    "my_widgets/w_scale_marker_img.c"
+    "my_widgets/w_pump_on_img.c"
+    "my_widgets/w_pump_off_img.c"
+    "my_widgets/w_valve_on.c"
+    "my_widgets/w_valve_off.c"
+    "my_widgets/w_heat_exch.c"
+    "my_widgets/w_lock_big_close.c"
+    "my_widgets/w_lock_big_open.c"
+    "my_widgets/w_in_out_main.c"
+
+    "my_widgets/w_all_inputs_out_down.c"
+    "my_widgets/w_analog_out_down.c"
+    "my_widgets/w_digital_out_up.c"
+    "my_widgets/w_universal_in_down.c"
 
 
         #--------Screens-------------------------
-   "screens/S_Co/screen_CO.c"
-   "screens/S_Gvs/screen_Gvs.c"
-   "screens/S_In_Out/screen_In_Out.c"
-   "screens/S_Pass/screen_Pass.c"
+    "screens/S_Co/screen_CO.c"
+    "screens/S_Gvs/screen_Gvs.c"
+    "screens/S_In_Out/1_layer/screen_In_Out.c"
+    "screens/S_In_Out/2_layer/screen_In_Out_Second.c"
+    "screens/S_Pass/screen_Pass.c"
     "screens/S_Pass/password_screen.c"
-   "screens/S_Podp/screen_Podp.c"
-   "screens/S_Uv/screen_Uv.c"
+    "screens/S_Podp/screen_Podp.c"
+    "screens/S_Uv/screen_Uv.c"
+    "screens/S_Service/screen_service.c"
+    "screens/S_Alarms/screen_alarms.c"
 
 
             # --------Other------------------------------
@@ -97,9 +116,10 @@ idf_component_register(
     "screen_logic/arc_menu.c"
     "screen_logic/screen_navigation.c"
     "counters/count_test.c"
-    "menu_layer/main_menu/main_menu.c"
     "scale_logic_time/time_scale.c"
-
+            #---------------Menu_Layer-----------------------
+    "menu_layer/main_menu/main_menu.c"
+    "menu_layer/In_Out_Menu/In_Out_main_menu.c"
 
 
 

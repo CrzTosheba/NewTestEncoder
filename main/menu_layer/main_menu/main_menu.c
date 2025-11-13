@@ -43,10 +43,18 @@ static screen_create_func_t screen_funcs[] = {
     screen_Pass_create,       // 0: "Открыть доступ"
     screen_Gvs_create,        // 1: "ГВС"
     screen_CO_create,         // 2: "Отопление"
-    screen_Podp_create,       // 3: "Подпитка"
-    screen_Uv_create,         // 4: "Узел ввода"
-    screen_In_Out_create      // 5: "Входы/выходы"
+    screen_alarms_create,     // 3:  Аварии
+    //----------TODO---------------//
+    //   screen_Podp_create,       // 3: "Подпитка"
+    //   screen_Uv_create,         // 4: "Узел ввода"
+    //-----------------------------//
+    screen_In_Out_create,      // 4: "Входы/выходы"
+    screen_service_create      // 5: "Экран сервис"
 };
+
+// Объявление статических функций
+static void highlight_box(lv_obj_t *cont, uint32_t cursor_index);
+static void create_menu_item(lv_obj_t *cont, const MenuItem *item);
 
 /**
  * @brief Показывает главное меню
@@ -80,6 +88,50 @@ void main_menu_hide(void) {
         }
     }
 }
+
+/**
+ * @brief Обновляет отображение главного меню в соответствии с текущим положением курсора
+ */
+void main_menu_update_display(void) {
+    if (_cont == NULL) {
+        ESP_LOGE(TAG, "Контейнер меню не инициализирован");
+        return;
+    }
+    
+    // Скрываем все экраны
+    for (int i = 0; i < 6; i++) {
+        if (screens[i] && lv_obj_is_valid(screens[i])) {
+            lv_obj_add_flag(screens[i], LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+    
+    // Показываем только активный экран
+    if (current_cursor_index < 6 && screens[current_cursor_index] && lv_obj_is_valid(screens[current_cursor_index])) {
+        lv_obj_clear_flag(screens[current_cursor_index], LV_OBJ_FLAG_HIDDEN);
+    }
+    
+    // Обновляем подсветку
+    highlight_box(_cont, current_cursor_index);
+    
+    // Управление видимостью шкалы времени
+    if (current_cursor_index == 1 || current_cursor_index == 2) {
+        show_time_scale(true);
+        
+        // Устанавливаем разные временные интервалы и время для разных экранов
+        if (current_cursor_index == 1) {
+            // ГВС: линии с 08:15 до 10:45 и с 14:00 до 20:00
+            set_time_intervals(8, 15, 10, 45, 14, 0, 20, 0);
+            set_time(12, 0); // Время для ГВС
+        } else {
+            // Отопление: другие временные интервалы (например, с 06:00 до 12:00 и с 16:00 до 22:00)
+            set_time_intervals(6, 0, 12, 0, 16, 0, 22, 0);
+            set_time(15, 30); // Время для Отопления
+        }
+    } else {
+        show_time_scale(false);
+    }
+}
+
 /**
  * @brief Подсветка выбранного элемента меню
  * 
@@ -142,35 +194,7 @@ void main_menu_encoder_event_cb(uint8_t e) {
     arc_menu_handle_encoder(e, _cont, &current_index);
     
     if (prev_cursor != current_cursor_index) {
-        highlight_box(_cont, current_cursor_index);
-        
-        // Скрываем все экраны
-        for (int i = 0; i < 6; i++) {
-            if (screens[i]) lv_obj_add_flag(screens[i], LV_OBJ_FLAG_HIDDEN);
-        }
-        
-        // Показываем выбранный экран
-        if (screens[current_cursor_index]) {
-            lv_obj_clear_flag(screens[current_cursor_index], LV_OBJ_FLAG_HIDDEN);
-        }
-        
-        // Управление видимостью шкалы времени
-        if (current_cursor_index == 1 || current_cursor_index == 2) {
-            show_time_scale(true);
-            
-            // Устанавливаем разные временные интервалы и время для разных экранов
-            if (current_cursor_index == 1) {
-                // ГВС: линии с 08:15 до 10:45 и с 14:00 до 20:00
-                set_time_intervals(8, 15, 10, 45, 14, 0, 20, 0);
-                set_time(12, 0); // Время для ГВС
-            } else {
-                // Отопление: другие временные интервалы (например, с 06:00 до 12:00 и с 16:00 до 22:00)
-                set_time_intervals(6, 0, 12, 0, 16, 0, 22, 0);
-                set_time(15, 30); // Время для Отопления
-            }
-        } else {
-            show_time_scale(false);
-        }
+        main_menu_update_display();
     }
 }
 
@@ -179,9 +203,13 @@ static const MenuItem menu_items[] = {
     {"Открыть доступ", "", &lv_im_module_lock, ""},
     {"ГВС", "40.6(56.5)°C", &lv_im_module_hotwater, &lv_im_module_on},
     {"Отопление", "40.6(56.5)°C", &lv_im_module_heat, &lv_im_module_on},
-    {"Подпитка", "Н1", &lv_im_module_podp, &lv_im_module_off},
-    {"Узел ввода", "71°C|-13°C", &lv_im_module_input_output, &lv_im_module_on},
+    //---------------TODO------------------//
+  //  {"Подпитка", "Н1", &lv_im_module_podp, &lv_im_module_off},
+  //  {"Узел ввода", "71°C|-13°C", &lv_im_module_input_output, &lv_im_module_on},
+  //--------------------------------------//
+    {"Аварии", "", &lv_im_module_alarms, ""},
     {"Входы/выходы", "", &lv_im_module_inout, ""},
+    {"Сервис", "", &lv_im_module_inout, ""},
 };
 
 /**

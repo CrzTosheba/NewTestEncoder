@@ -1,12 +1,11 @@
 #include "screen_In_Out.h"
 #include "my_widgets/w_in_out_main.h"
+#include "my_widgets/w_digital_out_up.h"
+#include "my_widgets/w_all_inputs_out_down.h"
+#include "my_widgets/w_universal_in_down.h"
+#include "my_widgets/w_analog_out_down.h"
 
 void screen_In_Out_create(lv_obj_t *parent) {
-    lv_obj_set_style_bg_color(parent, lv_color_hex(0x1E2528), LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(parent, LV_OPA_COVER, LV_PART_MAIN);
-    lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
-    lv_obj_set_style_border_opa(parent, LV_OPA_TRANSP, 0);
-
     static lv_point_precise_t line_points[] = { {-10, 0}, {100, 0} };
     static lv_point_precise_t line_points1[] = { {320, 0}, {460, 0} };
 
@@ -39,6 +38,8 @@ void screen_In_Out_create(lv_obj_t *parent) {
     //---------------Главная картинка-------------------------//
     lv_obj_t *In_Out_scheme = in_out_pic_main(parent);
     lv_obj_align(In_Out_scheme, LV_ALIGN_CENTER, 10, 20);
+
+
 
     
 }

@@ -58,9 +58,9 @@ void lvgl_timer_task(void* arg) {
 // Главная функция приложения
 void app_main(void)
 {
-    // Инициализация watchdog с настройками по умолчанию
+    // Инициализация watchdog с увеличенным таймаутом
     esp_task_wdt_config_t wdt_config = {
-        .timeout_ms = 5000,
+        .timeout_ms = 10000, // Увеличиваем до 10 секунд
         .idle_core_mask = (1 << portNUM_PROCESSORS) - 1,
         .trigger_panic = true
     };
@@ -139,7 +139,7 @@ void app_main(void)
         // Сбрасываем watchdog в главной задаче
         esp_task_wdt_reset();
         // Периодическая задержка
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(500)); // Уменьшаем задержку до 500 мс
     }
 
     // Сообщение о запуске приложения (не достижимо из-за бесконечного цикла)

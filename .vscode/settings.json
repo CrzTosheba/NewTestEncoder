@@ -33,7 +33,13 @@
         "w_rad_mask.h": "c",
         "w_lock_big_open.h": "c",
         "password_screen.h": "c",
-        "screen_pass.h": "c"
+        "screen_pass.h": "c",
+        "screen_service.h": "c",
+        "w_analog_out_down.h": "c",
+        "w_digital_out_up.h": "c",
+        "w_universal_in_up.h": "c",
+        "w_in_out_main.h": "c",
+        "w_all_inputs_out_down.h": "c"
     },
     "idf.flashType": "UART",
     "idf.portWin": "COM13"

@@ -57,22 +57,22 @@ void screen_CO_create(lv_obj_t *parent)
 
     //---------------Главная картинка-------------------------//
     lv_obj_t *Heat_Scheme = heat_exchanger(parent);
-    lv_obj_align(Heat_Scheme, LV_ALIGN_CENTER, 15, 0);
+    lv_obj_align(Heat_Scheme, LV_ALIGN_CENTER, -7, 0);
 
 
     //-------------Создаем баблы под показания----------------//
-
     lv_obj_t *Up_Big_buble = bubble_b(parent);
-    lv_obj_set_pos(Up_Big_buble, 280, 31);
+    lv_obj_set_pos(Up_Big_buble, 255, 31);
 
     lv_obj_t* Up_Left_Smal_buble =  bubble_s(parent);
-    lv_obj_set_pos(Up_Left_Smal_buble, 0, 41);
+    lv_obj_set_pos(Up_Left_Smal_buble, -15, 41);
 
-    lv_obj_t *Down_Left_Smal_buble = bubble_s(parent);
-    lv_obj_set_pos(Down_Left_Smal_buble, 0, 200);
+    lv_obj_t *Down_Left_Big_buble = bubble_b(parent);
+    lv_obj_set_pos(Down_Left_Big_buble, -15, 200);
 
     lv_obj_t *Down_Right_Smal_buble = bubble_s(parent);
-    lv_obj_set_pos(Down_Right_Smal_buble, 280, 200);
+    lv_obj_set_pos(Down_Right_Smal_buble, 255, 200);
+
 
 
   

@@ -88,7 +88,7 @@ void encoder_manager_task(void* arg) {
         esp_task_wdt_reset();
         
         // Ждем событие с таймаутом 100 мс вместо portMAX_DELAY
-        if (xQueueReceive(encoder_queue, &event, pdMS_TO_TICKS(100)) == pdTRUE) {
+        if (xQueueReceive(encoder_queue, &event, pdMS_TO_TICKS(50)) == pdTRUE) {
             // Преобразуем обратно в raw event для совместимости
             switch (event.type) {
                 case ENCODER_EVENT_LEFT:
