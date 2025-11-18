@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "display_lvgl_demos",
-    "project_version":    "7d670cc-dirty",
+    "project_version":    "1f70c0a-dirty",
     "project_path":       "C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963",
     "idf_path":           "C:/Users/RUCO1621/esp/v5.4.2/esp-idf",
     "build_dir":          "C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build",

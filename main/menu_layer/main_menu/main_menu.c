@@ -259,7 +259,7 @@ void Main_Menu_List(void) {
         
         // Для экрана входов/выходов используем новую функцию с подсветкой
         if (i == 4) { // Индекс 4 соответствует "Входы/выходы"
-            screen_In_Out_create_Second(screens[i]);
+            screen_In_Out_create(screens[i]);
         } else {
             screen_funcs[i](screens[i]);
         }

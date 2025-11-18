@@ -4,7 +4,7 @@
 #include "screens/S_Pass/screen_Pass.h"
 #include "encoder/encoder_manager.h"
 #include "menu_layer/In_Out_Menu/In_Out_main_menu.h"
-#include "screens/S_In_Out/2_layer/screen_In_Out_Second.h"
+#include "screens/S_In_Out/1_layer/screen_In_Out.h"
 #include "screen_container_manager.h"
 #include <inttypes.h>
 #include "esp_log.h"
@@ -203,7 +203,7 @@ void screen_navigation_go_to(screen_type_t screen) {
             current_content_container = screen_container_create(CONTAINER_TYPE_IN_OUT);
             
             // Создаем интерфейс экрана входов/выходов
-            screen_In_Out_create_Second(current_content_container);
+            screen_In_Out_create(current_content_container);
             
             // Создаем меню входов/выходов
             Input_Output_Menu_List();

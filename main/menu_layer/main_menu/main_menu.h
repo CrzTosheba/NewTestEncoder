@@ -41,7 +41,7 @@ void screen_alarms_create(lv_obj_t *parent);
 void screen_service_create(lv_obj_t *parent);
 
 // Добавляем объявление новой функции
-void screen_In_Out_create_Second(lv_obj_t *parent);
+void screen_In_Out_create(lv_obj_t *parent);
 
 // Прототипы функций меню
 void Main_Menu_List(void);
