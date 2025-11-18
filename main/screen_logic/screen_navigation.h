@@ -16,7 +16,7 @@ typedef enum {
     SCREEN_CO,             // Экран отопления
     SCREEN_PODP,           // Экран подпитки
     SCREEN_UV,             // Экран узла ввода
-    SCREEN_IN_OUT,          // Экран входов/выходов
+    SCREEN_IN_OUT,         // Экран входов/выходов
     SCREEN_ALARMS,
     SCREEN_SERVICE
 } screen_type_t;
@@ -31,9 +31,10 @@ screen_type_t screen_navigation_get_current_screen(void); // Получение 
 void screen_navigation_save_cursor_position(void);
 void screen_navigation_restore_cursor_position(void);
 
-// Внешние обработчики энкодера (объявлены в других файлах)
+// Внешние обработчики энкодера
 extern void main_menu_encoder_event_cb(uint8_t e);
 extern void password_encoder_event_cb(uint8_t e);
+extern void input_output_encoder_event_cb(uint8_t e); // Добавляем обработчик для входов/выходов
 
 #ifdef __cplusplus
 }

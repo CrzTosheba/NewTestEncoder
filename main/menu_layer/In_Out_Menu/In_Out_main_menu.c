@@ -2,12 +2,11 @@
 #include "encoder/encoder.h"
 #include "my_widgets/w_rad_mask.h"
 #include "screen_logic/arc_menu.h"
-#include "encoder/encoder_manager.h"
 #include "screen_logic/screen_navigation.h"
+#include "screens/S_In_Out/2_layer/screen_In_Out_Second.h"
 #include <stdint.h>
 #include <inttypes.h>
 #include "esp_log.h"
-#include "freertos/task.h"
 
 static const char *TAG = "IO_MENU";
 
@@ -15,7 +14,6 @@ static const char *TAG = "IO_MENU";
 extern lv_obj_t *_cont;
 extern uint32_t current_index;
 extern uint32_t current_cursor_index;
-extern void (*current_function)(void);
 
 // Структура элемента меню входов/выходов
 typedef struct {
@@ -29,13 +27,18 @@ static const IoMenuItem io_menu_items[] = {
     {"Все", NULL},
     {"Универсальные входы", NULL},
     {"Аналоговые выходы", NULL},
-    {"Дискретные входы", NULL},
+    {"Дискретные выходы", NULL},
 };
 
 // Локальные переменные для меню входов/выходов
 static lv_obj_t *io_cont = NULL;
-static uint32_t io_current_index = 0;
-static uint32_t io_current_cursor_index = 0;
+
+/**
+ * @brief Проверяет, является ли объект валидным
+ */
+static bool is_obj_valid(lv_obj_t *obj) {
+    return obj != NULL && lv_obj_is_valid(obj);
+}
 
 /**
  * @brief Создание элемента меню входов/выходов
@@ -58,9 +61,9 @@ static void create_io_menu_item(lv_obj_t *cont, const IoMenuItem *item) {
     if (item->img_src != NULL) {
         lv_obj_t *img = lv_img_create(box);
         lv_img_set_src(img, item->img_src);
-       lv_obj_set_style_img_recolor(img, lv_color_hex(0xFFFFFF), 0);
+        lv_obj_set_style_img_recolor(img, lv_color_hex(0xFFFFFF), 0);
         lv_obj_set_style_img_recolor_opa(img, LV_OPA_COVER, 0);
-      lv_obj_align(img, LV_ALIGN_CENTER, 100, 0);
+        lv_obj_align(img, LV_ALIGN_CENTER, 100, 0);
     }
     
     lv_obj_set_scrollbar_mode(box, LV_SCROLLBAR_MODE_OFF);
@@ -70,15 +73,20 @@ static void create_io_menu_item(lv_obj_t *cont, const IoMenuItem *item) {
  * @brief Подсветка выбранного элемента меню входов/выходов
  */
 static void io_highlight_box(lv_obj_t *cont, uint32_t cursor_index) {
+    if (!is_obj_valid(cont)) return;
+    
     uint32_t child_cnt = lv_obj_get_child_cnt(cont);
     
     for (uint32_t i = 0; i < child_cnt; i++) {
         lv_obj_t *child = lv_obj_get_child(cont, i);
+        if (!is_obj_valid(child)) continue;
+        
         uint32_t grand_child_cnt = lv_obj_get_child_cnt(child);
         
         // Обрабатываем все дочерние элементы контейнера
         for (uint32_t j = 0; j < grand_child_cnt; j++) {
             lv_obj_t *grand_child = lv_obj_get_child(child, j);
+            if (!is_obj_valid(grand_child)) continue;
             
             if (lv_obj_check_type(grand_child, &lv_label_class)) {
                 // Это метка - меняем цвет текста
@@ -107,96 +115,73 @@ static void io_highlight_box(lv_obj_t *cont, uint32_t cursor_index) {
 }
 
 /**
- * @brief Обработчик движений энкодера для меню входов/выходов
- */
-static void io_handle_encoder_movement(uint8_t e, lv_obj_t *cont, uint32_t *current_idx) {
-    static uint32_t last_event_time = 0;
-    static uint8_t last_event = 0;
-    const uint32_t DEBOUNCE_TIME_MS = 50;
-    
-    uint32_t now = xTaskGetTickCount() * portTICK_PERIOD_MS;
-    uint32_t child_count = lv_obj_get_child_cnt(cont);
-    
-    // Фильтр дребезга
-    if ((e == last_event) && (now - last_event_time < DEBOUNCE_TIME_MS)) {
-        return;
-    }
-    
-    // Обработка движения ВВЕРХ (против часовой стрелки)
-    if (e & ENC_RIGHT) {
-        if (io_current_cursor_index > 0) {
-            io_current_cursor_index--;  // Уменьшаем индекс курсора
-            
-            // Сдвигаем список, если курсор вышел за верхнюю границу видимой области
-            if (io_current_cursor_index < *current_idx - 2) {
-                if (*current_idx > 2) {
-                    (*current_idx)--;
-                }
-            }
-        }
-        last_event = ENC_RIGHT;
-        last_event_time = now;
-    } 
-    // Обработка движения ВНИЗ (по часовой стрелке)
-    else if (e & ENC_LEFT) {
-        if (io_current_cursor_index < child_count - 1) {
-            io_current_cursor_index++;  // Увеличиваем индекс курсора
-            
-            // Сдвигаем список, когда курсор достигает последнего видимого элемента
-            if (io_current_cursor_index > *current_idx + 2) {
-                if (*current_idx < child_count - 3) {
-                    (*current_idx)++;
-                }
-            }
-        }
-        last_event = ENC_LEFT;
-        last_event_time = now;
-    }
-    
-    // Обновление позиции после обработки движения
-    if (e & (ENC_LEFT | ENC_RIGHT)) {
-        // Прокручиваем к текущему элементу списка
-        lv_obj_t *target = lv_obj_get_child(cont, *current_idx);
-        if (target) {
-            lv_obj_scroll_to_view(target, LV_ANIM_ON);
-        }
-        
-        // Обновляем дуговое меню
-        arc_menu_update_slide(cont);
-        
-        // Синхронизируем глобальную переменную курсора
-        current_cursor_index = io_current_cursor_index;
-    }
-}
-
-/**
  * @brief Обработчик событий энкодера для меню входов/выходов
  */
 void input_output_encoder_event_cb(uint8_t e) {
-    if (io_cont == NULL) {
+    if (!is_obj_valid(io_cont)) {
         ESP_LOGE(TAG, "Контейнер меню входов/выходов не инициализирован");
         return;
     }
     
-    uint32_t prev_cursor = io_current_cursor_index;
+    uint32_t prev_cursor = current_cursor_index;
     
-    // Используем нашу собственную функцию для обработки движений
-    io_handle_encoder_movement(e, io_cont, &io_current_index);
+    ESP_LOGI(TAG, "IO menu encoder event: 0x%02x, current_cursor_index: %" PRIu32, e, current_cursor_index);
     
-    if (prev_cursor != io_current_cursor_index) {
-        io_highlight_box(io_cont, io_current_cursor_index);
+    // Используем стандартную функцию обработки движений из arc_menu
+    // Передаем глобальные переменные для синхронизации
+    arc_menu_handle_encoder(e, io_cont, &current_index);
+    
+    ESP_LOGI(TAG, "After arc_menu_handle_encoder - current_cursor_index: %" PRIu32, current_cursor_index);
+    
+    // Если позиция курсора изменилась, обновляем подсветку
+    if (prev_cursor != current_cursor_index) {
+        ESP_LOGI(TAG, "Cursor changed from %" PRIu32 " to %" PRIu32, prev_cursor, current_cursor_index);
+        io_highlight_box(io_cont, current_cursor_index);
+        
+        // Управляем подсветкой областей на схеме в зависимости от выбранного пункта меню
+        switch(current_cursor_index) {
+            case 0: // "Назад"
+                ESP_LOGI(TAG, "Highlighting back button");
+                screen_In_Out_hide_all_highlights();
+                break;
+                
+            case 1: // "Все"
+                ESP_LOGI(TAG, "Highlighting all inputs/outputs");
+                screen_In_Out_show_all_highlights();
+                break;
+                
+            case 2: // "Универсальные входы"
+                ESP_LOGI(TAG, "Highlighting universal inputs");
+                screen_In_Out_show_universal_inputs();
+                break;
+                
+            case 3: // "Аналоговые выходы"
+                ESP_LOGI(TAG, "Highlighting analog outputs");
+                screen_In_Out_show_analog_outputs();
+                break;
+                
+            case 4: // "Дискретные выходы"
+                ESP_LOGI(TAG, "Highlighting discrete outputs");
+                screen_In_Out_show_discrete_outputs();
+                break;
+                
+            default:
+                ESP_LOGW(TAG, "Unknown menu item: %" PRIu32, current_cursor_index);
+                screen_In_Out_hide_all_highlights();
+                break;
+        }
     }
     
     // Обработка нажатия кнопки
     if (e & ENC_CLICK) {
-        ESP_LOGI(TAG, "Click in IO menu on item: %" PRIu32, io_current_cursor_index);
+        ESP_LOGI(TAG, "Click in IO menu on item: %" PRIu32, current_cursor_index);
         
-        if (io_current_cursor_index == 0) {
+        if (current_cursor_index == 0) {
             // Нажали на "Назад" - возвращаемся в главное меню
             ESP_LOGI(TAG, "Returning to main menu from IO menu");
-            input_output_menu_cleanup();
             screen_navigation_go_to(SCREEN_MAIN_MENU);
         }
+        // TODO: Добавить обработку нажатий для других пунктов меню при необходимости
     }
 }
 
@@ -204,12 +189,14 @@ void input_output_encoder_event_cb(uint8_t e) {
  * @brief Очистка меню входов/выходов
  */
 void input_output_menu_cleanup(void) {
-    if (io_cont && lv_obj_is_valid(io_cont)) {
+    ESP_LOGI(TAG, "Cleaning up IO menu");
+    
+    if (is_obj_valid(io_cont)) {
         lv_obj_del(io_cont);
         io_cont = NULL;
     }
-    io_current_index = 0;
-    io_current_cursor_index = 0;
+    
+    // Не сбрасываем глобальные переменные, так как они используются главным меню
 }
 
 /**
@@ -241,7 +228,6 @@ void Input_Output_Menu_List(void) {
     lv_obj_set_style_shadow_width(io_cont, 0, 0); // убираем тени
     lv_obj_set_style_pad_row(io_cont, 0, 0);      //отсутп между боксами
     
-    
     // Создаем элементы меню
     for (uint32_t i = 0; i < sizeof(io_menu_items) / sizeof(IoMenuItem); i++) {
         create_io_menu_item(io_cont, &io_menu_items[i]);
@@ -252,16 +238,18 @@ void Input_Output_Menu_List(void) {
     lv_obj_set_pos(mask, 433, 70);
     
     uint32_t child_count = lv_obj_get_child_cnt(io_cont);
-    io_current_index = (child_count > 3) ? 2 : 0;
-    io_current_cursor_index = 0;
     
-    // Синхронизируем глобальные переменные
-    current_index = io_current_index;
-    current_cursor_index = io_current_cursor_index;
+    // Инициализируем глобальные переменные для меню входов/выходов
+    current_index = (child_count > 3) ? 2 : 0;
+    current_cursor_index = 0;
     
-    lv_obj_scroll_to_view(lv_obj_get_child(io_cont, io_current_index), LV_ANIM_OFF);
-    io_highlight_box(io_cont, io_current_cursor_index);
+    lv_obj_scroll_to_view(lv_obj_get_child(io_cont, current_index), LV_ANIM_OFF);
+    io_highlight_box(io_cont, current_cursor_index);
 
     ESP_LOGI(TAG, "Меню входов/выходов успешно инициализировано");
+    ESP_LOGI(TAG, "Количество элементов меню: %" PRIu32, child_count);
+    ESP_LOGI(TAG, "Начальный current_index: %" PRIu32, current_index);
+    ESP_LOGI(TAG, "Начальный current_cursor_index: %" PRIu32, current_cursor_index);
+    
     fflush(NULL);
 }

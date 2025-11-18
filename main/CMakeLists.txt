@@ -117,6 +117,7 @@ idf_component_register(
     "screen_logic/screen_navigation.c"
     "counters/count_test.c"
     "scale_logic_time/time_scale.c"
+    "screen_logic/screen_container_manager.c"
             #---------------Menu_Layer-----------------------
     "menu_layer/main_menu/main_menu.c"
     "menu_layer/In_Out_Menu/In_Out_main_menu.c"

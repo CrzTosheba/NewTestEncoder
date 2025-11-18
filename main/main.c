@@ -44,12 +44,10 @@ void main_screen_bg(void)
 
 // Задача обработки таймеров LVGL
 void lvgl_timer_task(void* arg) {
-    // Регистрируем задачу в watchdog
     esp_task_wdt_add(NULL);
     
     while (1) {
         lv_timer_handler();
-        // Сбрасываем watchdog
         esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(LVGL_TASK_DELAY_MS));
     }
@@ -60,7 +58,7 @@ void app_main(void)
 {
     // Инициализация watchdog с увеличенным таймаутом
     esp_task_wdt_config_t wdt_config = {
-        .timeout_ms = 10000, // Увеличиваем до 10 секунд
+        .timeout_ms = 15000, // Увеличиваем до 15 секунд
         .idle_core_mask = (1 << portNUM_PROCESSORS) - 1,
         .trigger_panic = true
     };
@@ -75,7 +73,6 @@ void app_main(void)
 
     // Инициализация дисплея
     bsp_display_start();
-    // Включение подсветки дисплея
     bsp_display_backlight_on();
     ESP_LOGI(TAG, "++Display LVGL demo");
     
@@ -87,7 +84,7 @@ void app_main(void)
     bsp_display_lock(0);
     main_screen_bg();
     
-    // Инициализация системы навигации (вместо прямого вызова Main_Menu_List)
+    // Инициализация системы навигации
     screen_navigation_init();
 
     // Разблокировка дисплея
@@ -97,51 +94,47 @@ void app_main(void)
     enc_init(10, GPIO_ROT_ENC_SW, GPIO_ROT_ENC_A, GPIO_ROT_ENC_B);
     ESP_LOGI(TAG, "Encoder driver initialized");
     
-    // Создание задач:
+    // Создание задач с увеличенными размерами стеков:
     
-    // Задача обработки энкодера на ядре APP_CPU (обычно CPU1)
+    // Задача обработки энкодера
     xTaskCreatePinnedToCore(
-        enc_loop,                   // Функция задачи
-        "rotary_encoder_task",      // Имя задачи
-        4096,                       // Размер стека
-        NULL,                       // Параметры
-        5,                          // Приоритет (выше среднего)
-        NULL,                       // Дескриптор задачи
-        APP_CPU_NUM                 // Ядро процессора
+        enc_loop,
+        "rotary_encoder_task",
+        6144,  // Увеличиваем стек
+        NULL,
+        5,
+        NULL,
+        APP_CPU_NUM
     );        
     
-    // Задача обработки событий энкодера на ядре PRO_CPU
+    // Задача обработки событий энкодера
     xTaskCreatePinnedToCore(
-        encoder_manager_task,       // Функция задачи
-        "encoder_manager",          // Имя задачи
-        4096,                       // Размер стека
-        NULL,                       // Параметры
-        3,                          // Приоритет (средний)
-        NULL,                       // Дескриптор задачи
-        PRO_CPU_NUM                 // Ядро процессора
+        encoder_manager_task,
+        "encoder_manager",
+        8192,  // Увеличиваем стек
+        NULL,
+        3,
+        NULL,
+        PRO_CPU_NUM
     );
     
-    // Задача обработки таймеров LVGL на ядре PRO_CPU
+    // Задача обработки таймеров LVGL
     xTaskCreatePinnedToCore(
-        lvgl_timer_task,            // Функция задачи
-        "lvgl_timers",              // Имя задачи
-        12 * 1024,                  // Размер стека (12KB)
-        NULL,                       // Параметры
-        4,                          // Приоритет (выше среднего)
-        NULL,                       // Дескриптор задачи
-        PRO_CPU_NUM                 // Ядро процессора
+        lvgl_timer_task,
+        "lvgl_timers",
+        16 * 1024,  // Увеличиваем стек до 16KB
+        NULL,
+        4,
+        NULL,
+        PRO_CPU_NUM
     );
     
     ESP_LOGI(TAG, "All tasks created successfully");
     
     // Основной цикл приложения
     while (1) {
-        // Сбрасываем watchdog в главной задаче
         esp_task_wdt_reset();
-        // Периодическая задержка
-        vTaskDelay(pdMS_TO_TICKS(500)); // Уменьшаем задержку до 500 мс
+        // Увеличиваем задержку для уменьшения нагрузки
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
-
-    // Сообщение о запуске приложения (не достижимо из-за бесконечного цикла)
-    ESP_LOGI(TAG, "Application started");
 }

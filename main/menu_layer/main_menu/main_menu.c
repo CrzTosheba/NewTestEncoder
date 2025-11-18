@@ -5,10 +5,14 @@
 #include "screen_logic/arc_menu.h"
 #include "encoder/encoder_manager.h"
 #include "screen_logic/screen_navigation.h"
+#include "screen_logic/screen_container_manager.h" // Добавляем менеджер контейнеров
 #include <stdint.h>
 #include "esp_log.h"
 #include "freertos/task.h"
 #include "scale_logic_time/time_scale.h"
+
+// Добавляем include для нового экрана входов/выходов
+#include "screens/S_In_Out/2_layer/screen_In_Out_Second.h"
 
 static const char *TAG = "Main_Menu_main";
 
@@ -44,12 +48,8 @@ static screen_create_func_t screen_funcs[] = {
     screen_Gvs_create,        // 1: "ГВС"
     screen_CO_create,         // 2: "Отопление"
     screen_alarms_create,     // 3:  Аварии
-    //----------TODO---------------//
-    //   screen_Podp_create,       // 3: "Подпитка"
-    //   screen_Uv_create,         // 4: "Узел ввода"
-    //-----------------------------//
-    screen_In_Out_create,      // 4: "Входы/выходы"
-    screen_service_create      // 5: "Экран сервис"
+    screen_In_Out_create,     // 4: "Входы/выходы" - оставляем старую функцию для массива
+    screen_service_create     // 5: "Экран сервис"
 };
 
 // Объявление статических функций
@@ -65,11 +65,7 @@ void main_menu_show(void) {
         lv_obj_clear_flag(_cont, LV_OBJ_FLAG_HIDDEN);
     }
     if (content_container && lv_obj_is_valid(content_container)) {
-        lv_obj_clear_flag(content_container, LV_OBJ_FLAG_HIDDEN);
-    }
-    // Показываем только активный экран первого уровня
-    if (screens[current_cursor_index] && lv_obj_is_valid(screens[current_cursor_index])) {
-        lv_obj_clear_flag(screens[current_cursor_index], LV_OBJ_FLAG_HIDDEN);
+        screen_container_show(content_container);
     }
 }
 
@@ -79,13 +75,7 @@ void main_menu_hide(void) {
         lv_obj_add_flag(_cont, LV_OBJ_FLAG_HIDDEN);
     }
     if (content_container && lv_obj_is_valid(content_container)) {
-        lv_obj_add_flag(content_container, LV_OBJ_FLAG_HIDDEN);
-    }
-    // Скрываем все экраны первого уровня
-    for (int i = 0; i < 6; i++) {
-        if (screens[i] && lv_obj_is_valid(screens[i])) {
-            lv_obj_add_flag(screens[i], LV_OBJ_FLAG_HIDDEN);
-        }
+        screen_container_hide(content_container);
     }
 }
 
@@ -203,13 +193,9 @@ static const MenuItem menu_items[] = {
     {"Открыть доступ", "", &lv_im_module_lock, ""},
     {"ГВС", "40.6(56.5)°C", &lv_im_module_hotwater, &lv_im_module_on},
     {"Отопление", "40.6(56.5)°C", &lv_im_module_heat, &lv_im_module_on},
-    //---------------TODO------------------//
-  //  {"Подпитка", "Н1", &lv_im_module_podp, &lv_im_module_off},
-  //  {"Узел ввода", "71°C|-13°C", &lv_im_module_input_output, &lv_im_module_on},
-  //--------------------------------------//
     {"Аварии", "", &lv_im_module_alarms, ""},
     {"Входы/выходы", "", &lv_im_module_inout, ""},
-    {"Сервис", "", &lv_im_module_inout, ""},
+    {"Сервис", "", &lv_im_service_icon, ""},
 };
 
 /**
@@ -263,21 +249,21 @@ void Main_Menu_List(void) {
     static lv_style_t style;
     lv_style_init(&style);
     
-    // Создаем контейнер для контента (левая часть экрана)
-    content_container = lv_obj_create(lv_scr_act());
-    lv_obj_set_size(content_container, 492, 380);
-    lv_obj_set_pos(content_container, -20, 50);
-    lv_obj_set_style_bg_opa(content_container, LV_OPA_TRANSP, 0);
-    lv_obj_set_style_border_opa(content_container, LV_OPA_TRANSP, 0);
-    lv_obj_set_scrollbar_mode(content_container, LV_SCROLLBAR_MODE_OFF);
-    lv_obj_set_style_bg_color(content_container, lv_color_hex(0x1e2528), LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(content_container, LV_OPA_COVER, LV_PART_MAIN);
+    // Создаем контейнер для контента (левая часть экрана) через менеджер
+    content_container = screen_container_create(CONTAINER_TYPE_MAIN_MENU);
     
     // Создаем все экраны заранее
     for (int i = 0; i < 6; i++) {
         screens[i] = lv_obj_create(content_container);
         lv_obj_set_size(screens[i], LV_PCT(100), LV_PCT(100));
-        screen_funcs[i](screens[i]);
+        
+        // Для экрана входов/выходов используем новую функцию с подсветкой
+        if (i == 4) { // Индекс 4 соответствует "Входы/выходы"
+            screen_In_Out_create_Second(screens[i]);
+        } else {
+            screen_funcs[i](screens[i]);
+        }
+        
         lv_obj_add_flag(screens[i], LV_OBJ_FLAG_HIDDEN);
     }
     

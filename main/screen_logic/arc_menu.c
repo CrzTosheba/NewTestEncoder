@@ -1,9 +1,8 @@
-
 #include "arc_menu.h"
 #include <stdint.h>
 #include "esp_log.h"
 
-// Тег для логирования (оставлен для возможной отладки)
+// Тег для логирования
 static const char *TAG_ARC = "ARC_MENU";
 
 // Глобальные переменные
@@ -79,12 +78,17 @@ void arc_menu_handle_encoder(uint8_t e, lv_obj_t *cont, uint32_t *current_index)
     uint32_t now = xTaskGetTickCount() * portTICK_PERIOD_MS;
     uint32_t child_count = lv_obj_get_child_cnt(cont);
     
+    ESP_LOGI(TAG_ARC, "Encoder event: 0x%02x, child_count: %" PRIu32, e, child_count);
+    ESP_LOGI(TAG_ARC, "Before - current_cursor_index: %" PRIu32 ", current_index: %" PRIu32, 
+             current_cursor_index, *current_index);
+    
     // Фильтр дребезга - игнорируем повторные события в течение DEBOUNCE_TIME_MS
     if ((e == last_event) && (now - last_event_time < DEBOUNCE_TIME_MS)) {
+        ESP_LOGI(TAG_ARC, "Debounce filter applied");
         return;
     }
     
-    // Обработка движения ВЛЕВО
+    // Обработка движения ВЛЕВО (против часовой стрелки - ВВЕРХ в списке)
     if (e & ENC_RIGHT) {
         if (current_cursor_index > 0) {
             current_cursor_index--;  // Уменьшаем индекс курсора
@@ -94,25 +98,25 @@ void arc_menu_handle_encoder(uint8_t e, lv_obj_t *cont, uint32_t *current_index)
                 // Минимальное значение индекса списка = 2
                 if (*current_index > 2) {
                     (*current_index)--;
+                    ESP_LOGI(TAG_ARC, "Список сдвинут вверх: новый idx %"PRIu32, *current_index);
                 }
             }
         }
         last_event = ENC_RIGHT;
         last_event_time = now;
     } 
-    // Обработка движения ВПРАВО
+    // Обработка движения ВПРАВО (по часовой стрелке - ВНИЗ в списке)
     else if (e & ENC_LEFT) {
         if (current_cursor_index < child_count - 1) {
             current_cursor_index++;  // Увеличиваем индекс курсора
             
             // Сдвигаем список, когда курсор достигает последнего видимого элемента
-             if (current_cursor_index > *current_index + 2) {
+            if (current_cursor_index > *current_index + 2) {
                 if (*current_index < child_count - 3) {
                     (*current_index)++;
                     ESP_LOGI(TAG_ARC, "Список сдвинут вниз: новый idx %"PRIu32, *current_index);
                 }
             }
-            
         }
         last_event = ENC_LEFT;
         last_event_time = now;
@@ -128,5 +132,8 @@ void arc_menu_handle_encoder(uint8_t e, lv_obj_t *cont, uint32_t *current_index)
         
         // Обновляем дуговое меню
         arc_menu_update_slide(cont);
+        
+        ESP_LOGI(TAG_ARC, "After - current_cursor_index: %" PRIu32 ", current_index: %" PRIu32, 
+                 current_cursor_index, *current_index);
     }
 }

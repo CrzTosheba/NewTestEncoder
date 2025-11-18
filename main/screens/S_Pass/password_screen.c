@@ -47,11 +47,21 @@ static void update_digit_positions(void);
 static void update_digit_display(void);
 static void update_roller_images(void);
 static void cleanup_password_objects(void);
+static bool is_obj_valid_safe(lv_obj_t *obj);
+
+/**
+ * @brief Безопасная проверка объекта LVGL
+ */
+static bool is_obj_valid_safe(lv_obj_t *obj) {
+    return obj != NULL && lv_obj_is_valid(obj);
+}
 
 /**
  * @brief Очистка всех объектов экрана пароля
  */
 static void cleanup_password_objects(void) {
+    ESP_LOGI(TAG, "Cleaning up password objects");
+    
     // Сбрасываем все указатели на NULL
     for (int row = 0; row < VISIBLE_DIGITS; row++) {
         for (int col = 0; col < 3; col++) {
@@ -74,18 +84,113 @@ static void cleanup_password_objects(void) {
  * @brief Очистка экрана пароля
  */
 void password_screen_cleanup(void) {
-    if (password_screen_obj && password_screen_active) {
-        ESP_LOGI(TAG, "Cleaning up password screen");
+    ESP_LOGI(TAG, "Starting password screen cleanup");
+    
+    if (is_obj_valid_safe(password_screen_obj) && password_screen_active) {
+        ESP_LOGI(TAG, "Cleaning up password screen objects");
         
-        // Удаляем экран пароля
-        lv_obj_del(password_screen_obj);
+        // Удаляем экран пароля асинхронно
+        lv_obj_t *screen_to_delete = password_screen_obj;
         password_screen_obj = NULL;
-        password_screen_active = false;
+        lv_obj_del_async(screen_to_delete);
         
-        // Очищаем все объекты
-        cleanup_password_objects();
+        ESP_LOGI(TAG, "Password screen object scheduled for deletion");
+    }
+    
+    // Очищаем все объекты
+    cleanup_password_objects();
+    
+    // Сбрасываем флаги
+    password_screen_active = false;
+    
+    ESP_LOGI(TAG, "Password screen cleanup completed");
+}
+
+/**
+ * @brief Обновление изображений под роллерами
+ */
+static void update_roller_images(void) {
+    for (int col = 0; col < 3; col++) {
+        if (is_obj_valid_safe(roller_images[col])) {
+            if (col == current_digit_index) {
+                lv_img_set_src(roller_images[col], &lv_im_radius_yellow);
+            } else {
+                lv_img_set_src(roller_images[col], &lv_im_radius_gray);
+            }
+        }
+    }
+}
+
+/**
+ * @brief Обновление отображения цифр
+ */
+static void update_digit_display(void) {
+    // Проверяем, что экран все еще активен
+    if (!password_screen_active) {
+        return;
+    }
+    
+    for (int col = 0; col < 3; col++) {
+        // Центральная цифра (текущее значение)
+        if (is_obj_valid_safe(digit_labels[central_digit_index][col])) {
+            lv_label_set_text_fmt(digit_labels[central_digit_index][col], "%d", digit_values[col]);
+        }
         
-        ESP_LOGI(TAG, "Password screen cleaned up successfully");
+        // Верхние цифры (предыдущие значения)
+        for (int row = 0; row < central_digit_index; row++) {
+            if (is_obj_valid_safe(digit_labels[row][col])) {
+                uint8_t value = (digit_values[col] + (central_digit_index - row)) % 10;
+                lv_label_set_text_fmt(digit_labels[row][col], "%d", value);
+            }
+        }
+        
+        // Нижние цифры (следующие значения)
+        for (int row = central_digit_index + 1; row < VISIBLE_DIGITS; row++) {
+            if (is_obj_valid_safe(digit_labels[row][col])) {
+                uint8_t value = (digit_values[col] - (row - central_digit_index) + 10) % 10;
+                lv_label_set_text_fmt(digit_labels[row][col], "%d", value);
+            }
+        }
+    }
+    
+    // Обновляем позиции цифр
+    update_digit_positions();
+}
+
+/**
+ * @brief Обновление позиций цифр по дуге
+ */
+static void update_digit_positions(void) {
+    // Проверяем, что экран все еще активен
+    if (!password_screen_active) {
+        return;
+    }
+    
+    for (int col = 0; col < 3; col++) {
+        const int32_t center_x = roller_centers[col][0];
+        const int32_t center_y = roller_centers[col][1];
+        const int32_t radius = ROLLER_RADIUS;
+        
+        for (int row = 0; row < VISIBLE_DIGITS; row++) {
+            if (!is_obj_valid_safe(digit_labels[row][col])) continue;
+            
+            // Угол для позиции на вертикальной дуге (в радианах)
+            double angle = -((row - central_digit_index) * ROLLER_ANGLE_STEP * DIGIT_SPACING) + M_PI;
+            
+            // Рассчитываем позицию на вертикальной дуге
+            int32_t x = center_x + radius * cos(angle);
+            int32_t y = center_y - radius * sin(angle);
+            
+            // Устанавливаем позицию
+            lv_obj_set_pos(digit_labels[row][col], x - 15, y - 15);
+            
+            // Рассчитываем прозрачность для эффекта перспективы
+            uint8_t opacity = 255 - abs(row - central_digit_index) * OPACITY_STEP;
+            if (opacity < MIN_OPACITY) opacity = MIN_OPACITY;
+            
+            // Устанавливаем прозрачность
+            lv_obj_set_style_opa(digit_labels[row][col], opacity, 0);
+        }
     }
 }
 
@@ -94,7 +199,9 @@ void password_screen_cleanup(void) {
  */
 void password_encoder_event_cb(uint8_t e) {
     // Если экран пароля не активен или пароль уже введен, игнорируем события
-    if (!password_screen_active || password_input_complete) return;
+    if (!password_screen_active || password_input_complete || !is_obj_valid_safe(password_screen_obj)) {
+        return;
+    }
     
     // Обработка поворота влево
     if (e & ENC_LEFT) {
@@ -111,7 +218,7 @@ void password_encoder_event_cb(uint8_t e) {
     if (e & ENC_CLICK) {
         // Делаем текущий роллер неактивным
         for (int i = 0; i < VISIBLE_DIGITS; i++) {
-            if (digit_labels[i][current_digit_index]) {
+            if (is_obj_valid_safe(digit_labels[i][current_digit_index])) {
                 if (i == central_digit_index) {
                     lv_obj_add_style(digit_labels[i][current_digit_index], &style_inactive_central_digit, 0);
                 } else {
@@ -138,7 +245,7 @@ void password_encoder_event_cb(uint8_t e) {
         
         // Делаем новый роллер активным
         for (int i = 0; i < VISIBLE_DIGITS; i++) {
-            if (digit_labels[i][current_digit_index]) {
+            if (is_obj_valid_safe(digit_labels[i][current_digit_index])) {
                 if (i == central_digit_index) {
                     lv_obj_add_style(digit_labels[i][current_digit_index], &style_active_digit, 0);
                 } else {
@@ -156,84 +263,6 @@ void password_encoder_event_cb(uint8_t e) {
 }
 
 /**
- * @brief Обновление изображений под роллерами
- */
-static void update_roller_images(void) {
-    for (int col = 0; col < 3; col++) {
-        if (roller_images[col]) {
-            if (col == current_digit_index) {
-                lv_img_set_src(roller_images[col], &lv_im_radius_yellow);
-            } else {
-                lv_img_set_src(roller_images[col], &lv_im_radius_gray);
-            }
-        }
-    }
-}
-
-/**
- * @brief Обновление отображения цифр
- */
-static void update_digit_display(void) {
-    for (int col = 0; col < 3; col++) {
-        // Центральная цифра (текущее значение)
-        if (digit_labels[central_digit_index][col]) {
-            lv_label_set_text_fmt(digit_labels[central_digit_index][col], "%d", digit_values[col]);
-        }
-        
-        // Верхние цифры (предыдущие значения)
-        for (int row = 0; row < central_digit_index; row++) {
-            if (digit_labels[row][col]) {
-                uint8_t value = (digit_values[col] + (central_digit_index - row)) % 10;
-                lv_label_set_text_fmt(digit_labels[row][col], "%d", value);
-            }
-        }
-        
-        // Нижние цифры (следующие значения)
-        for (int row = central_digit_index + 1; row < VISIBLE_DIGITS; row++) {
-            if (digit_labels[row][col]) {
-                uint8_t value = (digit_values[col] - (row - central_digit_index) + 10) % 10;
-                lv_label_set_text_fmt(digit_labels[row][col], "%d", value);
-            }
-        }
-    }
-    
-    // Обновляем позиции цифр
-    update_digit_positions();
-}
-
-/**
- * @brief Обновление позиций цифр по дуге
- */
-static void update_digit_positions(void) {
-    for (int col = 0; col < 3; col++) {
-        const int32_t center_x = roller_centers[col][0];
-        const int32_t center_y = roller_centers[col][1];
-        const int32_t radius = ROLLER_RADIUS;
-        
-        for (int row = 0; row < VISIBLE_DIGITS; row++) {
-            if (!digit_labels[row][col]) continue;
-            
-            // Угол для позиции на вертикальной дуге (в радианах)
-            double angle = -((row - central_digit_index) * ROLLER_ANGLE_STEP * DIGIT_SPACING) + M_PI;
-            
-            // Рассчитываем позицию на вертикальной дуге
-            int32_t x = center_x + radius * cos(angle);
-            int32_t y = center_y - radius * sin(angle);
-            
-            // Устанавливаем позицию
-            lv_obj_set_pos(digit_labels[row][col], x - 15, y - 15);
-            
-            // Рассчитываем прозрачность для эффекта перспективы
-            uint8_t opacity = 255 - abs(row - central_digit_index) * OPACITY_STEP;
-            if (opacity < MIN_OPACITY) opacity = MIN_OPACITY;
-            
-            // Устанавливаем прозрачность
-            lv_obj_set_style_opa(digit_labels[row][col], opacity, 0);
-        }
-    }
-}
-
-/**
  * @brief Создание экрана ввода пароля
  */
 void password_screen(void) {
@@ -245,7 +274,6 @@ void password_screen(void) {
     // Сбрасываем флаги состояния
     password_input_complete = false;
     current_digit_index = 0;
-    password_screen_active = true;
     
     // Проверяем, что количество видимых цифр нечетное
     if (VISIBLE_DIGITS % 2 == 0) {
@@ -259,6 +287,9 @@ void password_screen(void) {
         ESP_LOGE(TAG, "Failed to create password screen object");
         return;
     }
+    
+    // Устанавливаем флаг активности
+    password_screen_active = true;
     
     // Загружаем экран пароля
     lv_scr_load(password_screen_obj);

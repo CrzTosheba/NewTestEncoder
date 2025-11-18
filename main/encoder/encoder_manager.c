@@ -78,18 +78,16 @@ void encoder_manager_task(void* arg) {
     encoder_event_t event;
     uint8_t raw_event;
     
-    // Регистрируем задачу в watchdog
     esp_task_wdt_add(NULL);
     
     ESP_LOGI(TAG, "Encoder manager task started");
     
     while (1) {
-        // Сбрасываем watchdog на каждой итерации
         esp_task_wdt_reset();
         
-        // Ждем событие с таймаутом 100 мс вместо portMAX_DELAY
-        if (xQueueReceive(encoder_queue, &event, pdMS_TO_TICKS(50)) == pdTRUE) {
-            // Преобразуем обратно в raw event для совместимости
+        // Увеличиваем таймаут для уменьшения нагрузки
+        if (xQueueReceive(encoder_queue, &event, pdMS_TO_TICKS(100)) == pdTRUE) {
+            // Преобразуем обратно в raw event
             switch (event.type) {
                 case ENCODER_EVENT_LEFT:
                     raw_event = ENC_LEFT;
@@ -102,16 +100,16 @@ void encoder_manager_task(void* arg) {
                     break;
                 default:
                     raw_event = 0;
-                    continue; // Пропускаем неизвестные события
+                    continue;
             }
             
-            // Вызываем зарегистрированный callback, если он есть
+            // Вызываем зарегистрированный callback
             if (current_callback != NULL) {
                 current_callback(raw_event);
             }
         }
         
-        // Короткая задержка для предотвращения полного загрузки CPU
-        vTaskDelay(pdMS_TO_TICKS(5));
+        // Увеличиваем задержку для уменьшения нагрузки на CPU
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }

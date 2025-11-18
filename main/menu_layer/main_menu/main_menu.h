@@ -30,7 +30,6 @@ LV_IMG_DECLARE(lv_im_module_inout);
 LV_IMG_DECLARE(lv_im_module_alarms);
 LV_IMG_DECLARE(lv_im_service_icon);
 
-
 // Прототипы функций экранов
 void screen_Pass_create(lv_obj_t *parent);
 void screen_Gvs_create(lv_obj_t *parent);
@@ -41,10 +40,13 @@ void screen_In_Out_create(lv_obj_t *parent);
 void screen_alarms_create(lv_obj_t *parent);
 void screen_service_create(lv_obj_t *parent);
 
+// Добавляем объявление новой функции
+void screen_In_Out_create_Second(lv_obj_t *parent);
+
 // Прототипы функций меню
 void Main_Menu_List(void);
 void main_menu_encoder_event_cb(uint8_t e);
-void main_menu_update_display(void); // Добавлена новая функция
+void main_menu_update_display(void);
 
 // Функции управления видимостью главного меню
 void main_menu_show(void);
@@ -59,4 +61,4 @@ extern lv_obj_t *content_container;
 }
 #endif
 
-#endif // MAIN_MENU_HLV_IMG_DECLARE(lv_im_service_icon);
+#endif // MAIN_MENU_H

@@ -39,7 +39,10 @@
         "w_digital_out_up.h": "c",
         "w_universal_in_up.h": "c",
         "w_in_out_main.h": "c",
-        "w_all_inputs_out_down.h": "c"
+        "w_all_inputs_out_down.h": "c",
+        "in_out_main_menu.h": "c",
+        "screen_navigation.h": "c",
+        "interrupts.h": "c"
     },
     "idf.flashType": "UART",
     "idf.portWin": "COM13"
