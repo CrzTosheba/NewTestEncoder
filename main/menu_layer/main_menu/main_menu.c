@@ -254,9 +254,9 @@ void Main_Menu_List(void) {
     
     // Создаем все экраны заранее
     for (int i = 0; i < 6; i++) {
-        screens[i] = lv_obj_create(content_container);
-        lv_obj_set_size(screens[i], LV_PCT(100), LV_PCT(100));
-        
+        // ИСПОЛЬЗУЕМ НОВУЮ ФУНКЦИЮ ДЛЯ СОЗДАНИЯ ОБЕРТКИ
+        screens[i] = screen_content_wrapper_create(content_container);
+               
         // Для экрана входов/выходов используем новую функцию с подсветкой
         if (i == 4) { // Индекс 4 соответствует "Входы/выходы"
             screen_In_Out_create(screens[i]);
@@ -269,6 +269,8 @@ void Main_Menu_List(void) {
     
     // Показываем первый экран
     lv_obj_clear_flag(screens[0], LV_OBJ_FLAG_HIDDEN);
+
+
   
     // Создание контейнера меню (правая часть)
     lv_obj_t *cont = lv_obj_create(lv_scr_act());

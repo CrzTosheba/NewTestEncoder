@@ -16,6 +16,7 @@ typedef enum {
 
 // Функции управления контейнерами
 lv_obj_t* screen_container_create(container_type_t type);
+lv_obj_t* screen_content_wrapper_create(lv_obj_t* parent);  // Новая функция
 void screen_container_destroy(lv_obj_t* container);
 void screen_container_show(lv_obj_t* container);
 void screen_container_hide(lv_obj_t* container);

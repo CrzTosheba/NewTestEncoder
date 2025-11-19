@@ -5,8 +5,6 @@ static const char *TAG = "CONTAINER_MGR";
 
 /**
  * @brief Создает контейнер для контента с заданным типом
- * @param type Тип контейнера
- * @return Указатель на созданный контейнер
  */
 lv_obj_t* screen_container_create(container_type_t type) {
     ESP_LOGI(TAG, "Creating container of type: %d", type);
@@ -17,7 +15,6 @@ lv_obj_t* screen_container_create(container_type_t type) {
     
     // Базовые стили для всех контейнеров
     lv_obj_set_style_bg_opa(container, LV_OPA_TRANSP, 0);
-    lv_obj_set_style_border_opa(container, LV_OPA_TRANSP, 0);
     lv_obj_set_scrollbar_mode(container, LV_SCROLLBAR_MODE_OFF);
     
     // Стили в зависимости от типа контейнера
@@ -29,7 +26,6 @@ lv_obj_t* screen_container_create(container_type_t type) {
             break;
             
         case CONTAINER_TYPE_PASSWORD:
-            // Специфичные стили для экрана пароля
             lv_obj_set_style_bg_color(container, lv_color_hex(0x2a2a2a), LV_PART_MAIN);
             lv_obj_set_style_bg_opa(container, LV_OPA_COVER, LV_PART_MAIN);
             break;
@@ -40,12 +36,29 @@ lv_obj_t* screen_container_create(container_type_t type) {
             break;
     }
     
+    ESP_LOGI(TAG, "Container created: %dx%d at (%d,%d)", 
+             CONTENT_CONTAINER_WIDTH, CONTENT_CONTAINER_HEIGHT,
+             CONTENT_CONTAINER_X, CONTENT_CONTAINER_Y);
+    
     return container;
 }
 
 /**
+ * @brief Создает обертку для контента (100% размера родителя)
+ */
+lv_obj_t* screen_content_wrapper_create(lv_obj_t* parent) {
+    lv_obj_t *wrapper = lv_obj_create(parent);
+    lv_obj_set_size(wrapper, LV_PCT(100), LV_PCT(100));
+    lv_obj_set_style_bg_opa(wrapper, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_opa(wrapper, LV_OPA_TRANSP, 0);
+    lv_obj_set_scrollbar_mode(wrapper, LV_SCROLLBAR_MODE_OFF);
+    
+    ESP_LOGI(TAG, "Content wrapper created: 100%% of parent");
+    return wrapper;
+}
+
+/**
  * @brief Уничтожает контейнер
- * @param container Указатель на контейнер
  */
 void screen_container_destroy(lv_obj_t* container) {
     if (container && lv_obj_is_valid(container)) {
@@ -55,7 +68,6 @@ void screen_container_destroy(lv_obj_t* container) {
 
 /**
  * @brief Показывает контейнер
- * @param container Указатель на контейнер
  */
 void screen_container_show(lv_obj_t* container) {
     if (container && lv_obj_is_valid(container)) {
@@ -65,7 +77,6 @@ void screen_container_show(lv_obj_t* container) {
 
 /**
  * @brief Скрывает контейнер
- * @param container Указатель на контейнер
  */
 void screen_container_hide(lv_obj_t* container) {
     if (container && lv_obj_is_valid(container)) {

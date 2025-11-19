@@ -193,22 +193,31 @@ void screen_navigation_go_to(screen_type_t screen) {
             break;
 
         case SCREEN_IN_OUT:
-            // Сохраняем позицию курсора перед переходом
-            screen_navigation_save_cursor_position();
-            
-            // Скрываем главное меню
-            main_menu_hide();
-            
-            // Создаем контейнер для экрана входов/выходов
-            current_content_container = screen_container_create(CONTAINER_TYPE_IN_OUT);
-            
-            // Создаем интерфейс экрана входов/выходов
-            screen_In_Out_create(current_content_container);
-            
-            // Создаем меню входов/выходов
-            Input_Output_Menu_List();
-            encoder_manager_register_callback(input_output_encoder_event_cb);
-            break;
+    // Сохраняем позицию курсора перед переходом
+    screen_navigation_save_cursor_position();
+    
+    // Скрываем главное меню
+    main_menu_hide();
+    
+    // Даем время на завершение операций
+    vTaskDelay(pdMS_TO_TICKS(50));
+    
+    // Очищаем текущий контейнер
+    screen_navigation_cleanup_current_container();
+    
+    // Создаем контейнер для экрана входов/выходов
+    current_content_container = screen_container_create(CONTAINER_TYPE_IN_OUT);
+    
+    // СОЗДАЕМ ОБЕРТКУ ДЛЯ КОНТЕНТА (ТАК ЖЕ КАК В ГЛАВНОМ МЕНЮ)
+    lv_obj_t *screen_wrapper = screen_content_wrapper_create(current_content_container);
+    
+    // Создаем интерфейс экрана входов/выходов в обертке
+    screen_In_Out_create(screen_wrapper);
+    
+    // Создаем меню входов/выходов
+    Input_Output_Menu_List();
+    encoder_manager_register_callback(input_output_encoder_event_cb);
+    break;
 
         case SCREEN_SERVICE:
             // TODO: Реализовать переход на экран сервиса

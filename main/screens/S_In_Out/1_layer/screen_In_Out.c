@@ -40,11 +40,14 @@ static bool is_obj_valid(lv_obj_t *obj) {
  */
 void screen_In_Out_create(lv_obj_t *parent) {
     ESP_LOGI(TAG, "Creating In/Out screen");
-    lv_obj_set_style_bg_color(parent, lv_color_hex(0x1E2528), LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(parent, LV_OPA_COVER, LV_PART_MAIN);
+    
+    // УБРАТЬ УСТАНОВКУ ФОНА - это делает контейнер
+    // lv_obj_set_style_bg_color(parent, lv_color_hex(0x1E2528), LV_PART_MAIN);
+    // lv_obj_set_style_bg_opa(parent, LV_OPA_COVER, LV_PART_MAIN);
+    
     lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
- //   lv_obj_set_style_border_opa(parent, LV_OPA_TRANSP, 0);
 
+    // ... весь остальной код БЕЗ ИЗМЕНЕНИЙ
     static lv_point_precise_t line_points[] = { {-10, 0}, {100, 0} };
     static lv_point_precise_t line_points1[] = { {320, 0}, {460, 0} };
 
@@ -66,7 +69,7 @@ void screen_In_Out_create(lv_obj_t *parent) {
     lv_line_set_points(line2, line_points1, 2);     /*Set the points*/
     lv_obj_add_style(line2, &style_line, 0);
 
-    // Создание заголовка экрана (такие же координаты как в screen_In_Out.c)
+    // Создание заголовка экрана
     lv_obj_t *label = lv_label_create(parent);
     lv_label_set_text(label, "ВХОДЫ/ВЫХОДЫ");
     lv_obj_set_style_text_font(label, &Roboto_bold_24, 0);
@@ -74,8 +77,7 @@ void screen_In_Out_create(lv_obj_t *parent) {
     lv_obj_set_style_bg_color(label, lv_color_hex(0x1E2528), LV_PART_MAIN);
     lv_obj_set_style_text_color(label, lv_color_hex(0xffffff), 0);
 
-    //---------------Главная картинка-------------------------//
-    // Используем такие же координаты как в screen_In_Out.c
+    //---------------Главная картинка-------------------------
     lv_obj_t *In_Out_scheme = in_out_pic_main(parent);
     lv_obj_align(In_Out_scheme, LV_ALIGN_CENTER, 10, 20);
     
