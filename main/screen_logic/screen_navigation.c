@@ -1,11 +1,14 @@
+
 #include "screen_navigation.h"
 #include "menu_layer/main_menu/main_menu.h"
 #include "screens/S_Pass/password_screen.h"
 #include "screens/S_Pass/screen_Pass.h"
 #include "encoder/encoder_manager.h"
 #include "menu_layer/In_Out_Menu/In_Out_main_menu.h"
+#include "menu_layer/CO_Menu/CO_main_menu.h"
 #include "screens/S_In_Out/1_layer/screen_In_Out.h"
 #include "screen_container_manager.h"
+#include "arc_menu.h" // Добавляем include для arc_menu
 #include <inttypes.h>
 #include "esp_log.h"
 
@@ -57,6 +60,7 @@ void screen_navigation_restore_cursor_position(void) {
         ESP_LOGW(TAG, "No cursor position saved, using default");
     }
 }
+
 /**
  * @brief Очищает текущий контейнер контента
  */
@@ -119,6 +123,7 @@ void screen_navigation_go_to(screen_type_t screen) {
             // Очищаем экран пароля и меню входов/выходов
             password_screen_cleanup();
             input_output_menu_cleanup();
+            co_menu_cleanup(); // Очищаем меню отопления
             
             // Пересоздаем главное меню если оно было уничтожено
             extern lv_obj_t *_cont;
@@ -165,10 +170,58 @@ void screen_navigation_go_to(screen_type_t screen) {
             break;
             
         case SCREEN_CO:
-            // TODO: Реализовать переход на экран отопления  
-            ESP_LOGI(TAG, "Transition to CO screen not implemented yet");
-            // Временно возвращаемся в главное меню
-            screen_navigation_go_to(SCREEN_MAIN_MENU);
+            // Переход в меню отопления
+            ESP_LOGI(TAG, "Transition to CO menu");
+            
+            // Проверяем, не происходит ли уже переход
+            static bool co_transition_in_progress = false;
+            if (co_transition_in_progress) {
+                ESP_LOGW(TAG, "CO transition already in progress, skipping");
+                return;
+            }
+            co_transition_in_progress = true;
+            
+            // Сохраняем позицию курсора перед переходом
+            screen_navigation_save_cursor_position();
+            
+            // Скрываем главное меню
+            main_menu_hide();
+            
+            // Даем больше времени на завершение операций
+            vTaskDelay(pdMS_TO_TICKS(150));
+            
+            // Очищаем текущий контейнер
+            screen_navigation_cleanup_current_container();
+            
+            // Создаем контейнер для экрана отопления
+            current_content_container = screen_container_create(CONTAINER_TYPE_MAIN_MENU);
+            
+            // Даем время на создание контейнера
+            vTaskDelay(pdMS_TO_TICKS(50));
+            
+            // СОЗДАЕМ ОБЕРТКУ ДЛЯ КОНТЕНТА
+            lv_obj_t *screen_wrapper = screen_content_wrapper_create(current_content_container);
+            
+            // Создаем интерфейс экрана отопления в обертке (левая часть остается)
+            screen_CO_create(screen_wrapper);
+            
+            // Даем время на создание интерфейса отопления
+            vTaskDelay(pdMS_TO_TICKS(50));
+            
+            // Создаем меню отопления (правая часть меняется)
+            CO_Menu_List();
+            
+            // ДАЕМ ВРЕМЯ НА ПОЛНУЮ ИНИЦИАЛИЗАЦИЮ МЕНЮ
+            vTaskDelay(pdMS_TO_TICKS(100));
+            
+            // ОБНОВЛЯЕМ ДУГОВОЕ МЕНЮ ДЛЯ КОРРЕКТНОГО ОТОБРАЖЕНИЯ
+            // Теперь co_cont доступна через CO_main_menu.h
+            if (co_cont && lv_obj_is_valid(co_cont)) {
+                arc_menu_update_slide(co_cont);
+            }
+            
+            encoder_manager_register_callback(co_menu_encoder_event_cb);
+            co_transition_in_progress = false;
             break;
             
         case SCREEN_PODP:
@@ -193,31 +246,31 @@ void screen_navigation_go_to(screen_type_t screen) {
             break;
 
         case SCREEN_IN_OUT:
-    // Сохраняем позицию курсора перед переходом
-    screen_navigation_save_cursor_position();
-    
-    // Скрываем главное меню
-    main_menu_hide();
-    
-    // Даем время на завершение операций
-    vTaskDelay(pdMS_TO_TICKS(50));
-    
-    // Очищаем текущий контейнер
-    screen_navigation_cleanup_current_container();
-    
-    // Создаем контейнер для экрана входов/выходов
-    current_content_container = screen_container_create(CONTAINER_TYPE_IN_OUT);
-    
-    // СОЗДАЕМ ОБЕРТКУ ДЛЯ КОНТЕНТА (ТАК ЖЕ КАК В ГЛАВНОМ МЕНЮ)
-    lv_obj_t *screen_wrapper = screen_content_wrapper_create(current_content_container);
-    
-    // Создаем интерфейс экрана входов/выходов в обертке
-    screen_In_Out_create(screen_wrapper);
-    
-    // Создаем меню входов/выходов
-    Input_Output_Menu_List();
-    encoder_manager_register_callback(input_output_encoder_event_cb);
-    break;
+            // Сохраняем позицию курсора перед переходом
+            screen_navigation_save_cursor_position();
+            
+            // Скрываем главное меню
+            main_menu_hide();
+            
+            // Даем время на завершение операций
+            vTaskDelay(pdMS_TO_TICKS(50));
+            
+            // Очищаем текущий контейнер
+            screen_navigation_cleanup_current_container();
+            
+            // Создаем контейнер для экрана входов/выходов
+            current_content_container = screen_container_create(CONTAINER_TYPE_IN_OUT);
+            
+            // СОЗДАЕМ ОБЕРТКУ ДЛЯ КОНТЕНТА
+            lv_obj_t *screen_wrapper_io = screen_content_wrapper_create(current_content_container);
+            
+            // Создаем интерфейс экрана входов/выходов в обертке
+            screen_In_Out_create(screen_wrapper_io);
+            
+            // Создаем меню входов/выходов
+            Input_Output_Menu_List();
+            encoder_manager_register_callback(input_output_encoder_event_cb);
+            break;
 
         case SCREEN_SERVICE:
             // TODO: Реализовать переход на экран сервиса
@@ -235,7 +288,6 @@ void screen_navigation_go_to(screen_type_t screen) {
     
     current_screen = screen;
 }
-
 
 void screen_navigation_encoder_event_cb(uint8_t e) {
     // Если мы в главном меню
@@ -258,7 +310,7 @@ void screen_navigation_encoder_event_cb(uint8_t e) {
                     screen_navigation_go_to(SCREEN_GVS);
                     break;
                 case 2: // "Отопление"
-                    ESP_LOGI(TAG, "Navigating to CO screen");
+                    ESP_LOGI(TAG, "Navigating to CO menu");
                     screen_navigation_go_to(SCREEN_CO);
                     break;
                 case 3: // "Аварии"

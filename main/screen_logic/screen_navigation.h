@@ -13,7 +13,7 @@ typedef enum {
     SCREEN_MAIN_MENU,      // Главное меню
     SCREEN_PASSWORD_INPUT, // Экран ввода пароля
     SCREEN_GVS,            // Экран ГВС
-    SCREEN_CO,             // Экран отопления
+    SCREEN_CO,             // Экран отопления (меню)
     SCREEN_PODP,           // Экран подпитки
     SCREEN_UV,             // Экран узла ввода
     SCREEN_IN_OUT,         // Экран входов/выходов
@@ -34,7 +34,8 @@ void screen_navigation_restore_cursor_position(void);
 // Внешние обработчики энкодера
 extern void main_menu_encoder_event_cb(uint8_t e);
 extern void password_encoder_event_cb(uint8_t e);
-extern void input_output_encoder_event_cb(uint8_t e); // Добавляем обработчик для входов/выходов
+extern void input_output_encoder_event_cb(uint8_t e); // Обработчик для входов/выходов
+extern void co_menu_encoder_event_cb(uint8_t e);      // Добавляем обработчик для меню отопления
 
 #ifdef __cplusplus
 }

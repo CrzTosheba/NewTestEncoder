@@ -11,8 +11,6 @@
 #include "freertos/task.h"
 #include "scale_logic_time/time_scale.h"
 
-// Добавляем include для нового экрана входов/выходов
-#include "screens/S_In_Out/2_layer/screen_In_Out_Second.h"
 
 static const char *TAG = "Main_Menu_main";
 
@@ -181,13 +179,14 @@ void main_menu_encoder_event_cb(uint8_t e) {
     }
     
     uint32_t prev_cursor = current_cursor_index;
-    arc_menu_handle_encoder(e, _cont, &current_index);
+    
+    // Используем конфигурацию для главного меню
+    arc_menu_handle_encoder(e, _cont, &current_index, MENU_TYPE_MAIN);
     
     if (prev_cursor != current_cursor_index) {
         main_menu_update_display();
     }
 }
-
 // Элементы главного меню
 static const MenuItem menu_items[] = {
     {"Открыть доступ", "", &lv_im_module_lock, ""},
@@ -270,8 +269,6 @@ void Main_Menu_List(void) {
     // Показываем первый экран
     lv_obj_clear_flag(screens[0], LV_OBJ_FLAG_HIDDEN);
 
-
-  
     // Создание контейнера меню (правая часть)
     lv_obj_t *cont = lv_obj_create(lv_scr_act());
     lv_obj_set_size(cont, 1200, 1200);
@@ -302,7 +299,10 @@ void Main_Menu_List(void) {
     
     _cont = cont;
     uint32_t child_count = lv_obj_get_child_cnt(cont);
-    current_index = (child_count > 3) ? 2 : 0;
+    
+    // ИСПОЛЬЗУЕМ КОНФИГУРАЦИЮ ДЛЯ ГЛАВНОГО МЕНЮ
+    const menu_config_t* config = get_menu_config(MENU_TYPE_MAIN);
+    current_index = config->initial_index;
     current_cursor_index = 0;
     
     lv_obj_scroll_to_view(lv_obj_get_child(cont, current_index), LV_ANIM_OFF);
@@ -310,5 +310,7 @@ void Main_Menu_List(void) {
     current_function = Main_Menu_List;
 
     ESP_LOGI(TAG, "Главное меню успешно инициализировано");
+    ESP_LOGI(TAG, "Используется конфигурация: initial_index=%lu, scroll_boundary=%lu", 
+             config->initial_index, config->scroll_boundary);
     fflush(NULL);
 }

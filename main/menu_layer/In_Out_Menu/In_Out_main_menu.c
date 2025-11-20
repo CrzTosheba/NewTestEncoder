@@ -127,9 +127,8 @@ void input_output_encoder_event_cb(uint8_t e) {
     
     ESP_LOGI(TAG, "IO menu encoder event: 0x%02x, current_cursor_index: %" PRIu32, e, current_cursor_index);
     
-    // Используем стандартную функцию обработки движений из arc_menu
-    // Передаем глобальные переменные для синхронизации
-    arc_menu_handle_encoder(e, io_cont, &current_index);
+    // Используем конфигурацию для меню входов/выходов
+    arc_menu_handle_encoder(e, io_cont, &current_index, MENU_TYPE_IN_OUT);
     
     ESP_LOGI(TAG, "After arc_menu_handle_encoder - current_cursor_index: %" PRIu32, current_cursor_index);
     
@@ -184,7 +183,6 @@ void input_output_encoder_event_cb(uint8_t e) {
         // TODO: Добавить обработку нажатий для других пунктов меню при необходимости
     }
 }
-
 /**
  * @brief Очистка меню входов/выходов
  */
