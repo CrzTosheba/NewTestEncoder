@@ -5,9 +5,6 @@
 // Тег для логирования
 static const char *TAG_ARC = "ARC_MENU";
 
-// Глобальные переменные
-uint32_t current_cursor_index = 0; // Текущая позиция курсора в меню
-
 // Обновление позиции элементов в дуговом меню
 void arc_menu_update_slide(lv_obj_t *cont) {
     // Получаем координаты контейнера
@@ -68,9 +65,9 @@ void arc_menu_event_cb(lv_event_t *e) {
 }
 
 // Обработчик событий энкодера
-void arc_menu_handle_encoder(uint8_t e, lv_obj_t *cont, uint32_t *current_index, menu_type_t menu_type) {
+void arc_menu_handle_encoder(uint8_t e, lv_obj_t *cont, menu_state_t *menu_state, menu_type_t menu_type) {
     // Проверяем валидность параметров
-    if (!cont || !lv_obj_is_valid(cont) || !current_index) {
+    if (!cont || !lv_obj_is_valid(cont) || !menu_state) {
         ESP_LOGE(TAG_ARC, "Invalid parameters in arc_menu_handle_encoder");
         return;
     }
@@ -100,7 +97,7 @@ void arc_menu_handle_encoder(uint8_t e, lv_obj_t *cont, uint32_t *current_index,
     ESP_LOGI(TAG_ARC, "Encoder event: 0x%02x, child_count: %" PRIu32 ", menu_type: %d", 
              e, child_count, menu_type);
     ESP_LOGI(TAG_ARC, "Before - current_cursor_index: %" PRIu32 ", current_index: %" PRIu32, 
-             current_cursor_index, *current_index);
+             menu_state->cursor_index, menu_state->list_index);
     
     // Фильтр дребезга - игнорируем повторные события в течение DEBOUNCE_TIME_MS
     if ((e == last_event) && (now - last_event_time < DEBOUNCE_TIME_MS)) {
@@ -110,16 +107,16 @@ void arc_menu_handle_encoder(uint8_t e, lv_obj_t *cont, uint32_t *current_index,
     
     // Обработка движения ВЛЕВО (против часовой стрелки - ВВЕРХ в списке)
     if (e & ENC_RIGHT) {
-        if (current_cursor_index > 0) {
-            current_cursor_index--;  // Уменьшаем индекс курсора
+        if (menu_state->cursor_index > 0) {
+            menu_state->cursor_index--;  // Уменьшаем индекс курсора
             
             // Сдвигаем список, если курсор вышел за верхнюю границу видимой области
             // Используем настраиваемую границу из конфигурации
-            if (current_cursor_index < *current_index - scroll_boundary) {
+            if (menu_state->cursor_index < menu_state->list_index - scroll_boundary) {
                 // Минимальное значение индекса списка = scroll_boundary
-                if (*current_index > scroll_boundary) {
-                    (*current_index)--;
-                    ESP_LOGI(TAG_ARC, "Список сдвинут вверх: новый idx %"PRIu32, *current_index);
+                if (menu_state->list_index > scroll_boundary) {
+                    menu_state->list_index--;
+                    ESP_LOGI(TAG_ARC, "Список сдвинут вверх: новый idx %"PRIu32, menu_state->list_index);
                 }
             }
         }
@@ -128,15 +125,15 @@ void arc_menu_handle_encoder(uint8_t e, lv_obj_t *cont, uint32_t *current_index,
     } 
     // Обработка движения ВПРАВО (по часовой стрелке - ВНИЗ в списке)
     else if (e & ENC_LEFT) {
-        if (current_cursor_index < child_count - 1) {
-            current_cursor_index++;  // Увеличиваем индекс курсора
+        if (menu_state->cursor_index < child_count - 1) {
+            menu_state->cursor_index++;  // Увеличиваем индекс курсора
             
             // Сдвигаем список, когда курсор достигает последнего видимого элемента
             // Используем настраиваемую границу из конфигурации
-            if (current_cursor_index > *current_index + scroll_boundary) {
-                if (*current_index < child_count - scroll_boundary - 1) {
-                    (*current_index)++;
-                    ESP_LOGI(TAG_ARC, "Список сдвинут вниз: новый idx %"PRIu32, *current_index);
+            if (menu_state->cursor_index > menu_state->list_index + scroll_boundary) {
+                if (menu_state->list_index < child_count - scroll_boundary - 1) {
+                    menu_state->list_index++;
+                    ESP_LOGI(TAG_ARC, "Список сдвинут вниз: новый idx %"PRIu32, menu_state->list_index);
                 }
             }
         }
@@ -147,7 +144,7 @@ void arc_menu_handle_encoder(uint8_t e, lv_obj_t *cont, uint32_t *current_index,
     // Обновление позиции после обработки движения
     if (e & (ENC_LEFT | ENC_RIGHT)) {
         // Прокручиваем к текущему элементу списка
-        lv_obj_t *target = lv_obj_get_child(cont, *current_index);
+        lv_obj_t *target = lv_obj_get_child(cont, menu_state->list_index);
         if (target && lv_obj_is_valid(target)) {
             lv_obj_scroll_to_view(target, LV_ANIM_ON);
         }
@@ -156,6 +153,6 @@ void arc_menu_handle_encoder(uint8_t e, lv_obj_t *cont, uint32_t *current_index,
         arc_menu_update_slide(cont);
         
         ESP_LOGI(TAG_ARC, "After - current_cursor_index: %" PRIu32 ", current_index: %" PRIu32, 
-                 current_cursor_index, *current_index);
+                 menu_state->cursor_index, menu_state->list_index);
     }
 }

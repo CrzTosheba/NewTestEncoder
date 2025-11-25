@@ -12,9 +12,9 @@
 
 static const char *TAG = "CO_MENU";
 
-// Используем глобальные переменные из arc_menu для синхронизации
-extern uint32_t current_index;
-extern uint32_t current_cursor_index;
+// Используем состояние меню из menu_config вместо глобальных переменных
+// extern uint32_t current_index; // УДАЛЕНО
+// extern uint32_t current_cursor_index; // УДАЛЕНО
 
 // Структура элемента меню отопления
 typedef struct {
@@ -170,22 +170,24 @@ void co_menu_encoder_event_cb(uint8_t e) {
         return;
     }
     
-    uint32_t prev_cursor = current_cursor_index;
+    // Получаем состояние меню отопления
+    menu_state_t *menu_state = get_menu_state(MENU_TYPE_CO);
+    uint32_t prev_cursor = menu_state->cursor_index;
     
-    ESP_LOGI(TAG, "CO menu encoder event: 0x%02x, current_cursor_index: %" PRIu32, e, current_cursor_index);
+    ESP_LOGI(TAG, "CO menu encoder event: 0x%02x, current_cursor_index: %" PRIu32, e, menu_state->cursor_index);
     
     // Используем конфигурацию для меню отопления
-    arc_menu_handle_encoder(e, co_cont, &current_index, MENU_TYPE_CO);
+    arc_menu_handle_encoder(e, co_cont, menu_state, MENU_TYPE_CO);
     
-    ESP_LOGI(TAG, "After arc_menu_handle_encoder - current_cursor_index: %" PRIu32, current_cursor_index);
+    ESP_LOGI(TAG, "After arc_menu_handle_encoder - current_cursor_index: %" PRIu32, menu_state->cursor_index);
     
     // Если позиция курсора изменилась, обновляем подсветку
-    if (prev_cursor != current_cursor_index) {
-        ESP_LOGI(TAG, "Cursor changed from %" PRIu32 " to %" PRIu32, prev_cursor, current_cursor_index);
-        co_highlight_box(co_cont, current_cursor_index);
+    if (prev_cursor != menu_state->cursor_index) {
+        ESP_LOGI(TAG, "Cursor changed from %" PRIu32 " to %" PRIu32, prev_cursor, menu_state->cursor_index);
+        co_highlight_box(co_cont, menu_state->cursor_index);
         
         // TODO: Здесь можно добавить логику подсветки соответствующих элементов на схеме отопления
-        switch(current_cursor_index) {
+        switch(menu_state->cursor_index) {
             case 0: // "Назад"
                 ESP_LOGI(TAG, "Highlighting back button");
                 break;
@@ -195,16 +197,16 @@ void co_menu_encoder_event_cb(uint8_t e) {
                 break;
                 
             default:
-                ESP_LOGI(TAG, "Selected menu item: %" PRIu32, current_cursor_index);
+                ESP_LOGI(TAG, "Selected menu item: %" PRIu32, menu_state->cursor_index);
                 break;
         }
     }
     
     // Обработка нажатия кнопки
     if (e & ENC_CLICK) {
-        ESP_LOGI(TAG, "Click in CO menu on item: %" PRIu32, current_cursor_index);
+        ESP_LOGI(TAG, "Click in CO menu on item: %" PRIu32, menu_state->cursor_index);
         
-        if (current_cursor_index == 0) {
+        if (menu_state->cursor_index == 0) {
             // Нажали на "Назад" - возвращаемся в главное меню
             ESP_LOGI(TAG, "Returning to main menu from CO menu");
             screen_navigation_go_to(SCREEN_MAIN_MENU);
@@ -304,19 +306,22 @@ void CO_Menu_List(void) {
     
     uint32_t child_count = lv_obj_get_child_cnt(co_cont);
     
-    // ИСПОЛЬЗУЕМ КОНФИГУРАЦИЮ ДЛЯ МЕНЮ ОТОПЛЕНИЯ
+    // ИСПОЛЬЗУЕМ КОНФИГУРАЦИЮ И СОСТОЯНИЕ ДЛЯ МЕНЮ ОТОПЛЕНИЯ
     const menu_config_t* config = get_menu_config(MENU_TYPE_CO);
-    current_index = config->initial_index;
-    current_cursor_index = 0;
+    menu_state_t *menu_state = get_menu_state(MENU_TYPE_CO);
+    
+    // Инициализируем состояние меню
+    menu_state->list_index = config->initial_index;
+    menu_state->cursor_index = 0;
     
     // Прокручиваем к нужному элементу из конфигурации
-    lv_obj_t *target_child = lv_obj_get_child(co_cont, current_index);
+    lv_obj_t *target_child = lv_obj_get_child(co_cont, menu_state->list_index);
     if (target_child) {
         lv_obj_scroll_to_view(target_child, LV_ANIM_OFF);
     }
     
     // Применяем подсветку к начальному элементу
-    co_highlight_box(co_cont, current_cursor_index);
+    co_highlight_box(co_cont, menu_state->cursor_index);
     
     // Обновляем дуговое меню
     arc_menu_update_slide(co_cont);
@@ -327,9 +332,9 @@ void CO_Menu_List(void) {
     ESP_LOGI(TAG, "Меню отопления успешно инициализировано");
     ESP_LOGI(TAG, "Используется конфигурация: initial_index=%lu, scroll_boundary=%lu", 
              config->initial_index, config->scroll_boundary);
+    ESP_LOGI(TAG, "Состояние меню: list_index=%lu, cursor_index=%lu", 
+             menu_state->list_index, menu_state->cursor_index);
     ESP_LOGI(TAG, "Количество элементов меню: %" PRIu32, child_count);
-    ESP_LOGI(TAG, "Начальный current_index: %" PRIu32, current_index);
-    ESP_LOGI(TAG, "Начальный current_cursor_index: %" PRIu32, current_cursor_index);
     
     fflush(NULL);
 }

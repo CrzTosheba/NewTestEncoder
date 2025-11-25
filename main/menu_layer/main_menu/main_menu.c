@@ -1,4 +1,3 @@
-// Файл: main_menu.c
 #include "main_menu.h"
 #include "encoder/encoder.h"
 #include "my_widgets/w_rad_mask.h"
@@ -27,12 +26,10 @@ typedef struct {
 
 // Глобальные переменные меню (доступны из других файлов)
 lv_obj_t *_cont = NULL;
-uint32_t current_index = 0;
-uint32_t current_selected_point = 0;
 void (*current_function)(void) = NULL;
 
-// Используем глобальную переменную курсора из arc_menu
-extern uint32_t current_cursor_index;
+// Используем состояние меню из menu_config вместо глобальных переменных
+// extern uint32_t current_cursor_index; // УДАЛЕНО - больше не используем
 
 // Контейнер для контента экрана (доступен из других файлов)
 lv_obj_t *content_container = NULL;
@@ -86,6 +83,9 @@ void main_menu_update_display(void) {
         return;
     }
     
+    // Получаем состояние главного меню
+    menu_state_t *menu_state = get_menu_state(MENU_TYPE_MAIN);
+    
     // Скрываем все экраны
     for (int i = 0; i < 6; i++) {
         if (screens[i] && lv_obj_is_valid(screens[i])) {
@@ -94,19 +94,19 @@ void main_menu_update_display(void) {
     }
     
     // Показываем только активный экран
-    if (current_cursor_index < 6 && screens[current_cursor_index] && lv_obj_is_valid(screens[current_cursor_index])) {
-        lv_obj_clear_flag(screens[current_cursor_index], LV_OBJ_FLAG_HIDDEN);
+    if (menu_state->cursor_index < 6 && screens[menu_state->cursor_index] && lv_obj_is_valid(screens[menu_state->cursor_index])) {
+        lv_obj_clear_flag(screens[menu_state->cursor_index], LV_OBJ_FLAG_HIDDEN);
     }
     
     // Обновляем подсветку
-    highlight_box(_cont, current_cursor_index);
+    highlight_box(_cont, menu_state->cursor_index);
     
     // Управление видимостью шкалы времени
-    if (current_cursor_index == 1 || current_cursor_index == 2) {
+    if (menu_state->cursor_index == 1 || menu_state->cursor_index == 2) {
         show_time_scale(true);
         
         // Устанавливаем разные временные интервалы и время для разных экранов
-        if (current_cursor_index == 1) {
+        if (menu_state->cursor_index == 1) {
             // ГВС: линии с 08:15 до 10:45 и с 14:00 до 20:00
             set_time_intervals(8, 15, 10, 45, 14, 0, 20, 0);
             set_time(12, 0); // Время для ГВС
@@ -178,12 +178,14 @@ void main_menu_encoder_event_cb(uint8_t e) {
         return;
     }
     
-    uint32_t prev_cursor = current_cursor_index;
+    // Получаем состояние главного меню
+    menu_state_t *menu_state = get_menu_state(MENU_TYPE_MAIN);
+    uint32_t prev_cursor = menu_state->cursor_index;
     
     // Используем конфигурацию для главного меню
-    arc_menu_handle_encoder(e, _cont, &current_index, MENU_TYPE_MAIN);
+    arc_menu_handle_encoder(e, _cont, menu_state, MENU_TYPE_MAIN);
     
-    if (prev_cursor != current_cursor_index) {
+    if (prev_cursor != menu_state->cursor_index) {
         main_menu_update_display();
     }
 }
@@ -300,17 +302,22 @@ void Main_Menu_List(void) {
     _cont = cont;
     uint32_t child_count = lv_obj_get_child_cnt(cont);
     
-    // ИСПОЛЬЗУЕМ КОНФИГУРАЦИЮ ДЛЯ ГЛАВНОГО МЕНЮ
+    // ИСПОЛЬЗУЕМ КОНФИГУРАЦИЮ И СОСТОЯНИЕ ДЛЯ ГЛАВНОГО МЕНЮ
     const menu_config_t* config = get_menu_config(MENU_TYPE_MAIN);
-    current_index = config->initial_index;
-    current_cursor_index = 0;
+    menu_state_t *menu_state = get_menu_state(MENU_TYPE_MAIN);
     
-    lv_obj_scroll_to_view(lv_obj_get_child(cont, current_index), LV_ANIM_OFF);
-    highlight_box(cont, current_cursor_index);
+    // Инициализируем состояние меню
+    menu_state->list_index = config->initial_index;
+    menu_state->cursor_index = 0;
+    
+    lv_obj_scroll_to_view(lv_obj_get_child(cont, menu_state->list_index), LV_ANIM_OFF);
+    highlight_box(cont, menu_state->cursor_index);
     current_function = Main_Menu_List;
 
     ESP_LOGI(TAG, "Главное меню успешно инициализировано");
     ESP_LOGI(TAG, "Используется конфигурация: initial_index=%lu, scroll_boundary=%lu", 
              config->initial_index, config->scroll_boundary);
+    ESP_LOGI(TAG, "Состояние меню: list_index=%lu, cursor_index=%lu", 
+             menu_state->list_index, menu_state->cursor_index);
     fflush(NULL);
 }

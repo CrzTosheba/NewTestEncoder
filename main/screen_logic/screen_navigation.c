@@ -1,4 +1,3 @@
-
 #include "screen_navigation.h"
 #include "menu_layer/main_menu/main_menu.h"
 #include "screens/S_Pass/password_screen.h"
@@ -17,9 +16,9 @@ static const char *TAG = "SCREEN_NAV";
 static screen_type_t current_screen = SCREEN_MAIN_MENU;
 static lv_obj_t *main_screen = NULL;
 
-// Переменные для сохранения позиции курсора
-static uint32_t saved_cursor_position = 0;
-static bool cursor_position_saved = false;
+// Переменные для сохранения позиции курсора (теперь используем menu_state_t)
+static menu_state_t saved_menu_state = {0};
+static bool menu_state_saved = false;
 
 // Контейнеры для разных экранов
 static lv_obj_t *current_content_container = NULL;
@@ -39,25 +38,27 @@ void screen_navigation_init(void) {
 }
 
 /**
- * @brief Сохраняет текущую позицию курсора главного меню
+ * @brief Сохраняет текущее состояние главного меню
  */
 void screen_navigation_save_cursor_position(void) {
-    extern uint32_t current_cursor_index;
-    saved_cursor_position = current_cursor_index;
-    cursor_position_saved = true;
-    ESP_LOGI(TAG, "Cursor position saved: %" PRIu32, saved_cursor_position);
+    menu_state_t *main_menu_state = get_menu_state(MENU_TYPE_MAIN);
+    saved_menu_state = *main_menu_state;
+    menu_state_saved = true;
+    ESP_LOGI(TAG, "Menu state saved: cursor_index=%" PRIu32 ", list_index=%" PRIu32, 
+             saved_menu_state.cursor_index, saved_menu_state.list_index);
 }
 
 /**
- * @brief Восстанавливает сохраненную позицию курсора главного меню
+ * @brief Восстанавливает сохраненное состояние главного меню
  */
 void screen_navigation_restore_cursor_position(void) {
-    if (cursor_position_saved) {
-        extern uint32_t current_cursor_index;
-        current_cursor_index = saved_cursor_position;
-        ESP_LOGI(TAG, "Cursor position restored: %" PRIu32, saved_cursor_position);
+    if (menu_state_saved) {
+        menu_state_t *main_menu_state = get_menu_state(MENU_TYPE_MAIN);
+        *main_menu_state = saved_menu_state;
+        ESP_LOGI(TAG, "Menu state restored: cursor_index=%" PRIu32 ", list_index=%" PRIu32, 
+                 saved_menu_state.cursor_index, saved_menu_state.list_index);
     } else {
-        ESP_LOGW(TAG, "No cursor position saved, using default");
+        ESP_LOGW(TAG, "No menu state saved, using default");
     }
 }
 
@@ -132,7 +133,7 @@ void screen_navigation_go_to(screen_type_t screen) {
                 Main_Menu_List();
             }
             
-            // Восстанавливаем позицию курсора
+            // Восстанавливаем состояние меню
             screen_navigation_restore_cursor_position();
             
             // Показываем главное меню
@@ -145,7 +146,7 @@ void screen_navigation_go_to(screen_type_t screen) {
             break;
             
         case SCREEN_PASSWORD_INPUT:
-            // Сохраняем позицию курсора перед переходом
+            // Сохраняем состояние меню перед переходом
             screen_navigation_save_cursor_position();
             
             // Скрываем главное меню
@@ -181,7 +182,7 @@ void screen_navigation_go_to(screen_type_t screen) {
             }
             co_transition_in_progress = true;
             
-            // Сохраняем позицию курсора перед переходом
+            // Сохраняем состояние меню перед переходом
             screen_navigation_save_cursor_position();
             
             // Скрываем главное меню
@@ -246,7 +247,7 @@ void screen_navigation_go_to(screen_type_t screen) {
             break;
 
         case SCREEN_IN_OUT:
-            // Сохраняем позицию курсора перед переходом
+            // Сохраняем состояние меню перед переходом
             screen_navigation_save_cursor_position();
             
             // Скрываем главное меню
@@ -297,10 +298,10 @@ void screen_navigation_encoder_event_cb(uint8_t e) {
         
         // Обработка нажатий в главном меню
         if ((e & ENC_CLICK)) {
-            extern uint32_t current_cursor_index;
-            ESP_LOGI(TAG, "Click detected on menu item: %" PRIu32, current_cursor_index);
+            menu_state_t *menu_state = get_menu_state(MENU_TYPE_MAIN);
+            ESP_LOGI(TAG, "Click detected on menu item: %" PRIu32, menu_state->cursor_index);
             
-            switch(current_cursor_index) {
+            switch(menu_state->cursor_index) {
                 case 0: // "Открыть доступ"
                     ESP_LOGI(TAG, "Navigating to password screen");
                     screen_navigation_go_to(SCREEN_PASSWORD_INPUT);
@@ -326,7 +327,7 @@ void screen_navigation_encoder_event_cb(uint8_t e) {
                     screen_navigation_go_to(SCREEN_SERVICE);
                     break;
                 default:
-                    ESP_LOGI(TAG, "No action defined for menu item: %" PRIu32, current_cursor_index);
+                    ESP_LOGI(TAG, "No action defined for menu item: %" PRIu32, menu_state->cursor_index);
                     break;
             }
         }

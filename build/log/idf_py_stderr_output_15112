@@ -1,0 +1,82 @@
+[0;33m--- Warning: GDB cannot open serial ports accessed as COMx[0m
+[0;33m--- Using \\.\COM13 instead...[0m
+[0;33m--- esp-idf-monitor 1.6.2 on \\.\COM13 115200[0m
+[0;33m--- Quit: Ctrl+] | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H[0m
+[0;33m--- 0x4200a4c8: screen_navigation_encoder_event_cb at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/screen_logic/screen_navigation.c:293
+[0m
+[0;33m--- 0x4200b5bc: co_menu_encoder_event_cb at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/menu_layer/CO_Menu/CO_main_menu.c:167
+[0m
+[0;33m--- 0x4200a4c8: screen_navigation_encoder_event_cb at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/screen_logic/screen_navigation.c:293
+[0m
+[0;33m--- 0x42015c21: lv_inv_area at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_refr.c:282
+--- 0x420114c6: lv_obj_invalidate_area at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_pos.c:870
+--- 0x4201150d: lv_obj_invalidate_area at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_pos.c:847
+---  (inlined by) lv_obj_invalidate at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_pos.c:886
+---  (inlined by) lv_obj_invalidate at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_pos.c:873
+--- 0x4200ef0b: update_obj_state at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj.c:1001
+--- 0x4200f288: lv_obj_remove_state at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj.c:346
+--- 0x4200f527: lv_obj_event at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj.c:922
+--- 0x4204e165: lv_obj_event_base at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_event.c:92
+--- 0x4201033c: event_send_core at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_event.c:373
+--- 0x42010444: lv_obj_send_event at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_event.c:69
+--- 0x420122ca: scroll_end_cb at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_scroll.c:699
+---  (inlined by) scroll_end_cb at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_scroll.c:696
+--- 0x4201ea42: remove_anim at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/misc/lv_anim.c:820
+---  (inlined by) lv_anim_delete at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/misc/lv_anim.c:190
+--- 0x42012c4f: scroll_area_into_view at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_scroll.c:802
+--- 0x42012ced: lv_obj_scroll_to_view at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_scroll.c:395
+--- 0x4200ce79: arc_menu_handle_encoder at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/screen_logic/arc_menu.c:149
+--- 0x4200ae1a: main_menu_encoder_event_cb at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/menu_layer/main_menu/main_menu.c:186
+--- 0x4200a4d8: screen_navigation_encoder_event_cb at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/screen_logic/screen_navigation.c:297
+--- 0x4200a0f6: encoder_manager_task at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/encoder/encoder_manager.c:108
+[0m
+[0;33m--- 0x40379f60: esp_restart_noos at C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c:162
+[0m
+[0;33m--- 0x4200a4c8: screen_navigation_encoder_event_cb at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/screen_logic/screen_navigation.c:293
+[0m
+[0;33m--- 0x4200b5bc: co_menu_encoder_event_cb at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/menu_layer/CO_Menu/CO_main_menu.c:167
+[0m
+[0;33m--- 0x4200a4c8: screen_navigation_encoder_event_cb at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/screen_logic/screen_navigation.c:293
+[0m
+[0;33m--- 0x4200af68: input_output_encoder_event_cb at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/menu_layer/In_Out_Menu/In_Out_main_menu.c:119
+[0m
+[0;33m--- 0x4200a4c8: screen_navigation_encoder_event_cb at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/screen_logic/screen_navigation.c:293
+[0m
+[0;33m--- 0x40056f5c: memcpy in ROM
+[0m
+[0;33m--- 0x40056f5c: memcpy in ROM
+--- 0x40056f72: memcpy in ROM
+[0m
+[0;33m--- 0x40056f59: memcpy in ROM
+--- 0x4201f119: lv_event_send at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/misc/lv_event.c:104
+--- 0x4201f22e: lv_event_send at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/misc/lv_event.c:98
+---  (inlined by) lv_event_push_and_send at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/misc/lv_event.c:84
+--- 0x42017215: lv_display_send_event at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/display/lv_display.c:920
+--- 0x42010fb5: lv_obj_mark_layout_as_dirty at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_pos.c:304
+--- 0x4200f5ae: lv_obj_event at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj.c:944
+--- 0x4204e165: lv_obj_event_base at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_event.c:92
+--- 0x4201033c: event_send_core at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_event.c:373
+--- 0x42010444: lv_obj_send_event at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_event.c:69
+--- 0x42011b38: lv_obj_refr_size at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_pos.c:204
+--- 0x42011bcd: layout_update_core at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_pos.c:1258
+--- 0x42011bb9: layout_update_core at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_pos.c:1253
+--- 0x42011bb9: layout_update_core at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_pos.c:1253
+--- 0x42011c2c: lv_obj_update_layout at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_pos.c:327
+--- 0x42011c65: lv_obj_update_layout at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_obj_pos.c:315
+--- 0x42016127: lv_display_refr_timer at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/core/lv_refr.c:396
+--- 0x420209fa: lv_timer_exec at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/misc/lv_timer.c:327
+---  (inlined by) lv_timer_handler at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/misc/lv_timer.c:107
+--- 0x42020b4d: lv_timer_handler at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/lvgl/src/misc/lv_timer.c:71
+--- 0x4200e57d: lvgl_port_task at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/components/esp_lvgl_port/src/lvgl9/esp_lvgl_port.c:250
+[0m
+[0;33m--- 0x40379f60: esp_restart_noos at C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_system/port/soc/esp32s3/system_internal.c:162
+[0m
+[0;33m--- 0x4200a4c8: screen_navigation_encoder_event_cb at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/screen_logic/screen_navigation.c:293
+[0m
+[0;33m--- 0x4200b5bc: co_menu_encoder_event_cb at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/menu_layer/CO_Menu/CO_main_menu.c:167
+[0m
+[0;33m--- 0x4200a4c8: screen_navigation_encoder_event_cb at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/screen_logic/screen_navigation.c:293
+[0m
+[0;33m--- 0x4200b5bc: co_menu_encoder_event_cb at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/menu_layer/CO_Menu/CO_main_menu.c:167
+[0m
+[0m

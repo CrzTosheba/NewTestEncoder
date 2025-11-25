@@ -16,6 +16,12 @@ typedef enum {
     MENU_TYPE_COUNT      // Количество типов меню
 } menu_type_t;
 
+// Структура состояния меню (отдельная для каждого меню)
+typedef struct {
+    uint32_t cursor_index;  // Текущая позиция курсора
+    uint32_t list_index;    // Текущая позиция списка
+} menu_state_t;
+
 // Структура конфигурации меню
 typedef struct {
     uint32_t initial_index;    // Начальный индекс при инициализации
@@ -27,8 +33,15 @@ typedef struct {
 const menu_config_t* get_menu_config(menu_type_t menu_type);
 void set_menu_config(menu_type_t menu_type, const menu_config_t* config);
 
+// Функции для работы с состоянием меню
+menu_state_t* get_menu_state(menu_type_t menu_type);
+void set_menu_state(menu_type_t menu_type, const menu_state_t* state);
+
 // Глобальные конфигурации для каждого типа меню
 extern menu_config_t menu_configs[MENU_TYPE_COUNT];
+
+// Глобальные состояния для каждого типа меню
+extern menu_state_t menu_states[MENU_TYPE_COUNT];
 
 #ifdef __cplusplus
 }

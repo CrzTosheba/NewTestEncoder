@@ -1,0 +1,330 @@
+ESP-ROM:esp32s3-20210327
+Build:Mar 27 2021
+rst:0x1 (POWERON),boot:0x8 (SPI_FAST_FLASH_BOOT)
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fce2820,len:0x16d0
+load:0x403c8700,len:0x4
+load:0x403c8704,len:0xec8
+load:0x403cb700,len:0x3160
+entry 0x403c8950
+[0;32mI (27) boot: ESP-IDF v5.4.2 2nd stage bootloader[0m
+[0;32mI (27) boot: compile time Nov 24 2025 14:33:29[0m
+[0;32mI (27) boot: Multicore bootloader[0m
+[0;32mI (27) boot: chip revision: v0.2[0m
+[0;32mI (30) boot: efuse block revision: v1.3[0m
+[0;32mI (33) qio_mode: Enabling default flash chip QIO[0m
+[0;32mI (38) boot.esp32s3: Boot SPI Speed : 80MHz[0m
+[0;32mI (42) boot.esp32s3: SPI Mode       : QIO[0m
+[0;32mI (45) boot.esp32s3: SPI Flash Size : 8MB[0m
+[0;32mI (49) boot: Enabling RNG early entropy source...[0m
+[0;32mI (54) boot: Partition Table:[0m
+[0;32mI (56) boot: ## Label            Usage          Type ST Offset   Length[0m
+[0;32mI (63) boot:  0 nvs              WiFi data        01 02 00009000 00006000[0m
+[0;32mI (69) boot:  1 phy_init         RF data          01 01 0000f000 00001000[0m
+[0;32mI (76) boot:  2 factory          factory app      00 00 00010000 00400000[0m
+[0;32mI (82) boot:  3 storage          Unknown data     01 82 00410000 00200000[0m
+[0;32mI (89) boot: End of partition table[0m
+[0;32mI (92) esp_image: segment 0: paddr=00010020 vaddr=3c060020 size=131568h (1250664) map[0m
+[0;32mI (285) esp_image: segment 1: paddr=00141590 vaddr=3fcabc00 size=0343ch ( 13372) load[0m
+[0;32mI (288) esp_image: segment 2: paddr=001449d4 vaddr=40378000 size=0b644h ( 46660) load[0m
+[0;32mI (298) esp_image: segment 3: paddr=00150020 vaddr=42000020 size=529ach (338348) map[0m
+[0;32mI (348) esp_image: segment 4: paddr=001a29d4 vaddr=40383644 size=18598h ( 99736) load[0m
+[0;32mI (367) esp_image: segment 5: paddr=001baf74 vaddr=600fe000 size=0001ch (    28) load[0m
+[0;32mI (381) boot: Loaded app from partition at offset 0x10000[0m
+[0;32mI (381) boot: Disabling RNG early entropy source...[0m
+[0;32mI (391) octal_psram: vendor id    : 0x0d (AP)[0m
+[0;32mI (391) octal_psram: dev id       : 0x02 (generation 3)[0m
+[0;32mI (391) octal_psram: density      : 0x03 (64 Mbit)[0m
+[0;32mI (396) octal_psram: good-die     : 0x01 (Pass)[0m
+[0;32mI (401) octal_psram: Latency      : 0x01 (Fixed)[0m
+[0;32mI (406) octal_psram: VCC          : 0x01 (3V)[0m
+[0;32mI (411) octal_psram: SRF          : 0x01 (Fast Refresh)[0m
+[0;32mI (417) octal_psram: BurstType    : 0x01 (Hybrid Wrap)[0m
+[0;32mI (423) octal_psram: BurstLen     : 0x01 (32 Byte)[0m
+[0;32mI (429) octal_psram: Readlatency  : 0x02 (10 cycles@Fixed)[0m
+[0;32mI (435) octal_psram: DriveStrength: 0x00 (1/1)[0m
+[0;32mI (441) MSPI Timing: PSRAM timing tuning index: 5[0m
+[0;32mI (445) esp_psram: Found 8MB PSRAM device[0m
+[0;32mI (450) esp_psram: Speed: 80MHz[0m
+[0;32mI (529) mmu_psram: Read only data copied and mapped to SPIRAM[0m
+[0;32mI (555) mmu_psram: Instructions copied and mapped to SPIRAM[0m
+[0;32mI (555) cpu_start: Multicore app[0m
+[0;32mI (783) esp_psram: SPI SRAM memory test OK[0m
+[0;32mI (791) cpu_start: Pro cpu start user code[0m
+[0;32mI (791) cpu_start: cpu freq: 240000000 Hz[0m
+[0;32mI (791) app_init: Application information:[0m
+[0;32mI (794) app_init: Project name:     display_lvgl_demos[0m
+[0;32mI (800) app_init: App version:      699ef22-dirty[0m
+[0;32mI (805) app_init: Compile time:     Nov 24 2025 14:34:51[0m
+[0;32mI (811) app_init: ELF file SHA256:  a1e6fa5cf...[0m
+[0;32mI (817) app_init: ESP-IDF:          v5.4.2[0m
+[0;32mI (821) efuse_init: Min chip rev:     v0.0[0m
+[0;32mI (826) efuse_init: Max chip rev:     v0.99 [0m
+[0;32mI (831) efuse_init: Chip rev:         v0.2[0m
+[0;32mI (836) heap_init: Initializing. RAM available for dynamic allocation:[0m
+[0;32mI (843) heap_init: At 3FCAFDB8 len 00039958 (230 KiB): RAM[0m
+[0;32mI (849) heap_init: At 3FCE9710 len 00005724 (21 KiB): RAM[0m
+[0;32mI (855) heap_init: At 600FE01C len 00001FCC (7 KiB): RTCRAM[0m
+[0;32mI (862) esp_psram: Adding pool of 6528K of PSRAM memory to heap allocator[0m
+[0;32mI (869) esp_psram: Adding pool of 58K of PSRAM memory gap generated due to end address alignment of drom to the heap allocator[0m
+[0;32mI (881) spi_flash: detected chip: generic[0m
+[0;32mI (886) spi_flash: flash io: qio[0m
+[0;33mW (890) spi_flash: Detected size(16384k) larger than the size in the binary image header(8192k). Using the size in the binary image header.[0m
+[0;32mI (903) sleep_gpio: Configure to isolate all GPIO pins in sleep state[0m
+[0;32mI (910) sleep_gpio: Enable automatic switching of GPIO sleep configuration[0m
+[0;32mI (918) main_task: Started on CPU0[0m
+[0;32mI (922) esp_psram: Reserving pool of 32K of internal memory for DMA/internal allocations[0m
+[0;32mI (931) main_task: Calling app_main()[0m
+[0;32mI (935) gpio: GPIO[4]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (944) gpio: GPIO[8]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (953) gpio: GPIO[16]| InputEn: 1| OutputEn: 0| OpenDrain: 0| Pullup: 1| Pulldown: 0| Intr:0 [0m
+[0;32mI (963) app_main: Encoder GPIO initialized[0m
+[0;32mI (968) LVGL: Starting LVGL task[0m
+[0;32mI (971) bsp_sub_board: Initialize I80 panel (NEW LCD)[0m
+[0;32mI (977) bsp_sub_board: st7701_reg_init[0m
+[0;32mI (982) gpio: GPIO[15]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (991) gpio: GPIO[7]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (1000) gpio: GPIO[6]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (1009) st7701: st7701 register init[0m
+[0;32mI (1215) bsp_sub_board: Initialize Intel 8080 bus[0m
+[0;32mI (1215) gpio: GPIO[10]| InputEn: 0| OutputEn: 1| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 [0m
+[0;32mI (1218) bsp_sub_board: GPIO_LCD4_PIN_NUM_RD=1 always...[0m
+[0;32mI (1224) bsp_sub_board: Install SSD1963 panel driver[0m
+[0;32mI (1230) ssd1963: LCD panel create success[0m
+[0;33mW (1520) ssd1963: The 36h command has been used and will be overwritten by external initialization sequence[0m
+[0;33mW (1520) ssd1963: The F0h command has been used and will be overwritten by external initialization sequence[0m
+[0;32mI (1545) LVGL PORT: Register io panel event callback for LVGL flush ready notification[0m
+[0;33mW (1621) S3-LCD-BOARD: This board doesn't support to change brightness of LCD[0m
+[0;32mI (1621) app_main: ++Display LVGL demo[0m
+[0;32mI (1622) EncoderManager: Encoder manager initialized[0m
+[0;32mI (1628) app_main: Encoder manager initialized[0m
+[0;32mI (1633) SCREEN_NAV: Initializing screen navigation[0m
+[0;32mI (1639) Main_Menu_main: Инициализация главного меню[0m
+[0;32mI (1646) CONTAINER_MGR: Creating container of type: 0[0m
+[0;32mI (1652) CONTAINER_MGR: Container created: 492x380 at (-20,50)[0m
+[0;32mI (1659) CONTAINER_MGR: Content wrapper created: 100% of parent[0m
+[0;32mI (1666) CONTAINER_MGR: Content wrapper created: 100% of parent[0m
+[0;32mI (1673) CONTAINER_MGR: Content wrapper created: 100% of parent[0m
+[0;32mI (1680) CONTAINER_MGR: Content wrapper created: 100% of parent[0m
+[0;32mI (1686) CONTAINER_MGR: Content wrapper created: 100% of parent[0m
+[0;32mI (1692) IO_SCREEN: Creating In/Out screen[0m
+[0;32mI (1698) IO_SCREEN: Hiding all highlights[0m
+[0;32mI (1701) IO_SCREEN: In/Out screen created successfully[0m
+[0;32mI (1707) CONTAINER_MGR: Content wrapper created: 100% of parent[0m
+[0;32mI (1742) Main_Menu_main: Главное меню успешно инициализировано[0m
+[0;32mI (1742) Main_Menu_main: Используется конфигурация: initial_index=2, scroll_boundary=2[0m
+[0;32mI (1751) Main_Menu_main: Состояние меню: list_index=2, cursor_index=0[0m
+[0;32mI (1759) EncoderManager: Encoder callback registered: 0x4200a4c8[0m
+[0;32mI (1960) app_main: Encoder driver initialized[0m
+[0;32mI (1961) EncoderManager: Encoder manager task started[0m
+[0;32mI (2136) app_main: All tasks created successfully[0m
+[0;32mI (4126) ARC_MENU: Encoder event: 0x01, child_count: 6, menu_type: 0[0m
+[0;32mI (4126) ARC_MENU: Before - current_cursor_index: 0, current_index: 2[0m
+[0;32mI (4129) ARC_MENU: After - current_cursor_index: 1, current_index: 2[0m
+[0;32mI (4492) ARC_MENU: Encoder event: 0x01, child_count: 6, menu_type: 0[0m
+[0;32mI (4492) ARC_MENU: Before - current_cursor_index: 1, current_index: 2[0m
+[0;32mI (4496) ARC_MENU: After - current_cursor_index: 2, current_index: 2[0m
+[0;32mI (4697) ARC_MENU: Encoder event: 0x01, child_count: 6, menu_type: 0[0m
+[0;32mI (4698) ARC_MENU: Before - current_cursor_index: 2, current_index: 2[0m
+[0;32mI (4701) ARC_MENU: After - current_cursor_index: 3, current_index: 2[0m
+[0;32mI (4929) ARC_MENU: Encoder event: 0x01, child_count: 6, menu_type: 0[0m
+[0;32mI (4929) ARC_MENU: Before - current_cursor_index: 3, current_index: 2[0m
+[0;32mI (4938) ARC_MENU: After - current_cursor_index: 4, current_index: 2[0m
+[0;32mI (5181) ARC_MENU: Encoder event: 0x01, child_count: 6, menu_type: 0[0m
+[0;32mI (5181) ARC_MENU: Before - current_cursor_index: 4, current_index: 2[0m
+[0;32mI (5184) ARC_MENU: Список сдвинут вниз: новый idx 3[0m
+[0;32mI (5193) ARC_MENU: After - current_cursor_index: 5, current_index: 3[0m
+[0;32mI (5598) ARC_MENU: Encoder event: 0x01, child_count: 6, menu_type: 0[0m
+[0;32mI (5599) ARC_MENU: Before - current_cursor_index: 5, current_index: 3[0m
+[0;32mI (5943) ARC_MENU: After - current_cursor_index: 5, current_index: 3[0m
+[0;32mI (6221) ARC_MENU: Encoder event: 0x02, child_count: 6, menu_type: 0[0m
+[0;32mI (6221) ARC_MENU: Before - current_cursor_index: 5, current_index: 3[0m
+[0;32mI (6225) ARC_MENU: After - current_cursor_index: 4, current_index: 3[0m
+[0;32mI (6419) ARC_MENU: Encoder event: 0x02, child_count: 6, menu_type: 0[0m
+[0;32mI (6419) ARC_MENU: Before - current_cursor_index: 4, current_index: 3[0m
+[0;32mI (6428) ARC_MENU: After - current_cursor_index: 3, current_index: 3[0m
+[0;32mI (6633) ARC_MENU: Encoder event: 0x02, child_count: 6, menu_type: 0[0m
+[0;32mI (6634) ARC_MENU: Before - current_cursor_index: 3, current_index: 3[0m
+[0;32mI (6637) ARC_MENU: After - current_cursor_index: 2, current_index: 3[0m
+[0;32mI (6877) ARC_MENU: Encoder event: 0x02, child_count: 6, menu_type: 0[0m
+[0;32mI (6877) ARC_MENU: Before - current_cursor_index: 2, current_index: 3[0m
+[0;32mI (6885) ARC_MENU: After - current_cursor_index: 1, current_index: 3[0m
+[0;32mI (7095) ARC_MENU: Encoder event: 0x02, child_count: 6, menu_type: 0[0m
+[0;32mI (7095) ARC_MENU: Before - current_cursor_index: 1, current_index: 3[0m
+[0;32mI (7098) ARC_MENU: Список сдвинут вверх: новый idx 2[0m
+[0;32mI (7107) ARC_MENU: After - current_cursor_index: 0, current_index: 2[0m
+[0;32mI (7362) ARC_MENU: Encoder event: 0x02, child_count: 6, menu_type: 0[0m
+[0;32mI (7538) ARC_MENU: Before - current_cursor_index: 0, current_index: 2[0m
+[0;32mI (7882) ARC_MENU: After - current_cursor_index: 0, current_index: 2[0m
+[0;32mI (8037) ARC_MENU: Encoder event: 0x02, child_count: 6, menu_type: 0[0m
+[0;32mI (8037) ARC_MENU: Before - current_cursor_index: 0, current_index: 2[0m
+[0;32mI (8040) ARC_MENU: After - current_cursor_index: 0, current_index: 2[0m
+[0;32mI (8057) ARC_MENU: Encoder event: 0x02, child_count: 6, menu_type: 0[0m
+[0;32mI (8057) ARC_MENU: Before - current_cursor_index: 0, current_index: 2[0m
+[0;32mI (8061) ARC_MENU: Debounce filter applied[0m
+[0;32mI (8213) ARC_MENU: Encoder event: 0x02, child_count: 6, menu_type: 0[0m
+[0;32mI (8213) ARC_MENU: Before - current_cursor_index: 0, current_index: 2[0m
+[0;32mI (8216) ARC_MENU: After - current_cursor_index: 0, current_index: 2[0m
+[0;32mI (8233) ARC_MENU: Encoder event: 0x01, child_count: 6, menu_type: 0[0m
+[0;32mI (8233) ARC_MENU: Before - current_cursor_index: 0, current_index: 2[0m
+[0;32mI (8377) ARC_MENU: After - current_cursor_index: 1, current_index: 2[0m
+[0;32mI (8586) ARC_MENU: Encoder event: 0x01, child_count: 6, menu_type: 0[0m
+[0;32mI (8587) ARC_MENU: Before - current_cursor_index: 1, current_index: 2[0m
+[0;32mI (8590) ARC_MENU: After - current_cursor_index: 2, current_index: 2[0m
+[0;32mI (8805) ARC_MENU: Encoder event: 0x01, child_count: 6, menu_type: 0[0m
+[0;32mI (8805) ARC_MENU: Before - current_cursor_index: 2, current_index: 2[0m
+[0;32mI (8814) ARC_MENU: After - current_cursor_index: 3, current_index: 2[0m
+[0;32mI (9451) ARC_MENU: Encoder event: 0x02, child_count: 6, menu_type: 0[0m
+[0;32mI (9451) ARC_MENU: Before - current_cursor_index: 3, current_index: 2[0m
+[0;32mI (9455) ARC_MENU: After - current_cursor_index: 2, current_index: 2[0m
+[0;32mI (10791) ARC_MENU: Encoder event: 0x10, child_count: 6, menu_type: 0[0m
+[0;32mI (10791) ARC_MENU: Before - current_cursor_index: 2, current_index: 2[0m
+[0;32mI (10794) SCREEN_NAV: Click detected on menu item: 2[0m
+[0;32mI (10800) SCREEN_NAV: Navigating to CO menu[0m
+[0;32mI (10805) SCREEN_NAV: Navigating to screen: 3[0m
+[0;32mI (10810) EncoderManager: Encoder callback unregistered[0m
+[0;32mI (10916) SCREEN_NAV: Transition to CO menu[0m
+[0;32mI (10916) SCREEN_NAV: Menu state saved: cursor_index=2, list_index=2[0m
+[0;32mI (10916) Main_Menu_main: Hiding main menu[0m
+[0;32mI (11071) CONTAINER_MGR: Creating container of type: 0[0m
+[0;32mI (11071) CONTAINER_MGR: Container created: 492x380 at (-20,50)[0m
+[0;32mI (11149) CONTAINER_MGR: Content wrapper created: 100% of parent[0m
+[0;32mI (11240) CO_MENU: Инициализация меню отопления[0m
+[0;32mI (11240) CO_MENU: Cleaning up CO menu[0m
+[0;32mI (11499) CO_MENU: Меню отопления успешно инициализировано[0m
+[0;32mI (11499) CO_MENU: Используется конфигурация: initial_index=4, scroll_boundary=3[0m
+[0;32mI (11508) CO_MENU: Состояние меню: list_index=4, cursor_index=0[0m
+[0;32mI (11515) CO_MENU: Количество элементов меню: 11[0m
+[0;32mI (11689) EncoderManager: Encoder callback registered: 0x4200b5bc[0m
+[0;32mI (12701) CO_MENU: CO menu encoder event: 0x01, current_cursor_index: 0[0m
+[0;32mI (12701) ARC_MENU: Encoder event: 0x01, child_count: 11, menu_type: 2[0m
+[0;32mI (12705) ARC_MENU: Before - current_cursor_index: 0, current_index: 4[0m
+[0;32mI (12713) ARC_MENU: After - current_cursor_index: 1, current_index: 4[0m
+[0;32mI (12719) CO_MENU: After arc_menu_handle_encoder - current_cursor_index: 1[0m
+[0;32mI (12726) CO_MENU: Cursor changed from 0 to 1[0m
+[0;32mI (12899) CO_MENU: Highlighting general settings[0m
+[0;32mI (13461) CO_MENU: CO menu encoder event: 0x01, current_cursor_index: 1[0m
+[0;32mI (13461) ARC_MENU: Encoder event: 0x01, child_count: 11, menu_type: 2[0m
+[0;32mI (13465) ARC_MENU: Before - current_cursor_index: 1, current_index: 4[0m
+[0;32mI (13473) ARC_MENU: After - current_cursor_index: 2, current_index: 4[0m
+[0;32mI (13479) CO_MENU: After arc_menu_handle_encoder - current_cursor_index: 2[0m
+[0;32mI (13486) CO_MENU: Cursor changed from 1 to 2[0m
+[0;32mI (13619) CO_MENU: Selected menu item: 2[0m
+[0;32mI (14281) CO_MENU: CO menu encoder event: 0x01, current_cursor_index: 2[0m
+[0;32mI (14281) ARC_MENU: Encoder event: 0x01, child_count: 11, menu_type: 2[0m
+[0;32mI (14285) ARC_MENU: Before - current_cursor_index: 2, current_index: 4[0m
+[0;32mI (14293) ARC_MENU: After - current_cursor_index: 3, current_index: 4[0m
+[0;32mI (14299) CO_MENU: After arc_menu_handle_encoder - current_cursor_index: 3[0m
+[0;32mI (14306) CO_MENU: Cursor changed from 2 to 3[0m
+[0;32mI (14440) CO_MENU: Selected menu item: 3[0m
+[0;32mI (19086) CO_MENU: CO menu encoder event: 0x01, current_cursor_index: 3[0m
+[0;32mI (19087) ARC_MENU: Encoder event: 0x01, child_count: 11, menu_type: 2[0m
+[0;32mI (19090) ARC_MENU: Before - current_cursor_index: 3, current_index: 4[0m
+[0;32mI (19098) ARC_MENU: After - current_cursor_index: 4, current_index: 4[0m
+[0;32mI (19104) CO_MENU: After arc_menu_handle_encoder - current_cursor_index: 4[0m
+[0;32mI (19112) CO_MENU: Cursor changed from 3 to 4[0m
+[0;32mI (19280) CO_MENU: Selected menu item: 4[0m
+[0;32mI (20141) CO_MENU: CO menu encoder event: 0x01, current_cursor_index: 4[0m
+[0;32mI (20141) ARC_MENU: Encoder event: 0x01, child_count: 11, menu_type: 2[0m
+[0;32mI (20145) ARC_MENU: Before - current_cursor_index: 4, current_index: 4[0m
+[0;32mI (20153) ARC_MENU: After - current_cursor_index: 5, current_index: 4[0m
+[0;32mI (20283) CO_MENU: After arc_menu_handle_encoder - current_cursor_index: 5[0m
+[0;32mI (20284) CO_MENU: Cursor changed from 4 to 5[0m
+[0;32mI (20292) CO_MENU: Selected menu item: 5[0m
+[0;32mI (20941) CO_MENU: CO menu encoder event: 0x01, current_cursor_index: 5[0m
+[0;32mI (20941) ARC_MENU: Encoder event: 0x01, child_count: 11, menu_type: 2[0m
+[0;32mI (20945) ARC_MENU: Before - current_cursor_index: 5, current_index: 4[0m
+[0;32mI (20953) ARC_MENU: After - current_cursor_index: 6, current_index: 4[0m
+[0;32mI (20959) CO_MENU: After arc_menu_handle_encoder - current_cursor_index: 6[0m
+[0;32mI (20966) CO_MENU: Cursor changed from 5 to 6[0m
+[0;32mI (21097) CO_MENU: Selected menu item: 6[0m
+[0;32mI (21601) CO_MENU: CO menu encoder event: 0x01, current_cursor_index: 6[0m
+[0;32mI (21601) ARC_MENU: Encoder event: 0x01, child_count: 11, menu_type: 2[0m
+[0;32mI (21605) ARC_MENU: Before - current_cursor_index: 6, current_index: 4[0m
+[0;32mI (21613) ARC_MENU: After - current_cursor_index: 7, current_index: 4[0m
+[0;32mI (21619) CO_MENU: After arc_menu_handle_encoder - current_cursor_index: 7[0m
+[0;32mI (21626) CO_MENU: Cursor changed from 6 to 7[0m
+[0;32mI (21632) CO_MENU: Selected menu item: 7[0m
+[0;32mI (22331) CO_MENU: CO menu encoder event: 0x01, current_cursor_index: 7[0m
+[0;32mI (22331) ARC_MENU: Encoder event: 0x01, child_count: 11, menu_type: 2[0m
+[0;32mI (22335) ARC_MENU: Before - current_cursor_index: 7, current_index: 4[0m
+[0;32mI (22342) ARC_MENU: Список сдвинут вниз: новый idx 5[0m
+[0;32mI (22351) ARC_MENU: After - current_cursor_index: 8, current_index: 5[0m
+[0;32mI (22356) CO_MENU: After arc_menu_handle_encoder - current_cursor_index: 8[0m
+[0;32mI (22364) CO_MENU: Cursor changed from 7 to 8[0m
+[0;32mI (22370) CO_MENU: Selected menu item: 8[0m
+[0;32mI (25341) CO_MENU: CO menu encoder event: 0x01, current_cursor_index: 8[0m
+[0;32mI (25341) ARC_MENU: Encoder event: 0x01, child_count: 11, menu_type: 2[0m
+[0;32mI (25345) ARC_MENU: Before - current_cursor_index: 8, current_index: 5[0m
+[0;32mI (25352) ARC_MENU: Список сдвинут вниз: новый idx 6[0m
+[0;32mI (25361) ARC_MENU: After - current_cursor_index: 9, current_index: 6[0m
+[0;32mI (25527) CO_MENU: After arc_menu_handle_encoder - current_cursor_index: 9[0m
+[0;32mI (25694) CO_MENU: Cursor changed from 8 to 9[0m
+[0;32mI (25695) CO_MENU: Selected menu item: 9[0m
+[0;32mI (26671) CO_MENU: CO menu encoder event: 0x02, current_cursor_index: 9[0m
+[0;32mI (26671) ARC_MENU: Encoder event: 0x02, child_count: 11, menu_type: 2[0m
+[0;32mI (26675) ARC_MENU: Before - current_cursor_index: 9, current_index: 6[0m
+[0;32mI (26683) ARC_MENU: After - current_cursor_index: 8, current_index: 6[0m
+[0;32mI (26817) CO_MENU: After arc_menu_handle_encoder - current_cursor_index: 8[0m
+[0;32mI (26817) CO_MENU: Cursor changed from 9 to 8[0m
+[0;32mI (26819) CO_MENU: Selected menu item: 8[0m
+[0;32mI (27001) CO_MENU: CO menu encoder event: 0x02, current_cursor_index: 8[0m
+[0;32mI (27001) ARC_MENU: Encoder event: 0x02, child_count: 11, menu_type: 2[0m
+[0;32mI (27005) ARC_MENU: Before - current_cursor_index: 8, current_index: 6[0m
+[0;32mI (27013) ARC_MENU: After - current_cursor_index: 7, current_index: 6[0m
+[0;32mI (27019) CO_MENU: After arc_menu_handle_encoder - current_cursor_index: 7[0m
+[0;32mI (27148) CO_MENU: Cursor changed from 8 to 7[0m
+[0;32mI (27149) CO_MENU: Selected menu item: 7[0m
+[0;32mI (27285) CO_MENU: CO menu encoder event: 0x02, current_cursor_index: 7[0m
+[0;32mI (27285) ARC_MENU: Encoder event: 0x02, child_count: 11, menu_type: 2[0m
+[0;32mI (27288) ARC_MENU: Before - current_cursor_index: 7, current_index: 6[0m
+[0;32mI (27296) ARC_MENU: After - current_cursor_index: 6, current_index: 6[0m
+[0;32mI (27302) CO_MENU: After arc_menu_handle_encoder - current_cursor_index: 6[0m
+[0;32mI (27310) CO_MENU: Cursor changed from 7 to 6[0m
+[0;32mI (27445) CO_MENU: Selected menu item: 6[0m
+[0;32mI (27581) CO_MENU: CO menu encoder event: 0x02, current_cursor_index: 6[0m
+[0;32mI (27581) ARC_MENU: Encoder event: 0x02, child_count: 11, menu_type: 2[0m
+[0;32mI (27585) ARC_MENU: Before - current_cursor_index: 6, current_index: 6[0m
+[0;32mI (27593) ARC_MENU: After - current_cursor_index: 5, current_index: 6[0m
+[0;32mI (27599) CO_MENU: After arc_menu_handle_encoder - current_cursor_index: 5[0m
+[0;32mI (27606) CO_MENU: Cursor changed from 6 to 5[0m
+[0;32mI (27741) CO_MENU: Selected menu item: 5[0m
+[0;32mI (27961) CO_MENU: CO menu encoder event: 0x02, current_cursor_index: 5[0m
+[0;32mI (27961) ARC_MENU: Encoder event: 0x02, child_count: 11, menu_type: 2[0m
+[0;32mI (27965) ARC_MENU: Before - current_cursor_index: 5, current_index: 6[0m
+[0;32mI (27973) ARC_MENU: After - current_cursor_index: 4, current_index: 6[0m
+[0;32mI (27979) CO_MENU: After arc_menu_handle_encoder - current_cursor_index: 4[0m
+[0;32mI (27986) CO_MENU: Cursor changed from 5 to 4[0m
+[0;32mI (27992) CO_MENU: Selected menu item: 4[0m
+[0;32mI (28851) CO_MENU: CO menu encoder event: 0x02, current_cursor_index: 4[0m
+[0;32mI (28851) ARC_MENU: Encoder event: 0x02, child_count: 11, menu_type: 2[0m
+[0;32mI (28855) ARC_MENU: Before - current_cursor_index: 4, current_index: 6[0m
+[0;32mI (28863) ARC_MENU: After - current_cursor_index: 3, current_index: 6[0m
+[0;32mI (28869) CO_MENU: After arc_menu_handle_encoder - current_cursor_index: 3[0m
+[0;32mI (28998) CO_MENU: Cursor changed from 4 to 3[0m
+[0;32mI (28999) CO_MENU: Selected menu item: 3[0m
+[0;32mI (29135) CO_MENU: CO menu encoder event: 0x02, current_cursor_index: 3[0m
+[0;32mI (29135) ARC_MENU: Encoder event: 0x02, child_count: 11, menu_type: 2[0m
+[0;32mI (29138) ARC_MENU: Before - current_cursor_index: 3, current_index: 6[0m
+[0;32mI (29145) ARC_MENU: Список сдвинут вверх: новый idx 5[0m
+[0;32mI (29155) ARC_MENU: After - current_cursor_index: 2, current_index: 5[0m
+[0;32mI (29160) CO_MENU: After arc_menu_handle_encoder - current_cursor_index: 2[0m
+[0;32mI (29323) CO_MENU: Cursor changed from 3 to 2[0m
+[0;32mI (29491) CO_MENU: Selected menu item: 2[0m
+[0;32mI (30280) CO_MENU: CO menu encoder event: 0x02, current_cursor_index: 2[0m
+[0;32mI (30280) ARC_MENU: Encoder event: 0x02, child_count: 11, menu_type: 2[0m
+[0;32mI (30283) ARC_MENU: Before - current_cursor_index: 2, current_index: 5[0m
+[0;32mI (30290) ARC_MENU: Список сдвинут вверх: новый idx 4[0m
+[0;32mI (30300) ARC_MENU: After - current_cursor_index: 1, current_index: 4[0m
+[0;32mI (30305) CO_MENU: After arc_menu_handle_encoder - current_cursor_index: 1[0m
+[0;32mI (30313) CO_MENU: Cursor changed from 2 to 1[0m
+[0;32mI (30318) CO_MENU: Highlighting general settings[0m
+[0;32mI (31441) CO_MENU: CO menu encoder event: 0x02, current_cursor_index: 1[0m
+[0;32mI (31441) ARC_MENU: Encoder event: 0x02, child_count: 11, menu_type: 2[0m
+[0;32mI (31451) ARC_MENU: Before - current_cursor_index: 1, current_index: 4[0m
+[0;32mI (31452) ARC_MENU: Список сдвинут вверх: новый idx 3[0m
+[0;32mI (31461) ARC_MENU: After - current_cursor_index: 0, current_index: 3[0m
+[0;32mI (31467) CO_MENU: After arc_menu_handle_encoder - current_cursor_index: 0[0m
+[0;32mI (31474) CO_MENU: Cursor changed from 1 to 0[0m
+[0;32mI (31642) CO_MENU: Highlighting back button[0m

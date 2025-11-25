@@ -10,10 +10,9 @@
 
 static const char *TAG = "IO_MENU";
 
-// Используем те же глобальные переменные, что и в главном меню
-extern lv_obj_t *_cont;
-extern uint32_t current_index;
-extern uint32_t current_cursor_index;
+// Используем состояние меню из menu_config вместо глобальных переменных
+// extern uint32_t current_index; // УДАЛЕНО
+// extern uint32_t current_cursor_index; // УДАЛЕНО
 
 // Структура элемента меню входов/выходов
 typedef struct {
@@ -123,22 +122,24 @@ void input_output_encoder_event_cb(uint8_t e) {
         return;
     }
     
-    uint32_t prev_cursor = current_cursor_index;
+    // Получаем состояние меню входов/выходов
+    menu_state_t *menu_state = get_menu_state(MENU_TYPE_IN_OUT);
+    uint32_t prev_cursor = menu_state->cursor_index;
     
-    ESP_LOGI(TAG, "IO menu encoder event: 0x%02x, current_cursor_index: %" PRIu32, e, current_cursor_index);
+    ESP_LOGI(TAG, "IO menu encoder event: 0x%02x, current_cursor_index: %" PRIu32, e, menu_state->cursor_index);
     
     // Используем конфигурацию для меню входов/выходов
-    arc_menu_handle_encoder(e, io_cont, &current_index, MENU_TYPE_IN_OUT);
+    arc_menu_handle_encoder(e, io_cont, menu_state, MENU_TYPE_IN_OUT);
     
-    ESP_LOGI(TAG, "After arc_menu_handle_encoder - current_cursor_index: %" PRIu32, current_cursor_index);
+    ESP_LOGI(TAG, "After arc_menu_handle_encoder - current_cursor_index: %" PRIu32, menu_state->cursor_index);
     
     // Если позиция курсора изменилась, обновляем подсветку
-    if (prev_cursor != current_cursor_index) {
-        ESP_LOGI(TAG, "Cursor changed from %" PRIu32 " to %" PRIu32, prev_cursor, current_cursor_index);
-        io_highlight_box(io_cont, current_cursor_index);
+    if (prev_cursor != menu_state->cursor_index) {
+        ESP_LOGI(TAG, "Cursor changed from %" PRIu32 " to %" PRIu32, prev_cursor, menu_state->cursor_index);
+        io_highlight_box(io_cont, menu_state->cursor_index);
         
         // Управляем подсветкой областей на схеме в зависимости от выбранного пункта меню
-        switch(current_cursor_index) {
+        switch(menu_state->cursor_index) {
             case 0: // "Назад"
                 ESP_LOGI(TAG, "Highlighting back button");
                 screen_In_Out_hide_all_highlights();
@@ -165,7 +166,7 @@ void input_output_encoder_event_cb(uint8_t e) {
                 break;
                 
             default:
-                ESP_LOGW(TAG, "Unknown menu item: %" PRIu32, current_cursor_index);
+                ESP_LOGW(TAG, "Unknown menu item: %" PRIu32, menu_state->cursor_index);
                 screen_In_Out_hide_all_highlights();
                 break;
         }
@@ -173,9 +174,9 @@ void input_output_encoder_event_cb(uint8_t e) {
     
     // Обработка нажатия кнопки
     if (e & ENC_CLICK) {
-        ESP_LOGI(TAG, "Click in IO menu on item: %" PRIu32, current_cursor_index);
+        ESP_LOGI(TAG, "Click in IO menu on item: %" PRIu32, menu_state->cursor_index);
         
-        if (current_cursor_index == 0) {
+        if (menu_state->cursor_index == 0) {
             // Нажали на "Назад" - возвращаемся в главное меню
             ESP_LOGI(TAG, "Returning to main menu from IO menu");
             screen_navigation_go_to(SCREEN_MAIN_MENU);
@@ -194,7 +195,7 @@ void input_output_menu_cleanup(void) {
         io_cont = NULL;
     }
     
-    // Не сбрасываем глобальные переменные, так как они используются главным меню
+    // Не сбрасываем состояние меню, так как оно хранится отдельно и может быть восстановлено
 }
 
 /**
@@ -237,17 +238,23 @@ void Input_Output_Menu_List(void) {
     
     uint32_t child_count = lv_obj_get_child_cnt(io_cont);
     
-    // Инициализируем глобальные переменные для меню входов/выходов
-    current_index = (child_count > 3) ? 2 : 0;
-    current_cursor_index = 0;
+    // ИСПОЛЬЗУЕМ КОНФИГУРАЦИЮ И СОСТОЯНИЕ ДЛЯ МЕНЮ ВХОДОВ/ВЫХОДОВ
+    const menu_config_t* config = get_menu_config(MENU_TYPE_IN_OUT);
+    menu_state_t *menu_state = get_menu_state(MENU_TYPE_IN_OUT);
     
-    lv_obj_scroll_to_view(lv_obj_get_child(io_cont, current_index), LV_ANIM_OFF);
-    io_highlight_box(io_cont, current_cursor_index);
+    // Инициализируем состояние меню
+    menu_state->list_index = config->initial_index;
+    menu_state->cursor_index = 0;
+    
+    lv_obj_scroll_to_view(lv_obj_get_child(io_cont, menu_state->list_index), LV_ANIM_OFF);
+    io_highlight_box(io_cont, menu_state->cursor_index);
 
     ESP_LOGI(TAG, "Меню входов/выходов успешно инициализировано");
+    ESP_LOGI(TAG, "Используется конфигурация: initial_index=%lu, scroll_boundary=%lu", 
+             config->initial_index, config->scroll_boundary);
+    ESP_LOGI(TAG, "Состояние меню: list_index=%lu, cursor_index=%lu", 
+             menu_state->list_index, menu_state->cursor_index);
     ESP_LOGI(TAG, "Количество элементов меню: %" PRIu32, child_count);
-    ESP_LOGI(TAG, "Начальный current_index: %" PRIu32, current_index);
-    ESP_LOGI(TAG, "Начальный current_cursor_index: %" PRIu32, current_cursor_index);
     
     fflush(NULL);
 }

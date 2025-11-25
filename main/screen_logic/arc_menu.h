@@ -12,10 +12,10 @@ extern "C" {
 // Объявления функций
 void arc_menu_update_slide(lv_obj_t *cont);
 void arc_menu_event_cb(lv_event_t *e);
-void arc_menu_handle_encoder(uint8_t e, lv_obj_t *cont, uint32_t *current_index, menu_type_t menu_type);
+void arc_menu_handle_encoder(uint8_t e, lv_obj_t *cont, menu_state_t *menu_state, menu_type_t menu_type);
 
-// Глобальные переменные для управления меню
-extern uint32_t current_cursor_index; // Текущая позиция курсора
+// Глобальные переменные для управления меню (теперь используются через menu_state_t)
+// extern uint32_t current_cursor_index; // УДАЛЕНО - больше не используем глобальную переменную
 
 #ifdef __cplusplus
 } /*extern "C"*/
