@@ -24,7 +24,7 @@ typedef struct {
 
 // Элементы меню отопления
 static const CoMenuItem co_menu_items[] = {
-    {"                                  Назад", &lv_im_arrow_right},
+    {"                                Назад", &lv_im_arrow_right},
     {"Общие", NULL},
     {"График отопления", NULL},
     {"Насосы", NULL},
@@ -86,7 +86,7 @@ static void create_co_menu_item(lv_obj_t *cont, const CoMenuItem *item) {
             lv_img_set_src(img, item->img_src);
             lv_obj_set_style_img_recolor(img, lv_color_hex(0xFFFFFF), 0);
             lv_obj_set_style_img_recolor_opa(img, LV_OPA_COVER, 0);
-            lv_obj_align(img, LV_ALIGN_CENTER, 100, 0);
+            lv_obj_align(img, LV_ALIGN_CENTER, 90, 0);
         }
     }
     

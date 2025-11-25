@@ -9,13 +9,20 @@
 extern "C" {
 #endif
 
-// Объявления функций
+// Структура для пользовательских данных объекта
+typedef struct {
+    bool is_status_icon;  // Флаг, указывающий что это статусная иконка
+} custom_obj_data_t;
+
+// Функции для работы со статусными иконками
+void set_as_status_icon(lv_obj_t *obj);
+bool is_status_icon(lv_obj_t *obj);
+void free_custom_data(lv_event_t *e);  // Функция для очистки памяти
+
+// Объявления функций дугового меню
 void arc_menu_update_slide(lv_obj_t *cont);
 void arc_menu_event_cb(lv_event_t *e);
 void arc_menu_handle_encoder(uint8_t e, lv_obj_t *cont, menu_state_t *menu_state, menu_type_t menu_type);
-
-// Глобальные переменные для управления меню (теперь используются через menu_state_t)
-// extern uint32_t current_cursor_index; // УДАЛЕНО - больше не используем глобальную переменную
 
 #ifdef __cplusplus
 } /*extern "C"*/

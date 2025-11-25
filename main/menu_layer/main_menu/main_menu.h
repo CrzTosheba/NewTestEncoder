@@ -1,9 +1,9 @@
-// Файл: main_menu.h
 #ifndef MAIN_MENU_H
 #define MAIN_MENU_H
 
 #include "lvgl.h"
 #include "encoder/encoder.h"
+#include "screen_logic/arc_menu.h"  // Для доступа к функциям статусных иконок
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,9 +40,6 @@ void screen_In_Out_create(lv_obj_t *parent);
 void screen_alarms_create(lv_obj_t *parent);
 void screen_service_create(lv_obj_t *parent);
 
-// Добавляем объявление новой функции
-void screen_In_Out_create(lv_obj_t *parent);
-
 // Прототипы функций меню
 void Main_Menu_List(void);
 void main_menu_encoder_event_cb(uint8_t e);
@@ -51,6 +48,9 @@ void main_menu_update_display(void);
 // Функции управления видимостью главного меню
 void main_menu_show(void);
 void main_menu_hide(void);
+
+// Функции для работы с оберткой контента (добавляем если используются)
+lv_obj_t* screen_content_wrapper_create(lv_obj_t *parent);
 
 // Глобальные указатели на экраны (объявлены в main_menu.c)
 extern lv_obj_t *screens[6];

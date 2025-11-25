@@ -236,11 +236,14 @@ static void create_menu_item(lv_obj_t *cont, const MenuItem *item) {
         lv_obj_t *status_img = lv_img_create(box);
         lv_img_set_src(status_img, item->status_img_src);
         lv_obj_align(status_img, LV_ALIGN_BOTTOM_MID, 98, 21);
+        
+        // ПОМЕЧАЕМ СТАТУСНУЮ ИКОНКУ СПЕЦИАЛЬНЫМ ФЛАГОМ
+        set_as_status_icon(status_img);
+        ESP_LOGD(TAG, "Status icon marked for compensation");
     }
     
     lv_obj_set_scrollbar_mode(box, LV_SCROLLBAR_MODE_OFF);
 }
-
 /**
  * @brief Создание и инициализация главного меню
  */

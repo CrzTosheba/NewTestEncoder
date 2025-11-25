@@ -1,0 +1,9 @@
+[0;33m--- Warning: GDB cannot open serial ports accessed as COMx[0m
+[0;33m--- Using \\.\COM13 instead...[0m
+[0;33m--- esp-idf-monitor 1.6.2 on \\.\COM13 115200[0m
+[0;33m--- Quit: Ctrl+] | Menu: Ctrl+T | Help: Ctrl+T followed by Ctrl+H[0m
+[0;33m--- 0x4200a4c8: screen_navigation_encoder_event_cb at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/screen_logic/screen_navigation.c:293
+[0m
+[0;33m--- 0x4200b5c4: co_menu_encoder_event_cb at C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/main/menu_layer/CO_Menu/CO_main_menu.c:167
+[0m
+[0m

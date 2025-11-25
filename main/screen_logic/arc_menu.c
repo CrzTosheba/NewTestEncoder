@@ -1,9 +1,69 @@
 #include "arc_menu.h"
 #include <stdint.h>
 #include "esp_log.h"
+#include <stdlib.h>
 
 // Тег для логирования
 static const char *TAG_ARC = "ARC_MENU";
+
+/**
+ * @brief Устанавливает объект как статусную иконку
+ * @param obj Указатель на объект LVGL
+ */
+void set_as_status_icon(lv_obj_t *obj) {
+    if (obj == NULL) {
+        ESP_LOGE(TAG_ARC, "Attempt to set NULL object as status icon");
+        return;
+    }
+    
+    // Выделяем память для пользовательских данных с помощью LVGL
+    custom_obj_data_t *data = (custom_obj_data_t*)lv_malloc(sizeof(custom_obj_data_t));
+    if (data == NULL) {
+        ESP_LOGE(TAG_ARC, "Failed to allocate memory for custom_obj_data_t");
+        return;
+    }
+    
+    // Инициализируем структуру
+    data->is_status_icon = true;
+    
+    // Устанавливаем пользовательские данные для объекта
+    lv_obj_set_user_data(obj, data);
+    
+    // Добавляем обработчик события DELETE для автоматической очистки памяти
+    lv_obj_add_event_cb(obj, free_custom_data, LV_EVENT_DELETE, NULL);
+    
+    ESP_LOGD(TAG_ARC, "Object marked as status icon");
+}
+
+/**
+ * @brief Проверяет, является ли объект статусной иконкой
+ * @param obj Указатель на объект LVGL
+ * @return true если это статусная иконка, иначе false
+ */
+bool is_status_icon(lv_obj_t *obj) {
+    if (obj == NULL) {
+        return false;
+    }
+    
+    custom_obj_data_t *data = (custom_obj_data_t*)lv_obj_get_user_data(obj);
+    return (data != NULL && data->is_status_icon);
+}
+
+/**
+ * @brief Обработчик события DELETE для освобождения пользовательских данных
+ * @param e Событие LVGL
+ */
+void free_custom_data(lv_event_t *e) {
+    lv_obj_t *obj = lv_event_get_target(e);
+    if (obj == NULL) return;
+    
+    custom_obj_data_t *data = (custom_obj_data_t*)lv_obj_get_user_data(obj);
+    if (data != NULL) {
+        lv_free(data);
+        lv_obj_set_user_data(obj, NULL);  // Обнуляем указатель
+        ESP_LOGD(TAG_ARC, "Freed custom data for object");
+    }
+}
 
 // Обновление позиции элементов в дуговом меню
 void arc_menu_update_slide(lv_obj_t *cont) {
@@ -46,10 +106,17 @@ void arc_menu_update_slide(lv_obj_t *cont) {
         // Применяем вычисленное смещение к основному контейнеру
         lv_obj_set_style_translate_x(child, x, 0);
         
-        // Применяем обратное смещение к дочерним элементам (компенсация)
-        lv_obj_t *st = lv_obj_get_child(child, -1);
-        if (st) {
-            lv_obj_set_style_translate_x(st, -x, 0);
+        // ПРИМЕНЯЕМ КОМПЕНСАЦИЮ ТОЛЬКО К СТАТУСНЫМ ИКОНКАМ
+        uint32_t grand_child_cnt = lv_obj_get_child_cnt(child);
+        for (uint32_t j = 0; j < grand_child_cnt; j++) {
+            lv_obj_t *grand_child = lv_obj_get_child(child, j);
+            
+            // Проверяем, является ли элемент статусной иконкой
+            if (is_status_icon(grand_child)) {
+                // Применяем обратное смещение только к статусным иконкам
+                lv_obj_set_style_translate_x(grand_child, -x, 0);
+                ESP_LOGD(TAG_ARC, "Applied compensation to status icon, offset: %" PRId32, -x);
+            }
         }
         
         // Отключаем скроллбар для элемента
