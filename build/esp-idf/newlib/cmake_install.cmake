@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/newlib
+# Install script for directory: C:/Users/RUCO1621/esp/v5.5.1/esp-idf/components/newlib
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -39,6 +39,6 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/esp-idf/newlib/port/cmake_install.cmake")
+  include("C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/esp-idf/newlib/src/port/cmake_install.cmake")
 endif()
 

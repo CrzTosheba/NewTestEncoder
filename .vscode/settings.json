@@ -1,5 +1,5 @@
 {
-    "idf.espIdfPathWin": "C:\\Users\\RUCO1621\\esp\\v5.4.2\\esp-idf",
+    "idf.espIdfPathWin": "C:\\Users\\RUCO1621\\esp\\v5.5.1\\esp-idf",
     "idf.toolsPathWin": "C:\\Espressif",
     "idf.pythonInstallPath": "C:\\Espressif\\tools\\idf-python\\3.11.2\\python.exe",
     "files.associations": {
@@ -48,5 +48,5 @@
         "menu_config.h": "c"
     },
     "idf.flashType": "UART",
-    "idf.portWin": "COM13"
+    "idf.portWin": "COM10"
 }

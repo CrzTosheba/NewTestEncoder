@@ -22,6 +22,10 @@ static lv_obj_t *no_label = NULL;
 bool confirmation_active = false;
 bool selected_yes = true;
 
+// Callback функции для сохранения/отмены
+yes_no_save_callback_t save_callback = NULL;
+yes_no_cancel_callback_t cancel_callback = NULL;
+
 // Обновление стилей кнопок при изменении выбора
 void update_buttons_style() {
     // Стиль для активной кнопки ДА
@@ -39,7 +43,7 @@ void update_buttons_style() {
 }
 
 // Закрытие окна подтверждения
-void close_yes_no_screen() {
+void close_yes_no_screen(void) {
     if (confirm_win) {
         lv_obj_del(confirm_win);
         confirm_win = NULL;
@@ -53,11 +57,18 @@ void close_yes_no_screen() {
             dim_layer = NULL;
         }
         confirmation_active = false;
+        save_callback = NULL;
+        cancel_callback = NULL;
     }
 }
 
 // Создание окна подтверждения
-void create_yes_no_screen() {
+void create_yes_no_screen(void) {
+    create_yes_no_screen_with_callbacks(NULL, NULL);
+}
+
+// Создание окна подтверждения с callback функциями
+void create_yes_no_screen_with_callbacks(yes_no_save_callback_t save_cb, yes_no_cancel_callback_t cancel_cb) {
     if (confirmation_active) {
         ESP_LOGW(TAG, "Окно уже активно!");
         return;
@@ -65,6 +76,8 @@ void create_yes_no_screen() {
     
     confirmation_active = true;
     selected_yes = true;  // Сброс выбора к ДА
+    save_callback = save_cb;
+    cancel_callback = cancel_cb;
     
         // Создаем слой затемнения
     dim_layer = lv_obj_create(lv_layer_sys());
@@ -148,9 +161,16 @@ void yes_no_menu_encoder_event_cb(uint8_t e) {
         if (e & ENC_CLICK) {
             if (selected_yes) {
                 ESP_LOGI(TAG, "Пользователь подтвердил действие");
-                // Здесь можно добавить логику сохранения
+                // Вызываем callback сохранения если он установлен
+                if (save_callback != NULL) {
+                    save_callback();
+                }
             } else {
                 ESP_LOGI(TAG, "Действие отменено");
+                // Вызываем callback отмены если он установлен
+                if (cancel_callback != NULL) {
+                    cancel_callback();
+                }
             }
             close_yes_no_screen();
         }

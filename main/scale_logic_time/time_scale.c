@@ -142,3 +142,38 @@ void show_time_scale(bool show) {
         }
     }
 }
+
+// Очистка шкалы времени и освобождение ресурсов
+void time_scale_cleanup(void) {
+    ESP_LOGI("TIME_SCALE", "Cleaning up time scale");
+    
+    // Удаляем объекты
+    if (scale && lv_obj_is_valid(scale)) {
+        lv_obj_del(scale);
+        scale = NULL;
+    }
+    
+    if (scale_marker && lv_obj_is_valid(scale_marker)) {
+        lv_obj_del(scale_marker);
+        scale_marker = NULL;
+    }
+    
+    if (time_label && lv_obj_is_valid(time_label)) {
+        lv_obj_del(time_label);
+        time_label = NULL;
+    }
+    
+    for (int i = 0; i < 2; i++) {
+        if (lines[i] && lv_obj_is_valid(lines[i])) {
+            lv_obj_del(lines[i]);
+            lines[i] = NULL;
+        }
+    }
+    
+    // Освобождаем стиль
+    lv_style_reset(&style_line);
+    
+    is_time_scale_visible = false;
+    
+    ESP_LOGI("TIME_SCALE", "Time scale cleanup completed");
+}

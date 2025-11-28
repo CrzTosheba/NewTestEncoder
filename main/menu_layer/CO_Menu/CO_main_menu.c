@@ -1,9 +1,17 @@
 #include "CO_main_menu.h"
+#include "CO_general_menu.h"
+#include "CO_heating_graph_menu.h"
+#include "CO_pumps_menu.h"
+#include "CO_valve_menu.h"
+#include "CO_manual_menu.h"
+#include "CO_schedule_menu.h"
+#include "CO_alarms_menu.h"
 #include "encoder/encoder.h"
 #include "my_widgets/w_rad_mask.h"
 #include "screen_logic/arc_menu.h"
 #include "screen_logic/screen_navigation.h"
 #include "screen_logic/screen_container_manager.h"
+#include "encoder/encoder_manager.h"
 #include <stdint.h>
 #include <inttypes.h>
 #include "esp_log.h"
@@ -12,9 +20,7 @@
 
 static const char *TAG = "CO_MENU";
 
-// Используем состояние меню из menu_config вместо глобальных переменных
-// extern uint32_t current_index; // УДАЛЕНО
-// extern uint32_t current_cursor_index; // УДАЛЕНО
+
 
 // Структура элемента меню отопления
 typedef struct {
@@ -31,16 +37,14 @@ static const CoMenuItem co_menu_items[] = {
     {"Клапан", NULL},
     {"Ручной режим", NULL},
     {"Расписание", NULL},
-    {"Сухой ход", NULL},
-    {"Внешняя авария", NULL},
-    {"Обрыв датчика", NULL},
-    {"Авар. отклонение", NULL},
+    {"Аварии", NULL},
 };
 
 // Локальные переменные для меню отопления
 lv_obj_t *co_cont = NULL;  // УБИРАЕМ static, делаем глобальной
 static bool co_menu_initialized = false;
 static bool co_menu_creation_in_progress = false;
+static lv_obj_t *co_mask = NULL;  // Добавляем указатель на маску
 
 /**
  * @brief Проверяет, является ли объект валидным
@@ -149,6 +153,16 @@ void co_menu_show(void) {
     if (is_obj_valid(co_cont)) {
         lv_obj_clear_flag(co_cont, LV_OBJ_FLAG_HIDDEN);
     }
+    // Пересоздаем маску, если она была удалена
+    if (!is_obj_valid(co_mask)) {
+        co_mask = radial();
+        if (is_obj_valid(co_mask)) {
+            lv_obj_set_pos(co_mask, 433, 70);
+            ESP_LOGI(TAG, "CO menu mask recreated");
+        }
+    } else {
+        lv_obj_clear_flag(co_mask, LV_OBJ_FLAG_HIDDEN);
+    }
 }
 
 /**
@@ -158,6 +172,12 @@ void co_menu_hide(void) {
     ESP_LOGI(TAG, "Hiding CO menu");
     if (is_obj_valid(co_cont)) {
         lv_obj_add_flag(co_cont, LV_OBJ_FLAG_HIDDEN);
+    }
+    // ВАЖНО: Удаляем маску при скрытии, чтобы она не перекрывала главный экран
+    if (is_obj_valid(co_mask)) {
+        lv_obj_del(co_mask);
+        co_mask = NULL;
+        ESP_LOGI(TAG, "CO menu mask deleted");
     }
 }
 
@@ -210,8 +230,63 @@ void co_menu_encoder_event_cb(uint8_t e) {
             // Нажали на "Назад" - возвращаемся в главное меню
             ESP_LOGI(TAG, "Returning to main menu from CO menu");
             screen_navigation_go_to(SCREEN_MAIN_MENU);
+        } else if (menu_state->cursor_index == 1) {
+            // Нажали на "Общие" - открываем подменю общие
+            ESP_LOGI(TAG, "Opening general settings menu");
+            co_menu_hide();
+            CO_General_Menu_List();
+            co_general_menu_show();
+            // Переключаем обработчик энкодера на меню общие
+            encoder_manager_register_callback(co_general_menu_encoder_event_cb);
+        } else if (menu_state->cursor_index == 2) {
+            // Нажали на "График отопления" - открываем подменю графика отопления
+            ESP_LOGI(TAG, "Opening heating graph menu");
+            co_menu_hide();
+            CO_Heating_Graph_Menu_List();
+            co_heating_graph_menu_show();
+            // Переключаем обработчик энкодера на меню графика отопления
+            encoder_manager_register_callback(co_heating_graph_menu_encoder_event_cb);
+        } else if (menu_state->cursor_index == 3) {
+            // Нажали на "Насосы" - открываем подменю насосов
+            ESP_LOGI(TAG, "Opening pumps menu");
+            co_menu_hide();
+            CO_Pumps_Menu_List();
+            co_pumps_menu_show();
+            // Переключаем обработчик энкодера на меню насосов
+            encoder_manager_register_callback(co_pumps_menu_encoder_event_cb);
+        } else if (menu_state->cursor_index == 4) {
+            // Нажали на "Клапан" - открываем подменю клапан
+            ESP_LOGI(TAG, "Opening valve menu");
+            co_menu_hide();
+            CO_Valve_Menu_List();
+            co_valve_menu_show();
+            // Переключаем обработчик энкодера на меню клапан
+            encoder_manager_register_callback(co_valve_menu_encoder_event_cb);
+        } else if (menu_state->cursor_index == 5) {
+            // Нажали на "Ручной режим" - открываем подменю ручной режим
+            ESP_LOGI(TAG, "Opening manual menu");
+            co_menu_hide();
+            CO_Manual_Menu_List();
+            co_manual_menu_show();
+            // Переключаем обработчик энкодера на меню ручной режим
+            encoder_manager_register_callback(co_manual_menu_encoder_event_cb);
+        } else if (menu_state->cursor_index == 6) {
+            // Нажали на "Расписание" - открываем подменю расписания
+            ESP_LOGI(TAG, "Opening schedule menu");
+            co_menu_hide();
+            CO_Schedule_Menu_List();
+            co_schedule_menu_show();
+            // Переключаем обработчик энкодера на меню расписания
+            encoder_manager_register_callback(co_schedule_menu_encoder_event_cb);
+        } else if (menu_state->cursor_index == 7) {
+            // Нажали на "Аварии" - открываем подменю аварий
+            ESP_LOGI(TAG, "Opening alarms menu");
+            co_menu_hide();
+            CO_Alarms_Menu_List();
+            co_alarms_menu_show();
+            // Переключаем обработчик энкодера на меню аварий
+            encoder_manager_register_callback(co_alarms_menu_encoder_event_cb);
         }
-        // TODO: Добавить обработку нажатий для других пунктов меню при необходимости
     }
 }
 
@@ -222,6 +297,12 @@ void co_menu_cleanup(void) {
     ESP_LOGI(TAG, "Cleaning up CO menu");
     
     co_menu_creation_in_progress = false;
+    
+    // Удаляем маску
+    if (is_obj_valid(co_mask)) {
+        lv_obj_del(co_mask);
+        co_mask = NULL;
+    }
     
     if (is_obj_valid(co_cont)) {
         lv_obj_del(co_cont);
@@ -256,8 +337,13 @@ void CO_Menu_List(void) {
     // Очищаем предыдущее меню, если было
     co_menu_cleanup();
     
+    // Инициализируем стиль только один раз (при первом вызове функции)
     static lv_style_t style;
-    lv_style_init(&style);
+    static bool style_inited = false;
+    if (!style_inited) {
+        lv_style_init(&style);
+        style_inited = true;
+    }
 
     // Создаем контейнер меню
     co_cont = lv_obj_create(lv_scr_act());
@@ -299,9 +385,9 @@ void CO_Menu_List(void) {
     vTaskDelay(pdMS_TO_TICKS(20));
     
     // Создание радиальной маски
-    lv_obj_t *mask = radial();
-    if (is_obj_valid(mask)) {
-        lv_obj_set_pos(mask, 433, 70);
+        co_mask = radial();
+    if (is_obj_valid(co_mask)) {
+        lv_obj_set_pos(co_mask, 433, 70);
     }
     
     uint32_t child_count = lv_obj_get_child_cnt(co_cont);

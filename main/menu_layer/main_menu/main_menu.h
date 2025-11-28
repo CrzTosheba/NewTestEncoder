@@ -3,7 +3,7 @@
 
 #include "lvgl.h"
 #include "encoder/encoder.h"
-#include "screen_logic/arc_menu.h"  // Для доступа к функциям статусных иконок
+#include "screen_logic/arc_menu.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -49,10 +49,13 @@ void main_menu_update_display(void);
 void main_menu_show(void);
 void main_menu_hide(void);
 
-// Функции для работы с оберткой контента (добавляем если используются)
+// Функции очистки
+void main_menu_cleanup(void);  // Добавляем объявление
+
+// Функции для работы с оберткой контента
 lv_obj_t* screen_content_wrapper_create(lv_obj_t *parent);
 
-// Глобальные указатели на экраны (объявлены в main_menu.c)
+// Глобальные указатели на экраны
 extern lv_obj_t *screens[6];
 extern lv_obj_t *_cont;
 extern lv_obj_t *content_container;

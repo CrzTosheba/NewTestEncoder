@@ -16,7 +16,7 @@ void CO_Menu_List(void);
 void co_menu_encoder_event_cb(uint8_t e);
 void co_menu_cleanup(void);
 void co_menu_show(void);
-void co_menu_hide(void);
+void co_menu_hide(void);  // Добавляем объявление
 
 // Объявляем глобальную переменную для доступа из других файлов
 extern lv_obj_t *co_cont;

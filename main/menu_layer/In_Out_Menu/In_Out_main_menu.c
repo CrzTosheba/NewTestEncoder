@@ -10,10 +10,6 @@
 
 static const char *TAG = "IO_MENU";
 
-// Используем состояние меню из menu_config вместо глобальных переменных
-// extern uint32_t current_index; // УДАЛЕНО
-// extern uint32_t current_cursor_index; // УДАЛЕНО
-
 // Структура элемента меню входов/выходов
 typedef struct {
     const char *label_text;     // Текст элемента
@@ -31,6 +27,9 @@ static const IoMenuItem io_menu_items[] = {
 
 // Локальные переменные для меню входов/выходов
 static lv_obj_t *io_cont = NULL;
+static lv_obj_t *io_mask = NULL;
+static bool io_menu_initialized = false;
+static bool io_menu_creation_in_progress = false;
 
 /**
  * @brief Проверяет, является ли объект валидным
@@ -114,6 +113,42 @@ static void io_highlight_box(lv_obj_t *cont, uint32_t cursor_index) {
 }
 
 /**
+ * @brief Показывает меню входов/выходов
+ */
+void input_output_menu_show(void) {
+    ESP_LOGI(TAG, "Showing IO menu");
+    if (is_obj_valid(io_cont)) {
+        lv_obj_clear_flag(io_cont, LV_OBJ_FLAG_HIDDEN);
+    }
+    // Пересоздаем маску, если она была удалена
+    if (!is_obj_valid(io_mask)) {
+        io_mask = radial();
+        if (is_obj_valid(io_mask)) {
+            lv_obj_set_pos(io_mask, 433, 70);
+            ESP_LOGI(TAG, "IO menu mask recreated");
+        }
+    } else {
+        lv_obj_clear_flag(io_mask, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
+/**
+ * @brief Скрывает меню входов/выходов
+ */
+void input_output_menu_hide(void) {
+    ESP_LOGI(TAG, "Hiding IO menu");
+    if (is_obj_valid(io_cont)) {
+        lv_obj_add_flag(io_cont, LV_OBJ_FLAG_HIDDEN);
+    }
+    // ВАЖНО: Удаляем маску при скрытии, чтобы она не перекрывала главный экран
+    if (is_obj_valid(io_mask)) {
+        lv_obj_del(io_mask);
+        io_mask = NULL;
+        ESP_LOGI(TAG, "IO menu mask deleted");
+    }
+}
+
+/**
  * @brief Обработчик событий энкодера для меню входов/выходов
  */
 void input_output_encoder_event_cb(uint8_t e) {
@@ -184,18 +219,28 @@ void input_output_encoder_event_cb(uint8_t e) {
         // TODO: Добавить обработку нажатий для других пунктов меню при необходимости
     }
 }
+
 /**
  * @brief Очистка меню входов/выходов
  */
 void input_output_menu_cleanup(void) {
     ESP_LOGI(TAG, "Cleaning up IO menu");
     
+    io_menu_creation_in_progress = false;
+    io_menu_initialized = false;
+    
+    // Удаляем маску
+    if (is_obj_valid(io_mask)) {
+        lv_obj_del(io_mask);
+        io_mask = NULL;
+    }
+    
     if (is_obj_valid(io_cont)) {
         lv_obj_del(io_cont);
         io_cont = NULL;
     }
     
-    // Не сбрасываем состояние меню, так как оно хранится отдельно и может быть восстановлено
+    ESP_LOGI(TAG, "IO menu cleanup completed");
 }
 
 /**
@@ -204,14 +249,49 @@ void input_output_menu_cleanup(void) {
 void Input_Output_Menu_List(void) {
     ESP_LOGI(TAG, "Инициализация меню входов/выходов");
     
+    // ЗАЩИТА ОТ ПОВТОРНОЙ ИНИЦИАЛИЗАЦИИ ВО ВРЕМЯ СОЗДАНИЯ
+    if (io_menu_creation_in_progress) {
+        ESP_LOGW(TAG, "IO menu creation already in progress, skipping");
+        return;
+    }
+    
+    io_menu_creation_in_progress = true;
+    
+    // ЕСЛИ МЕНЮ УЖЕ ИНИЦИАЛИЗИРОВАНО, ПРОСТО ПОКАЗЫВАЕМ ЕГО
+    if (io_menu_initialized && is_obj_valid(io_cont)) {
+        ESP_LOGI(TAG, "IO menu already initialized, showing it");
+        
+        // Показываем контейнер и маску
+        if (is_obj_valid(io_cont)) {
+            lv_obj_clear_flag(io_cont, LV_OBJ_FLAG_HIDDEN);
+        }
+        if (is_obj_valid(io_mask)) {
+            lv_obj_clear_flag(io_mask, LV_OBJ_FLAG_HIDDEN);
+        }
+        
+        io_menu_creation_in_progress = false;
+        return;
+    }
+    
     // Очищаем предыдущее меню, если было
     input_output_menu_cleanup();
     
+    // Инициализируем стиль только один раз (при первом вызове функции)
     static lv_style_t style;
-    lv_style_init(&style);
+    static bool style_inited = false;
+    if (!style_inited) {
+        lv_style_init(&style);
+        style_inited = true;
+    }
 
     // Создаем контейнер меню (такой же как в главном меню)
     io_cont = lv_obj_create(lv_scr_act());
+    if (!is_obj_valid(io_cont)) {
+        ESP_LOGE(TAG, "Failed to create IO menu container");
+        io_menu_creation_in_progress = false;
+        return;
+    }
+    
     lv_obj_set_size(io_cont, 1200, 1200);
     lv_obj_center(io_cont);
     lv_obj_add_event_cb(io_cont, arc_menu_event_cb, LV_EVENT_SCROLL, NULL);
@@ -225,16 +305,18 @@ void Input_Output_Menu_List(void) {
     lv_obj_set_style_bg_color(io_cont, lv_color_hex(0x1E2528), 0);
     lv_obj_set_style_border_color(io_cont, lv_color_hex(0x1E2528), 0);
     lv_obj_set_style_shadow_width(io_cont, 0, 0); // убираем тени
-    lv_obj_set_style_pad_row(io_cont, 0, 0);      //отсутп между боксами
+    lv_obj_set_style_pad_row(io_cont, 0, 0);      // отсутп между боксами
     
     // Создаем элементы меню
     for (uint32_t i = 0; i < sizeof(io_menu_items) / sizeof(IoMenuItem); i++) {
         create_io_menu_item(io_cont, &io_menu_items[i]);
     }
     
-    // Создание радиальной маски (как в главном меню)
-    lv_obj_t *mask = radial();
-    lv_obj_set_pos(mask, 433, 70);
+    // Создание радиальной маски
+    io_mask = radial();
+    if (is_obj_valid(io_mask)) {
+        lv_obj_set_pos(io_mask, 433, 70);
+    }
     
     uint32_t child_count = lv_obj_get_child_cnt(io_cont);
     
@@ -248,6 +330,10 @@ void Input_Output_Menu_List(void) {
     
     lv_obj_scroll_to_view(lv_obj_get_child(io_cont, menu_state->list_index), LV_ANIM_OFF);
     io_highlight_box(io_cont, menu_state->cursor_index);
+    
+    // УСТАНАВЛИВАЕМ ФЛАГИ ПОСЛЕ УСПЕШНОЙ ИНИЦИАЛИЗАЦИИ
+    io_menu_initialized = true;
+    io_menu_creation_in_progress = false;
 
     ESP_LOGI(TAG, "Меню входов/выходов успешно инициализировано");
     ESP_LOGI(TAG, "Используется конфигурация: initial_index=%lu, scroll_boundary=%lu", 

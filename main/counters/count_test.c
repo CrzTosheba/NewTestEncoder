@@ -31,9 +31,13 @@ static void add_data(lv_timer_t *timer) {
 
 // Основная функция для создания интерфейса
 void main_test(void) {
-    // Инициализация стиля
+    // Инициализируем стиль только один раз (при первом вызове функции)
     static lv_style_t style;
-    lv_style_init(&style);
+    static bool style_inited = false;
+    if (!style_inited) {
+        lv_style_init(&style);
+        style_inited = true;
+    }
     lv_style_set_text_font(&style, &Roboto_bold_18);
 
     // Создание меток

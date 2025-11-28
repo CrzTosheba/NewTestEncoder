@@ -22,20 +22,32 @@ typedef enum {
 } screen_type_t;
 
 // Функции навигации
-void screen_navigation_init(void);                    // Инициализация навигации
-void screen_navigation_go_to(screen_type_t screen);   // Переход к указанному экрану
-void screen_navigation_encoder_event_cb(uint8_t e);   // Обработчик событий энкодера для навигации
-screen_type_t screen_navigation_get_current_screen(void); // Получение текущего экрана
+void screen_navigation_init(void);
+void screen_navigation_go_to(screen_type_t screen);
+void screen_navigation_encoder_event_cb(uint8_t e);
+screen_type_t screen_navigation_get_current_screen(void);
 
 // Функции для сохранения и восстановления позиции курсора
 void screen_navigation_save_cursor_position(void);
 void screen_navigation_restore_cursor_position(void);
 
+// Функция полной очистки
+void screen_navigation_full_cleanup(void);
+
 // Внешние обработчики энкодера
 extern void main_menu_encoder_event_cb(uint8_t e);
 extern void password_encoder_event_cb(uint8_t e);
-extern void input_output_encoder_event_cb(uint8_t e); // Обработчик для входов/выходов
-extern void co_menu_encoder_event_cb(uint8_t e);      // Добавляем обработчик для меню отопления
+extern void input_output_encoder_event_cb(uint8_t e);
+extern void co_menu_encoder_event_cb(uint8_t e);
+extern void co_general_menu_encoder_event_cb(uint8_t e);
+
+// Функции управления видимостью меню
+extern void main_menu_show(void);
+extern void main_menu_hide(void);
+extern void input_output_menu_show(void);
+extern void input_output_menu_hide(void);
+extern void co_menu_show(void);
+extern void co_menu_hide(void);
 
 #ifdef __cplusplus
 }

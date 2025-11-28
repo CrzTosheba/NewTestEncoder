@@ -28,6 +28,7 @@ typedef void (*encoder_event_callback_t)(uint8_t event);
 
 // Функции для работы с менеджером энкодера
 void encoder_manager_init(void);
+void encoder_manager_deinit(void);
 QueueHandle_t encoder_manager_get_queue(void);
 void encoder_manager_task(void* arg);
 void encoder_manager_register_callback(encoder_event_callback_t callback);

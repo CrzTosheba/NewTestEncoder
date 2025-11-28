@@ -7,6 +7,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include "screen_logic/screen_navigation.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 static const char *TAG = "PASSWORD_SCREEN";
 
@@ -86,7 +88,20 @@ static void cleanup_password_objects(void) {
 void password_screen_cleanup(void) {
     ESP_LOGI(TAG, "Starting password screen cleanup");
     
-    if (is_obj_valid_safe(password_screen_obj) && password_screen_active) {
+    // Проверяем, что экран пароля был активен
+    if (!password_screen_active) {
+        ESP_LOGI(TAG, "Password screen was not active, skipping cleanup");
+        return;
+    }
+    
+    // Сбрасываем флаг активности СРАЗУ, чтобы предотвратить дальнейшие обращения
+    password_screen_active = false;
+    
+    // Очищаем все объекты (обнуляем указатели)
+    cleanup_password_objects();
+    
+    // Удаляем экран пароля асинхронно (если он еще существует)
+    if (is_obj_valid_safe(password_screen_obj)) {
         ESP_LOGI(TAG, "Cleaning up password screen objects");
         
         // Удаляем экран пароля асинхронно
@@ -95,13 +110,19 @@ void password_screen_cleanup(void) {
         lv_obj_del_async(screen_to_delete);
         
         ESP_LOGI(TAG, "Password screen object scheduled for deletion");
+        
+        // Даем LVGL время на обработку удаления перед освобождением стилей
+        vTaskDelay(pdMS_TO_TICKS(50));
     }
     
-    // Очищаем все объекты
-    cleanup_password_objects();
-    
-    // Сбрасываем флаги
-    password_screen_active = false;
+    // ВАЖНО: Освобождаем стили ПОСЛЕ удаления объектов
+    // Используем небольшую задержку, чтобы убедиться, что объекты удалены
+    lv_style_reset(&style_active_digit);
+    lv_style_reset(&style_active_roller);
+    lv_style_reset(&style_inactive_roller);
+    lv_style_reset(&style_inactive_central_digit);
+    lv_style_reset(&style_transparent_bg);
+    ESP_LOGI(TAG, "Password screen styles deinitialized");
     
     ESP_LOGI(TAG, "Password screen cleanup completed");
 }
@@ -199,7 +220,13 @@ static void update_digit_positions(void) {
  */
 void password_encoder_event_cb(uint8_t e) {
     // Если экран пароля не активен или пароль уже введен, игнорируем события
-    if (!password_screen_active || password_input_complete || !is_obj_valid_safe(password_screen_obj)) {
+    if (!password_screen_active || password_input_complete) {
+        return;
+    }
+    
+    // Проверяем валидность экрана
+    if (!is_obj_valid_safe(password_screen_obj)) {
+        ESP_LOGW(TAG, "Password screen object is invalid, ignoring event");
         return;
     }
     
@@ -237,6 +264,9 @@ void password_encoder_event_cb(uint8_t e) {
                     digit_values[0], digit_values[1], digit_values[2]);
             
             // TODO: Проверить пароль здесь
+            
+            // Сбрасываем флаг активности ПЕРЕД переходом, чтобы предотвратить дальнейшие события
+            password_screen_active = false;
             
             // Возвращаемся в главное меню
             screen_navigation_go_to(SCREEN_MAIN_MENU);
@@ -356,15 +386,20 @@ void password_screen(void) {
         lv_obj_set_size(obj, 220, 380);     
         lv_obj_set_pos(obj, 578, 70);
         
+        // Инициализируем стиль только один раз (при первом вызове функции)
         static lv_style_t style;
-        lv_style_init(&style);
-        lv_style_set_bg_color(&style, lv_color_hex(0x2B3639));
-        lv_style_set_bg_opa(&style, LV_OPA_COVER);
-        lv_style_set_radius(&style, 0);
-        lv_style_set_border_width(&style, 0);
-        lv_style_set_outline_width(&style, 0);
-        lv_style_set_shadow_width(&style, 0);
-        lv_style_set_pad_all(&style, 0);
+        static bool style_inited = false;
+        if (!style_inited) {
+            lv_style_init(&style);
+            lv_style_set_bg_color(&style, lv_color_hex(0x2B3639));
+            lv_style_set_bg_opa(&style, LV_OPA_COVER);
+            lv_style_set_radius(&style, 0);
+            lv_style_set_border_width(&style, 0);
+            lv_style_set_outline_width(&style, 0);
+            lv_style_set_shadow_width(&style, 0);
+            lv_style_set_pad_all(&style, 0);
+            style_inited = true;
+        }
         lv_obj_add_style(obj, &style, 0);
     }
     

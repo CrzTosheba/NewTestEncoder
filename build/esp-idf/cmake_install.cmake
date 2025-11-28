@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/RUCO1621/esp/v5.4.2/esp-idf
+# Install script for directory: C:/Users/RUCO1621/esp/v5.5.1/esp-idf
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -64,6 +64,26 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
+  include("C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/esp-idf/esp_app_format/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/esp-idf/efuse/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/esp-idf/esp_bootloader_format/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/esp-idf/bootloader_support/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
   include("C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/esp-idf/bootloader/cmake_install.cmake")
 endif()
 
@@ -79,32 +99,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/esp-idf/esp_app_format/cmake_install.cmake")
-endif()
-
-if(NOT CMAKE_INSTALL_LOCAL_ONLY)
-  # Include the install script for the subdirectory.
-  include("C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/esp-idf/esp_bootloader_format/cmake_install.cmake")
-endif()
-
-if(NOT CMAKE_INSTALL_LOCAL_ONLY)
-  # Include the install script for the subdirectory.
   include("C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/esp-idf/app_update/cmake_install.cmake")
-endif()
-
-if(NOT CMAKE_INSTALL_LOCAL_ONLY)
-  # Include the install script for the subdirectory.
-  include("C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/esp-idf/esp_partition/cmake_install.cmake")
-endif()
-
-if(NOT CMAKE_INSTALL_LOCAL_ONLY)
-  # Include the install script for the subdirectory.
-  include("C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/esp-idf/efuse/cmake_install.cmake")
-endif()
-
-if(NOT CMAKE_INSTALL_LOCAL_ONLY)
-  # Include the install script for the subdirectory.
-  include("C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/esp-idf/bootloader_support/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
@@ -184,6 +179,16 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
+  include("C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/esp-idf/esp_partition/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/esp-idf/nvs_flash/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
   include("C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/esp-idf/cmake_utilities/cmake_install.cmake")
 endif()
 
@@ -254,6 +259,11 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
+  include("C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/esp-idf/esp_driver_bitscrambler/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
   include("C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/esp-idf/esp_driver_rmt/cmake_install.cmake")
 endif()
 
@@ -290,6 +300,11 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
   include("C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/esp-idf/esp_driver_usb_serial_jtag/cmake_install.cmake")
+endif()
+
+if(NOT CMAKE_INSTALL_LOCAL_ONLY)
+  # Include the install script for the subdirectory.
+  include("C:/Users/RUCO1621/Desktop/ECL5/esp32s3_lcd_i80_ssd1963/build/esp-idf/esp_driver_twai/cmake_install.cmake")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)

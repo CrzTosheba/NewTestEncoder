@@ -1,4 +1,4 @@
-# Install script for directory: C:/Users/RUCO1621/esp/v5.4.2/esp-idf/components/esp_driver_gptimer
+# Install script for directory: C:/Users/RUCO1621/esp/v5.5.1/esp-idf/components/esp_driver_gptimer
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)

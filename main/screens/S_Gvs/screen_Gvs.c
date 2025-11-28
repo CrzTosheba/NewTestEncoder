@@ -29,11 +29,16 @@ void screen_Gvs_create(lv_obj_t *parent)
     static lv_point_precise_t line_points[] = { {55, 0}, {175, 0} };
     static lv_point_precise_t line_points1[] = { {245, 0}, {460, 0} };
 
+    // Инициализируем стиль только один раз (при первом вызове функции)
     static lv_style_t style_line;
-    lv_style_init(&style_line);
-    lv_style_set_line_width(&style_line, 1);
-    lv_style_set_line_color(&style_line, lv_color_hex(0xffffff));
-    lv_style_set_line_rounded(&style_line, true);
+    static bool style_line_inited = false;
+    if (!style_line_inited) {
+        lv_style_init(&style_line);
+        lv_style_set_line_width(&style_line, 1);
+        lv_style_set_line_color(&style_line, lv_color_hex(0xffffff));
+        lv_style_set_line_rounded(&style_line, true);
+        style_line_inited = true;
+    }
 
         /*Create a line and apply the new style*/
     lv_obj_t * line1;

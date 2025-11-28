@@ -4,12 +4,11 @@
 #include "screen_logic/arc_menu.h"
 #include "encoder/encoder_manager.h"
 #include "screen_logic/screen_navigation.h"
-#include "screen_logic/screen_container_manager.h" // Добавляем менеджер контейнеров
+#include "screen_logic/screen_container_manager.h"
 #include <stdint.h>
 #include "esp_log.h"
 #include "freertos/task.h"
 #include "scale_logic_time/time_scale.h"
-
 
 static const char *TAG = "Main_Menu_main";
 
@@ -28,11 +27,11 @@ typedef struct {
 lv_obj_t *_cont = NULL;
 void (*current_function)(void) = NULL;
 
-// Используем состояние меню из menu_config вместо глобальных переменных
-// extern uint32_t current_cursor_index; // УДАЛЕНО - больше не используем
-
 // Контейнер для контента экрана (доступен из других файлов)
 lv_obj_t *content_container = NULL;
+
+// Указатель на радиальную маску главного меню
+static lv_obj_t *main_mask = NULL;
 
 // Тип для функций создания экранов
 typedef void (*screen_create_func_t)(lv_obj_t*);
@@ -62,8 +61,14 @@ void main_menu_show(void) {
     if (content_container && lv_obj_is_valid(content_container)) {
         screen_container_show(content_container);
     }
+    if (main_mask && lv_obj_is_valid(main_mask)) {
+        lv_obj_clear_flag(main_mask, LV_OBJ_FLAG_HIDDEN);
+    }
 }
 
+/**
+ * @brief Скрывает главное меню
+ */
 void main_menu_hide(void) {
     ESP_LOGI(TAG, "Hiding main menu");
     if (_cont && lv_obj_is_valid(_cont)) {
@@ -72,6 +77,44 @@ void main_menu_hide(void) {
     if (content_container && lv_obj_is_valid(content_container)) {
         screen_container_hide(content_container);
     }
+    if (main_mask && lv_obj_is_valid(main_mask)) {
+        lv_obj_add_flag(main_mask, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
+/**
+ * @brief Очистка главного меню
+ */
+void main_menu_cleanup(void) {
+    ESP_LOGI(TAG, "Cleaning up main menu");
+    
+    // Удаляем радиальную маску
+    if (main_mask && lv_obj_is_valid(main_mask)) {
+        lv_obj_del(main_mask);
+        main_mask = NULL;
+    }
+    
+    // Удаляем контейнер меню
+    if (_cont && lv_obj_is_valid(_cont)) {
+        lv_obj_del(_cont);
+        _cont = NULL;
+    }
+    
+    // Удаляем контейнер контента
+    if (content_container && lv_obj_is_valid(content_container)) {
+        screen_container_destroy(content_container);
+        content_container = NULL;
+    }
+    
+    // Очищаем массив экранов
+    for (int i = 0; i < 6; i++) {
+        if (screens[i] && lv_obj_is_valid(screens[i])) {
+            lv_obj_del(screens[i]);
+            screens[i] = NULL;
+        }
+    }
+    
+    ESP_LOGI(TAG, "Main menu cleanup completed");
 }
 
 /**
@@ -189,6 +232,7 @@ void main_menu_encoder_event_cb(uint8_t e) {
         main_menu_update_display();
     }
 }
+
 // Элементы главного меню
 static const MenuItem menu_items[] = {
     {"Открыть доступ", "", &lv_im_module_lock, ""},
@@ -244,14 +288,20 @@ static void create_menu_item(lv_obj_t *cont, const MenuItem *item) {
     
     lv_obj_set_scrollbar_mode(box, LV_SCROLLBAR_MODE_OFF);
 }
+
 /**
  * @brief Создание и инициализация главного меню
  */
 void Main_Menu_List(void) {
     ESP_LOGI(TAG, "Инициализация главного меню");
     
+    // Инициализируем стиль только один раз (при первом вызове функции)
     static lv_style_t style;
-    lv_style_init(&style);
+    static bool style_inited = false;
+    if (!style_inited) {
+        lv_style_init(&style);
+        style_inited = true;
+    }
     
     // Создаем контейнер для контента (левая часть экрана) через менеджер
     content_container = screen_container_create(CONTAINER_TYPE_MAIN_MENU);
@@ -296,8 +346,8 @@ void Main_Menu_List(void) {
     }
     
     // Создание радиальной маски
-    lv_obj_t *mask = radial();
-    lv_obj_set_pos(mask, 433, 70);
+    main_mask = radial();
+    lv_obj_set_pos(main_mask, 433, 70);
     
     // Инициализация шкалы времени (изначально скрыта)
     time_scale_init();

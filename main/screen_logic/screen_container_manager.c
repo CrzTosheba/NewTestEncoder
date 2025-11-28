@@ -16,6 +16,9 @@ lv_obj_t* screen_container_create(container_type_t type) {
     // Базовые стили для всех контейнеров
     lv_obj_set_style_bg_opa(container, LV_OPA_TRANSP, 0);
     lv_obj_set_scrollbar_mode(container, LV_SCROLLBAR_MODE_OFF);
+    // Скрываем границу контейнера для чистого интерфейса
+    lv_obj_set_style_border_opa(container, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_outline_opa(container, LV_OPA_TRANSP, 0);
     
     // Стили в зависимости от типа контейнера
     switch(type) {

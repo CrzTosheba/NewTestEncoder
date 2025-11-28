@@ -13,6 +13,8 @@ LV_IMG_DECLARE(lv_im_arrow_right);
 void Input_Output_Menu_List(void);
 void input_output_encoder_event_cb(uint8_t e);
 void input_output_menu_cleanup(void);
+void input_output_menu_show(void);
+void input_output_menu_hide(void);
 
 #ifdef __cplusplus
 }

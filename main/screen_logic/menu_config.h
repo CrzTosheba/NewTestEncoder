@@ -10,10 +10,22 @@ extern "C" {
 
 // Типы меню
 typedef enum {
-    MENU_TYPE_MAIN,      // Главное меню
-    MENU_TYPE_IN_OUT,    // Меню входов/выходов
-    MENU_TYPE_CO,        // Меню отопления
-    MENU_TYPE_COUNT      // Количество типов меню
+    MENU_TYPE_MAIN,              // Главное меню
+    MENU_TYPE_IN_OUT,            // Меню входов/выходов
+    MENU_TYPE_CO,                // Меню отопления
+    MENU_TYPE_CO_GENERAL,        // Меню общие настройки отопления
+    MENU_TYPE_CO_HEATING_GRAPH,  // Меню графика отопления
+    MENU_TYPE_CO_PUMPS,          // Меню насосов
+    MENU_TYPE_CO_VALVE,          // Меню клапан
+    MENU_TYPE_CO_MANUAL,         // Меню ручной режим
+    MENU_TYPE_CO_SCHEDULE,       // Меню расписания
+    MENU_TYPE_CO_SCHEDULE_DAY,   // Меню дня недели расписания
+    MENU_TYPE_CO_ALARMS,         // Меню аварий
+    MENU_TYPE_CO_ALARMS_DRY_RUN,      // Меню сухого хода
+    MENU_TYPE_CO_ALARMS_EXTERNAL,     // Меню внешней аварии
+    MENU_TYPE_CO_ALARMS_SENSOR_BREAK, // Меню обрыва датчика
+    MENU_TYPE_CO_ALARMS_DEVIATION,     // Меню аварийного отклонения
+    MENU_TYPE_COUNT              // Количество типов меню
 } menu_type_t;
 
 // Структура состояния меню (отдельная для каждого меню)

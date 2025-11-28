@@ -51,11 +51,16 @@ void screen_In_Out_create(lv_obj_t *parent) {
     static lv_point_precise_t line_points[] = { {-10, 0}, {100, 0} };
     static lv_point_precise_t line_points1[] = { {320, 0}, {460, 0} };
 
+    // Инициализируем стиль только один раз (при первом вызове функции)
     static lv_style_t style_line;
-    lv_style_init(&style_line);
-    lv_style_set_line_width(&style_line, 1);
-    lv_style_set_line_color(&style_line, lv_color_hex(0xffffff));
-    lv_style_set_line_rounded(&style_line, true);
+    static bool style_line_inited = false;
+    if (!style_line_inited) {
+        lv_style_init(&style_line);
+        lv_style_set_line_width(&style_line, 1);
+        lv_style_set_line_color(&style_line, lv_color_hex(0xffffff));
+        lv_style_set_line_rounded(&style_line, true);
+        style_line_inited = true;
+    }
 
     /*Create a line and apply the new style*/
     lv_obj_t * line1;
@@ -77,30 +82,68 @@ void screen_In_Out_create(lv_obj_t *parent) {
     lv_obj_set_style_bg_color(label, lv_color_hex(0x1E2528), LV_PART_MAIN);
     lv_obj_set_style_text_color(label, lv_color_hex(0xffffff), 0);
 
+    // Проверяем валидность родительского контейнера
+    if (parent == NULL || !lv_obj_is_valid(parent)) {
+        ESP_LOGE(TAG, "Invalid parent container for In/Out screen");
+        return;
+    }
+    
+    ESP_LOGI(TAG, "Parent container is valid, creating widgets");
+    
     //---------------Главная картинка-------------------------
     lv_obj_t *In_Out_scheme = in_out_pic_main(parent);
-    lv_obj_align(In_Out_scheme, LV_ALIGN_CENTER, 10, 20);
+    if (In_Out_scheme != NULL && lv_obj_is_valid(In_Out_scheme)) {
+        // Используем LV_ANIM_OFF чтобы избежать проблем с layout во время создания
+        lv_obj_align(In_Out_scheme, LV_ALIGN_CENTER, 10, 20);
+    } else {
+        ESP_LOGE(TAG, "Failed to create In/Out scheme image");
+    }
     
     //----------------Выделение всех входов и выходов-------------//
     // Создаем виджеты подсветки с правильными координатами
     widget_all_in_out_up = digital_out_up(parent);
-    lv_obj_align(widget_all_in_out_up, LV_ALIGN_CENTER, 2, -86); // все верхние клеммы верх
+    if (widget_all_in_out_up != NULL && lv_obj_is_valid(widget_all_in_out_up)) {
+        lv_obj_align(widget_all_in_out_up, LV_ALIGN_CENTER, 2, -86); // все верхние клеммы верх
+    } else {
+        ESP_LOGE(TAG, "Failed to create widget_all_in_out_up");
+        widget_all_in_out_up = NULL;
+    }
     
     widget_all_in_out_down = all_in_out_down(parent);
-    lv_obj_align(widget_all_in_out_down, LV_ALIGN_CENTER, -20, 125); // все верхние клеммы низ
-
+    if (widget_all_in_out_down != NULL && lv_obj_is_valid(widget_all_in_out_down)) {
+        lv_obj_align(widget_all_in_out_down, LV_ALIGN_CENTER, -20, 125); // все верхние клеммы низ
+    } else {
+        ESP_LOGE(TAG, "Failed to create widget_all_in_out_down");
+        widget_all_in_out_down = NULL;
+    }
+    
     //---------------Универсальные входы ---------------//
     widget_universal_in_down_left = universal_in_down(parent);
-    lv_obj_align(widget_universal_in_down_left, LV_ALIGN_CENTER, -60, 125); // входы низ лево
+    if (widget_universal_in_down_left != NULL && lv_obj_is_valid(widget_universal_in_down_left)) {
+        lv_obj_align(widget_universal_in_down_left, LV_ALIGN_CENTER, -60, 125); // входы низ лево
+    } else {
+        ESP_LOGE(TAG, "Failed to create widget_universal_in_down_left");
+        widget_universal_in_down_left = NULL;
+    }
     
     //----------------Аналоговые выходы---------------//
     widget_analog_out_down_right = analog_out_down(parent);
-    lv_obj_align(widget_analog_out_down_right, LV_ALIGN_CENTER, 95, 125); // выходы низ право
+    if (widget_analog_out_down_right != NULL && lv_obj_is_valid(widget_analog_out_down_right)) {
+        lv_obj_align(widget_analog_out_down_right, LV_ALIGN_CENTER, 95, 125); // выходы низ право
+    } else {
+        ESP_LOGE(TAG, "Failed to create widget_analog_out_down_right");
+        widget_analog_out_down_right = NULL;
+    }
     
     //----------------Дискретные выходы---------------//
     // Для дискретных выходов используем ту же картинку digital_out_up, но с другим выравниванием если нужно
     widget_discrete_outputs = digital_out_up(parent); // Используем ту же функцию
-    lv_obj_align(widget_discrete_outputs, LV_ALIGN_CENTER, 2, -86); // дискретные выходы - верхние клеммы
+    if (widget_discrete_outputs != NULL && lv_obj_is_valid(widget_discrete_outputs)) {
+        lv_obj_align(widget_discrete_outputs, LV_ALIGN_CENTER, 2, -86); // дискретные выходы - верхние клеммы
+    } else {
+        ESP_LOGE(TAG, "Failed to create widget_discrete_outputs");
+        widget_discrete_outputs = NULL;
+    }
     
     // Изначально скрываем все подсветки
     screen_In_Out_hide_all_highlights();

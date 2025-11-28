@@ -19,4 +19,7 @@ void show_time_scale(bool show);
 void set_time_intervals(int line1_start_h, int line1_start_m, int line1_end_h, int line1_end_m,
                        int line2_start_h, int line2_start_m, int line2_end_h, int line2_end_m);
 
+// Очистка шкалы времени и освобождение ресурсов
+void time_scale_cleanup(void);
+
 #endif // TIME_SCALE_H
