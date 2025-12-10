@@ -7,9 +7,11 @@
 extern "C" {
 #endif
 LV_FONT_DECLARE(Roboto_bold_24);
+LV_FONT_DECLARE(Roboto_bold_36);
 LV_IMAGE_DECLARE(lv_im_big_lock_close);
 LV_IMAGE_DECLARE(lv_im_big_lock_open);
 void screen_Pass_create(lv_obj_t *parent);
+void screen_Pass_update_display(void);
 
 
 #ifdef __cplusplus

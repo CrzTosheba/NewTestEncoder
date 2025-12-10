@@ -8,6 +8,7 @@
 #include "screen_logic/menu_config.h"
 #include "screen_logic/screen_navigation.h"
 #include "screen_logic/screen_container_manager.h"
+#include "screen_logic/access_control.h"
 #include "dialog_screen/screen_YES_NO/yes_no_screen.h"
 #include <stdint.h>
 #include <inttypes.h>
@@ -52,12 +53,12 @@ static bool edit_mode = false;
 static int editing_param_index = -1;
 static manual_pump1_t editing_pump1_value = MANUAL_PUMP1_OFF;
 static manual_pump2_t editing_pump2_value = MANUAL_PUMP2_OFF;
-static manual_valve_t editing_valve_value = MANUAL_VALVE_OFF;
+static manual_valve_t editing_valve_value = MANUAL_VALVE_STOP;
 
 // Временные значения для отмены изменений
 static manual_pump1_t temp_N1_DControl = MANUAL_PUMP1_OFF;
 static manual_pump2_t temp_N2_DControl = MANUAL_PUMP2_OFF;
-static manual_valve_t temp_M_IControl = MANUAL_VALVE_OFF;
+static manual_valve_t temp_M_IControl = MANUAL_VALVE_STOP;
 
 /**
  * @brief Проверяет, является ли объект валидным
@@ -70,21 +71,26 @@ static bool is_obj_valid(lv_obj_t *obj) {
  * @brief Получает строковое представление состояния насоса 1
  */
 static const char* get_pump1_string(manual_pump1_t pump) {
-    return (pump == MANUAL_PUMP1_OFF) ? "Выкл" : "Вкл";
+    return (pump == MANUAL_PUMP1_OFF) ? "ВЫКЛ" : "ВКЛ";
 }
 
 /**
  * @brief Получает строковое представление состояния насоса 2
  */
 static const char* get_pump2_string(manual_pump2_t pump) {
-    return (pump == MANUAL_PUMP2_OFF) ? "Выкл" : "Вкл";
+    return (pump == MANUAL_PUMP2_OFF) ? "ВЫКЛ" : "ВКЛ";
 }
 
 /**
  * @brief Получает строковое представление состояния клапана
  */
 static const char* get_valve_string(manual_valve_t valve) {
-    return (valve == MANUAL_VALVE_OFF) ? "Выкл" : "Вкл";
+    switch(valve) {
+        case MANUAL_VALVE_CLOSED: return "ЗАКР";
+        case MANUAL_VALVE_OPEN: return "ОТКР";
+        case MANUAL_VALVE_STOP: return "СТОП";
+        default: return "???";
+    }
 }
 
 /**
@@ -210,8 +216,7 @@ static void save_param_changes(void) {
         case 2: M_IControl = editing_valve_value; break;
     }
     
-    // Сохраняем параметры в NVS
-    co_manual_params_save();
+    // НЕ сохраняем параметры в NVS (как в ГВС)
     
     edit_mode = false;
     editing_param_index = -1;
@@ -255,6 +260,12 @@ static void cancel_param_changes(void) {
  */
 static void enter_edit_mode(int param_index) {
     if (param_index < 0 || param_index >= 3) return;
+    
+    // Проверяем доступ перед редактированием
+    if (!access_control_is_unlocked()) {
+        ESP_LOGW(TAG, "Access denied: cannot edit parameters when access is locked");
+        return;
+    }
     
     ESP_LOGI(TAG, "Entering edit mode for parameter %d", param_index);
     
@@ -364,6 +375,9 @@ static void create_co_manual_menu_item(lv_obj_t *cont, const CoManualMenuItem *i
             // Выравниваем контейнер значения относительно названия параметра (смещение 200px от левого края)
             lv_obj_set_pos(value_container, 200, -23);
             
+            // Помечаем контейнер значения параметра для компенсации движения по дуге
+            set_as_param_value(value_container);
+            
             lv_obj_t *value_label = lv_label_create(value_container);
             if (is_obj_valid(value_label)) {
                 value_labels[item->param_index] = value_label;
@@ -441,8 +455,20 @@ void co_manual_menu_encoder_event_cb(uint8_t e) {
                                          MANUAL_PUMP2_ON : MANUAL_PUMP2_OFF;
                     break;
                 case 2: // M-IControl
-                    editing_valve_value = (editing_valve_value == MANUAL_VALVE_OFF) ? 
-                                        MANUAL_VALVE_ON : MANUAL_VALVE_OFF;
+                    // Циклическое переключение: ЗАКР -> ОТКР -> СТОП -> ЗАКР
+                    if (e & ENC_RIGHT) {
+                        if (editing_valve_value == MANUAL_VALVE_STOP) {
+                            editing_valve_value = MANUAL_VALVE_CLOSED;
+                        } else {
+                            editing_valve_value = (manual_valve_t)((int)editing_valve_value + 1);
+                        }
+                    } else { // ENC_LEFT
+                        if (editing_valve_value == MANUAL_VALVE_CLOSED) {
+                            editing_valve_value = MANUAL_VALVE_STOP;
+                        } else {
+                            editing_valve_value = (manual_valve_t)((int)editing_valve_value - 1);
+                        }
+                    }
                     break;
             }
             update_param_display(editing_param_index);

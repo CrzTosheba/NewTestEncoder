@@ -9,21 +9,22 @@ static const char *NVS_NAMESPACE = "co_pumps";  // Максимум 15 симв�
 
 // Глобальные переменные для параметров насосов
 int N_Number = 2;                                    // По умолчанию 2 насоса
-int N_BeforeStopPause = 5;                          // По умолчанию 5 с
-int N_ChangeOverPause = 10;                          // По умолчанию 10 с
-pump_change_mode_t N_ChangeMode = PUMP_CHANGE_MODE_TIME; // По умолчанию по времени
-int N_ChangeWHours = 24;                            // По умолчанию 24 ч
-int N_ChangeWDays = 0;                              // По умолчанию 0 сут
-int N_ChangeHours = 12;                             // По умолчанию 12 ч
+int N_BeforeStartPause = 2;                          // По умолчанию 2 с
+int N_BeforeStopPause = 2;                           // По умолчанию 2 с
+int N_ChangeOverPause = 5;                           // По умолчанию 5 с
+pump_change_mode_t N_ChangeMode = PUMP_CHANGE_MODE_TIME; // По умолчанию ЧАСЫ
+int N_ChangeWHours = 48;                            // По умолчанию 48 ч
+int N_ChangeWDays = 2;                              // По умолчанию 2 сут
+int N_ChangeHours = 3;                              // По умолчанию 3 ч
 int N_ChangeMinutes = 0;                            // По умолчанию 0 мин
-pump_reset_t N1_ResetWHours = PUMP_RESET_OFF;       // По умолчанию выкл
-int N1_WHours = 0;                                  // По умолчанию 0 ч
-int N1_WStarts = 0;                                 // По умолчанию 0
-pump_reset_t N2_ResetWHours = PUMP_RESET_OFF;      // По умолчанию выкл
-int N2_WHours = 0;                                  // По умолчанию 0 ч
-int N2_WStarts = 0;                                 // По умолчанию 0
-pump_training_t N_Training_En = PUMP_TRAINING_OFF;  // По умолчанию выкл
-int N_Training_Period = 3600;                       // По умолчанию 3600 с (1 час)
+pump_reset_t N1_ResetWHours = PUMP_RESET_OFF;       // По умолчанию НЕТ
+int N1_WHours = 0;                                  // Только для отображения
+int N1_WStarts = 0;                                 // Только для отображения
+pump_reset_t N2_ResetWHours = PUMP_RESET_OFF;       // По умолчанию НЕТ
+int N2_WHours = 0;                                  // Только для отображения
+int N2_WStarts = 0;                                 // Только для отображения
+pump_training_t N_Training_En = PUMP_TRAINING_OFF;  // По умолчанию ВЫКЛ
+int N_Training_Period = 10;                         // По умолчанию 10 с
 
 /**
  * @brief Сохраняет параметры в NVS
@@ -235,6 +236,8 @@ void co_pumps_params_load(void) {
  */
 void co_pumps_params_init(void) {
     ESP_LOGI(TAG, "Initializing CO pumps parameters");
-    co_pumps_params_load();
+    // НЕ загружаем параметры из NVS (как в ГВС)
+    // Используем значения по умолчанию
+    ESP_LOGI(TAG, "CO pumps parameters initialized with default values");
 }
 

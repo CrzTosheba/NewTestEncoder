@@ -8,6 +8,7 @@
 #include "screen_logic/menu_config.h"
 #include "screen_logic/screen_navigation.h"
 #include "screen_logic/screen_container_manager.h"
+#include "screen_logic/access_control.h"
 #include "dialog_screen/screen_YES_NO/yes_no_screen.h"
 #include <stdint.h>
 #include <inttypes.h>
@@ -54,7 +55,7 @@ static lv_obj_t *value_labels[6] = {NULL};
 static bool edit_mode = false;
 static int editing_param_index = -1;
 static float editing_float_value = 0.0f;
-static heating_mode_t editing_mode_value = MODE_COMF;
+static heating_mode_t editing_mode_value = MODE_COMF;  // По умолчанию КОМФ
 
 // Используем пределы из co_params_limits.h
 #define param_limits co_general_param_limits
@@ -89,7 +90,14 @@ static void format_float_value(char *buf, size_t buf_size, float value) {
  * @brief Получает строковое представление режима
  */
 static const char* get_mode_string(heating_mode_t mode) {
-    return (mode == MODE_COMF) ? "КОМФ" : "ЭКОН";
+    switch(mode) {
+        case MODE_MANUAL:   return "РУЧН";
+        case MODE_SCHEDULE: return "РАСП";
+        case MODE_ECON:     return "ЭКОН";
+        case MODE_COMF:     return "КОМФ";
+        case MODE_ALARM:    return "АВАР";
+        default:            return "???";
+    }
 }
 
 /**
@@ -234,8 +242,7 @@ static void save_param_changes(void) {
         }
     }
     
-    // Сохраняем параметры в NVS
-    co_general_params_save();
+    // НЕ сохраняем параметры в NVS (как в ГВС)
     
     edit_mode = false;
     editing_param_index = -1;
@@ -285,6 +292,12 @@ static void cancel_param_changes(void) {
  */
 static void enter_edit_mode(int param_index) {
     if (param_index < 0 || param_index >= 6) return;
+    
+    // Проверяем доступ перед редактированием
+    if (!access_control_is_unlocked()) {
+        ESP_LOGW(TAG, "Access denied: cannot edit parameters when access is locked");
+        return;
+    }
     
     ESP_LOGI(TAG, "Entering edit mode for parameter %d", param_index);
     
@@ -407,6 +420,9 @@ static void create_co_general_menu_item(lv_obj_t *cont, const CoGeneralMenuItem 
             // Выравниваем контейнер значения относительно названия параметра (смещение 200px от левого края)
             lv_obj_set_pos(value_container, 200, -23);
             
+            // Помечаем контейнер значения параметра для компенсации движения по дуге
+            set_as_param_value(value_container);
+            
             lv_obj_t *value_label = lv_label_create(value_container);
             if (is_obj_valid(value_label)) {
                 value_labels[item->param_index] = value_label;
@@ -474,8 +490,12 @@ void co_general_menu_encoder_event_cb(uint8_t e) {
     if (edit_mode && editing_param_index >= 0) {
         if (e & ENC_LEFT) {
             if (editing_param_index == 0) {
-                // Режим - переключаем между КОМФ и ЭКОН
-                editing_mode_value = (editing_mode_value == MODE_COMF) ? MODE_ECON : MODE_COMF;
+                // Режим - переключаем циклически: РУЧН -> РАСП -> ЭКОН -> КОМФ -> АВАР -> РУЧН
+                if (editing_mode_value == MODE_MANUAL) {
+                    editing_mode_value = MODE_ALARM;
+                } else {
+                    editing_mode_value = (heating_mode_t)((int)editing_mode_value - 1);
+                }
             } else {
                 // Float параметры - уменьшаем на step
                 float step = param_limits[editing_param_index].step;
@@ -487,8 +507,12 @@ void co_general_menu_encoder_event_cb(uint8_t e) {
             update_param_display(editing_param_index);
         } else if (e & ENC_RIGHT) {
             if (editing_param_index == 0) {
-                // Режим - переключаем между КОМФ и ЭКОН
-                editing_mode_value = (editing_mode_value == MODE_COMF) ? MODE_ECON : MODE_COMF;
+                // Режим - переключаем циклически: РУЧН -> РАСП -> ЭКОН -> КОМФ -> АВАР -> РУЧН
+                if (editing_mode_value == MODE_ALARM) {
+                    editing_mode_value = MODE_MANUAL;
+                } else {
+                    editing_mode_value = (heating_mode_t)((int)editing_mode_value + 1);
+                }
             } else {
                 // Float параметры - увеличиваем на step
                 float step = param_limits[editing_param_index].step;

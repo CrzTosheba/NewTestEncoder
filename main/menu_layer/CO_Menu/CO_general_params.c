@@ -9,11 +9,11 @@ static const char *NVS_NAMESPACE = "co_params";
 
 // Глобальные переменные для параметров отопления
 heating_mode_t Mode = MODE_COMF;        // По умолчанию КОМФ
-float T1_Econom = 18.0f;                // По умолчанию 18.0°C
-float T1_Comfort = 22.0f;               // По умолчанию 22.0°C
-float T1_Standby = 15.0f;               // По умолчанию 15.0°C
+float T1_Econom = 55.0f;                // По умолчанию 18.0°C
+float T1_Comfort = 65.0f;               // По умолчанию 22.0°C
+float T1_Standby = 25.0f;               // По умолчанию 15.0°C
 float T1_DesiredMax = 75.0f;            // По умолчанию 75.0°C
-float T1_DesiredMin = 30.0f;            // По умолчанию 30.0°C
+float T1_DesiredMin = 10.0f;            // По умолчанию 10.0°C
 
 /**
  * @brief Сохраняет параметры в NVS
@@ -147,10 +147,11 @@ void co_general_params_load(void) {
 
 // Функция инициализации параметров
 void co_general_params_init(void) {
-    // Сначала пытаемся загрузить из NVS
-    co_general_params_load();
-    
-    // Если загрузка не удалась, используем значения по умолчанию
+    // НЕ загружаем параметры из NVS (как в ГВС)
+    // Используем значения по умолчанию
     // (они уже установлены при объявлении переменных)
+    ESP_LOGI(TAG, "CO general parameters initialized with default values");
+    ESP_LOGI(TAG, "Mode: %d, T1_Econom: %.1f, T1_Comfort: %.1f, T1_Standby: %.1f, T1_DesiredMax: %.1f, T1_DesiredMin: %.1f",
+             Mode, T1_Econom, T1_Comfort, T1_Standby, T1_DesiredMax, T1_DesiredMin);
 }
 

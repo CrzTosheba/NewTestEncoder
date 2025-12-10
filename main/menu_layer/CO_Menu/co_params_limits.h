@@ -31,11 +31,11 @@ extern const param_limits_t co_heating_graph_param_limits_float[PARAM_LIMITS_HEA
 extern const param_limits_int_t co_heating_graph_param_limits_int[1]; // Для C1-Number
 
 // Пределы для параметров меню "Насосы"
-#define PARAM_LIMITS_PUMPS_INT_COUNT 16
+#define PARAM_LIMITS_PUMPS_INT_COUNT 17
 extern const param_limits_int_t co_pumps_param_limits_int[PARAM_LIMITS_PUMPS_INT_COUNT];
 
 // Пределы для параметров меню "Клапан"
-#define PARAM_LIMITS_VALVE_INT_COUNT 4
+#define PARAM_LIMITS_VALVE_INT_COUNT 3
 #define PARAM_LIMITS_VALVE_FLOAT_COUNT 4
 extern const param_limits_int_t co_valve_param_limits_int[PARAM_LIMITS_VALVE_INT_COUNT];
 extern const param_limits_t co_valve_param_limits_float[PARAM_LIMITS_VALVE_FLOAT_COUNT];

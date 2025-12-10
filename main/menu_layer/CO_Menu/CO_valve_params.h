@@ -5,15 +5,21 @@
 extern "C" {
 #endif
 
+// Тип enum для типа регулятора СО
+typedef enum {
+    CO_REG_TYPE_P = 0,      // П
+    CO_REG_TYPE_PI = 1,     // ПИ
+    CO_REG_TYPE_PID = 2     // ПИД
+} co_reg_type_t;
+
 // Глобальные переменные для параметров клапан
-extern int M_ControlType;        // Управл.сигнал
-extern int M_RegType;            // Тип регулятора
-extern int M_Length;             // Длина штока, мм
-extern float M_Speed;            // Скорость, с/мм
-extern float M_PCoef;            // П-коэффициент
-extern float M_ICoef;            // И-коэффициент
-extern float M_Deadband;         // Нейтральная зона, °C
-extern int M_IControl_Min;       // Мин. ширина ИМПС, мс
+extern co_reg_type_t M_RegType;            // M-RegType: Тип регулятора (enum: П/ПИ/ПИД)
+extern int M_Length;             // M-Length: Длина штока, мм
+extern float M_Speed;            // M-Speed: Скорость, с/мм
+extern float M_PCoef;            // M-PCoef: П-коэффициент
+extern float M_ICoef;            // M-ICoef: И-коэффициент
+extern float M_Deadband;         // M-Deadband: Нейтральная зона, °C
+extern int M_IControl_Min;       // M-IControl-Min: Мин. ширина ИМПС, мс
 
 // Функции для работы с параметрами
 void co_valve_params_init(void);

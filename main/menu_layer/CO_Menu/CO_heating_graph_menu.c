@@ -8,6 +8,7 @@
 #include "screen_logic/menu_config.h"
 #include "screen_logic/screen_navigation.h"
 #include "screen_logic/screen_container_manager.h"
+#include "screen_logic/access_control.h"
 #include "dialog_screen/screen_YES_NO/yes_no_screen.h"
 #include <stdint.h>
 #include <inttypes.h>
@@ -315,10 +316,7 @@ static void save_param_changes(void) {
         ESP_LOGI(TAG, "Saving float param %d: %.1f -> %.1f", editing_param_index, old_value, editing_float_value);
     }
     
-    // Сохраняем параметры в NVS
-    ESP_LOGI(TAG, "Calling co_heating_graph_params_save()");
-    co_heating_graph_params_save();
-    ESP_LOGI(TAG, "co_heating_graph_params_save() completed");
+    // НЕ сохраняем параметры в NVS (как в ГВС)
     
     edit_mode = false;
     editing_param_index = -1;
@@ -380,6 +378,12 @@ static void cancel_param_changes(void) {
  */
 static void enter_edit_mode(int param_index) {
     if (param_index < 0 || param_index >= 17) return;
+    
+    // Проверяем доступ перед редактированием
+    if (!access_control_is_unlocked()) {
+        ESP_LOGW(TAG, "Access denied: cannot edit parameters when access is locked");
+        return;
+    }
     
     ESP_LOGI(TAG, "Entering edit mode for parameter %d", param_index);
     
@@ -564,6 +568,9 @@ static void create_co_heating_graph_menu_item(lv_obj_t *cont, const CoHeatingGra
             lv_obj_set_style_pad_all(value_container, 0, 0);
             // Выравниваем контейнер значения относительно названия параметра (смещение 200px от левого края)
             lv_obj_set_pos(value_container, 200, -23);
+            
+            // Помечаем контейнер значения параметра для компенсации движения по дуге
+            set_as_param_value(value_container);
             
             lv_obj_t *value_label = lv_label_create(value_container);
             if (is_obj_valid(value_label)) {

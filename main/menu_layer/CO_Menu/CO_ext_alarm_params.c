@@ -8,10 +8,10 @@ static const char *TAG = "CO_EXT_ALARM_PARAMS";
 static const char *NVS_NAMESPACE = "co_ext_alarm";
 
 // Глобальные переменные для параметров внешней аварии
-int N1_EnExtAlarm = 0;
-int N2_EnExtAlarm = 0;
-int N_ExtAlarmDelay = 0;
-int N_ExtAlarmRType = 0;
+int N1_EnExtAlarm = 0;        // По умолчанию НЕТ
+int N2_EnExtAlarm = 0;        // По умолчанию НЕТ
+int N_ExtAlarmDelay = 2;       // По умолчанию 2 с
+int N_ExtAlarmRType = 4;       // По умолчанию РУЧН-3
 
 /**
  * @brief Сохраняет параметры в NVS
@@ -58,7 +58,11 @@ void co_ext_alarm_params_load(void) {
     
     err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &nvs_handle);
     if (err != ESP_OK) {
-        ESP_LOGW(TAG, "Error opening NVS handle (namespace may not exist): %s", esp_err_to_name(err));
+        if (err == ESP_ERR_NVS_NOT_FOUND) {
+            ESP_LOGI(TAG, "NVS namespace not found, using default values");
+        } else {
+            ESP_LOGW(TAG, "Error opening NVS handle: %s", esp_err_to_name(err));
+        }
         return;
     }
     
@@ -81,6 +85,10 @@ void co_ext_alarm_params_load(void) {
  */
 void co_ext_alarm_params_init(void) {
     ESP_LOGI(TAG, "Initializing CO external alarm parameters");
-    co_ext_alarm_params_load();
+    // НЕ загружаем параметры из NVS (как в ГВС)
+    // Используем значения по умолчанию
+    ESP_LOGI(TAG, "CO external alarm parameters initialized with default values");
+    ESP_LOGI(TAG, "N1_EnExtAlarm=%d, N2_EnExtAlarm=%d, N_ExtAlarmDelay=%d, N_ExtAlarmRType=%d",
+             N1_EnExtAlarm, N2_EnExtAlarm, N_ExtAlarmDelay, N_ExtAlarmRType);
 }
 

@@ -566,6 +566,9 @@ static void create_co_schedule_day_menu_item(lv_obj_t *cont, const CoScheduleDay
             lv_obj_set_style_pad_all(value_container, 0, 0);
             lv_obj_set_pos(value_container, 200, -23);
             
+            // Помечаем контейнер значения параметра для компенсации движения по дуге
+            set_as_param_value(value_container);
+            
             lv_obj_t *value_label = lv_label_create(value_container);
             if (is_obj_valid(value_label)) {
                 day_value_labels[item->param_index] = value_label;
@@ -599,8 +602,7 @@ static void save_day_param_changes(void) {
         *minutes_ptr = editing_minutes_value;
     }
     
-    // Сохраняем параметры в NVS
-    co_schedule_params_save();
+    // НЕ сохраняем параметры в NVS (как в ГВС)
     
     edit_mode = false;
     editing_param_index = -1;

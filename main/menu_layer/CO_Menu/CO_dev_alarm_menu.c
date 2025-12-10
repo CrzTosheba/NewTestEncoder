@@ -8,6 +8,7 @@
 #include "screen_logic/menu_config.h"
 #include "screen_logic/screen_navigation.h"
 #include "screen_logic/screen_container_manager.h"
+#include "screen_logic/access_control.h"
 #include "dialog_screen/screen_YES_NO/yes_no_screen.h"
 #include "CO_alarms_menu.h"
 #include <stdint.h>
@@ -22,6 +23,27 @@
 static const char *TAG = "CO_DEV_ALARM_MENU";
 
 static void update_param_display(int param_index);
+
+/**
+ * @brief Преобразует enum сброса в строку
+ */
+static const char* get_dev_alarm_rtype_string(int value) {
+    switch(value) {
+        case 0: return "АВТО";
+        case 1: return "РУЧН";
+        case 2: return "РУЧН-1";
+        case 3: return "РУЧН-2";
+        case 4: return "РУЧН-3";
+        case 5: return "РУЧН-4";
+        case 6: return "РУЧН-5";
+        case 7: return "РУЧН-6";
+        case 8: return "РУЧН-7";
+        case 9: return "РУЧН-8";
+        case 10: return "РУЧН-9";
+        case 11: return "РУЧН-10";
+        default: return "???";
+    }
+}
 
 typedef struct {
     const char *label_text;
@@ -119,54 +141,41 @@ static void update_param_display(int param_index) {
     char value_str[32];
     bool is_float = (param_index == 5);
     
-    bool is_enum = (param_index == 0 || param_index == 1 || param_index == 2 || param_index == 4);  // Enum параметры
-    
     if (edit_mode && editing_param_index == param_index) {
         if (is_float) {
             format_float_value(value_str, sizeof(value_str), editing_float_value);
-        } else if (is_enum) {
+        } else if (param_index == 0 || param_index == 1 || param_index == 2) {
+            // Enum НЕТ/ДА
             snprintf(value_str, sizeof(value_str), "%s", 
                      editing_int_value == 0 ? "НЕТ" : "ДА");
-        } else {
+        } else if (param_index == 3) {
+            // Задержка - int
             snprintf(value_str, sizeof(value_str), "%d", editing_int_value);
+        } else if (param_index == 4) {
+            // Сброс - enum АВТО/РУЧН/РУЧН-1/.../РУЧН-10
+            snprintf(value_str, sizeof(value_str), "%s", 
+                     get_dev_alarm_rtype_string(editing_int_value));
         }
     } else {
         switch(param_index) {
             case 0: {
                 int value = T1_EnDevAlarm;
-                if (is_enum) {
-                    snprintf(value_str, sizeof(value_str), "%s", value == 0 ? "НЕТ" : "ДА");
-                } else {
-                    snprintf(value_str, sizeof(value_str), "%d", value);
-                }
+                snprintf(value_str, sizeof(value_str), "%s", value == 0 ? "НЕТ" : "ДА");
                 break;
             }
             case 1: {
                 int value = T1_EnHighAlarm;
-                if (is_enum) {
-                    snprintf(value_str, sizeof(value_str), "%s", value == 0 ? "НЕТ" : "ДА");
-                } else {
-                    snprintf(value_str, sizeof(value_str), "%d", value);
-                }
+                snprintf(value_str, sizeof(value_str), "%s", value == 0 ? "НЕТ" : "ДА");
                 break;
             }
             case 2: {
                 int value = T1_EnLowAlarm;
-                if (is_enum) {
-                    snprintf(value_str, sizeof(value_str), "%s", value == 0 ? "НЕТ" : "ДА");
-                } else {
-                    snprintf(value_str, sizeof(value_str), "%d", value);
-                }
+                snprintf(value_str, sizeof(value_str), "%s", value == 0 ? "НЕТ" : "ДА");
                 break;
             }
             case 3: snprintf(value_str, sizeof(value_str), "%d", T1_DevAlarmDelay); break;
             case 4: {
-                int value = T1_DevAlarmRType;
-                if (is_enum) {
-                    snprintf(value_str, sizeof(value_str), "%s", value == 0 ? "НЕТ" : "ДА");
-                } else {
-                    snprintf(value_str, sizeof(value_str), "%d", value);
-                }
+                snprintf(value_str, sizeof(value_str), "%s", get_dev_alarm_rtype_string(T1_DevAlarmRType));
                 break;
             }
             case 5: format_float_value(value_str, sizeof(value_str), T1_AlarmDev); break;
@@ -214,7 +223,7 @@ static void save_param_changes(void) {
         case 5: T1_AlarmDev = editing_float_value; break;
     }
     
-    co_dev_alarm_params_save();
+    // НЕ сохраняем параметры в NVS (как в ГВС)
     
     edit_mode = false;
     editing_param_index = -1;
@@ -252,6 +261,12 @@ static void cancel_param_changes(void) {
 
 static void enter_edit_mode(int param_index) {
     if (param_index < 0 || param_index >= 6) return;
+    
+    // Проверяем доступ перед редактированием
+    if (!access_control_is_unlocked()) {
+        ESP_LOGW(TAG, "Access denied: cannot edit parameters when access is locked");
+        return;
+    }
     
     ESP_LOGI(TAG, "Entering edit mode for parameter %d", param_index);
     
@@ -357,6 +372,9 @@ static void create_co_dev_alarm_menu_item(lv_obj_t *cont, const CoDevAlarmMenuIt
             lv_obj_set_style_pad_all(value_container, 0, 0);
             lv_obj_set_pos(value_container, 200, -23);
             
+            // Помечаем контейнер значения параметра для компенсации движения по дуге
+            set_as_param_value(value_container);
+            
             lv_obj_t *value_label = lv_label_create(value_container);
             if (is_obj_valid(value_label)) {
                 value_labels[item->param_index] = value_label;
@@ -422,7 +440,12 @@ void co_dev_alarm_menu_encoder_event_cb(uint8_t e) {
                 int step = co_dev_alarm_param_limits_int[editing_param_index].step;
                 editing_int_value -= step;
                 if (editing_int_value < co_dev_alarm_param_limits_int[editing_param_index].min) {
-                    editing_int_value = co_dev_alarm_param_limits_int[editing_param_index].min;
+                    // Для enum параметров делаем циклическое переключение
+                    if (editing_param_index == 0 || editing_param_index == 1 || editing_param_index == 2 || editing_param_index == 4) {
+                        editing_int_value = co_dev_alarm_param_limits_int[editing_param_index].max;
+                    } else {
+                        editing_int_value = co_dev_alarm_param_limits_int[editing_param_index].min;
+                    }
                 }
             }
             update_param_display(editing_param_index);
@@ -437,7 +460,12 @@ void co_dev_alarm_menu_encoder_event_cb(uint8_t e) {
                 int step = co_dev_alarm_param_limits_int[editing_param_index].step;
                 editing_int_value += step;
                 if (editing_int_value > co_dev_alarm_param_limits_int[editing_param_index].max) {
-                    editing_int_value = co_dev_alarm_param_limits_int[editing_param_index].max;
+                    // Для enum параметров делаем циклическое переключение
+                    if (editing_param_index == 0 || editing_param_index == 1 || editing_param_index == 2 || editing_param_index == 4) {
+                        editing_int_value = co_dev_alarm_param_limits_int[editing_param_index].min;
+                    } else {
+                        editing_int_value = co_dev_alarm_param_limits_int[editing_param_index].max;
+                    }
                 }
             }
             update_param_display(editing_param_index);

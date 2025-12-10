@@ -2,10 +2,21 @@
 #include "menu_layer/main_menu/main_menu.h"
 #include "screens/S_Pass/password_screen.h"
 #include "screens/S_Pass/screen_Pass.h"
+#include "screen_logic/access_control.h"
 #include "encoder/encoder_manager.h"
 #include "menu_layer/In_Out_Menu/In_Out_main_menu.h"
 #include "menu_layer/CO_Menu/CO_main_menu.h"
+#include "menu_layer/GVS_Menu/GVS_main_menu.h"
+#include "menu_layer/GVS_Menu/GVS_general_menu.h"
+#include "menu_layer/GVS_Menu/GVS_pumps_menu.h"
+#include "menu_layer/GVS_Menu/GVS_valve_menu.h"
+#include "menu_layer/GVS_Menu/GVS_manual_menu.h"
+#include "menu_layer/GVS_Menu/GVS_schedule_menu.h"
+#include "menu_layer/GVS_Menu/GVS_alarms_menu.h"
+#include "menu_layer/GVS_Menu/GVS_dry_run_menu.h"
 #include "screens/S_In_Out/1_layer/screen_In_Out.h"
+#include "screens/S_Co/screen_CO.h"
+#include "screens/S_Gvs/screen_Gvs.h"
 #include "screen_container_manager.h"
 #include "arc_menu.h"
 #include <inttypes.h>
@@ -151,6 +162,15 @@ void screen_navigation_go_to(screen_type_t screen) {
             // Скрываем все подменю
             input_output_menu_hide();
             co_menu_hide();
+            gvs_menu_hide();
+            gvs_general_menu_hide();
+            gvs_pumps_menu_hide();
+            gvs_valve_menu_hide();
+            gvs_manual_menu_hide();
+            gvs_schedule_menu_hide();
+            gvs_schedule_day_menu_hide();
+            gvs_alarms_menu_hide();
+            gvs_dry_run_menu_hide();
             
             // Теперь безопасно очищаем экран пароля (главный экран уже активен)
             password_screen_cleanup();
@@ -170,6 +190,9 @@ void screen_navigation_go_to(screen_type_t screen) {
             
             // Обновляем отображение
             main_menu_update_display();
+            
+            // Обновляем отображение экрана доступа
+            screen_Pass_update_display();
             
             encoder_manager_register_callback(screen_navigation_encoder_event_cb);
             break;
@@ -191,12 +214,40 @@ void screen_navigation_go_to(screen_type_t screen) {
             encoder_manager_register_callback(password_encoder_event_cb);
             break;
             
-        case SCREEN_GVS:
-            ESP_LOGI(TAG, "Transition to GVS screen not implemented yet");
-            screen_navigation_go_to(SCREEN_MAIN_MENU);
-            break;
+        case SCREEN_GVS: {
+            ESP_LOGI(TAG, "Transition to GVS menu");
             
-        case SCREEN_CO:
+            // Сохраняем состояние меню перед переходом
+            screen_navigation_save_cursor_position();
+            
+            // Скрываем главное меню
+            main_menu_hide();
+            
+            // Создаем контейнер для экрана ГВС
+            current_content_container = screen_container_create(CONTAINER_TYPE_MAIN_MENU);
+            
+            // Создаем обертку для контента
+            lv_obj_t *screen_wrapper = screen_content_wrapper_create(current_content_container);
+            
+            // Создаем интерфейс экрана ГВС
+            screen_Gvs_create(screen_wrapper);
+            
+            // Создаем меню ГВС
+            GVS_Menu_List();
+            
+            // Показываем меню ГВС
+            gvs_menu_show();
+            
+            // Обновляем дуговое меню
+            if (gvs_cont && lv_obj_is_valid(gvs_cont)) {
+                arc_menu_update_slide(gvs_cont);
+            }
+            
+            encoder_manager_register_callback(gvs_menu_encoder_event_cb);
+            break;
+        }
+            
+        case SCREEN_CO: {
             ESP_LOGI(TAG, "Transition to CO menu");
             
             // Сохраняем состояние меню перед переходом
@@ -227,6 +278,7 @@ void screen_navigation_go_to(screen_type_t screen) {
             
             encoder_manager_register_callback(co_menu_encoder_event_cb);
             break;
+        }
             
         case SCREEN_PODP:
             ESP_LOGI(TAG, "Transition to PODP screen not implemented yet");
@@ -299,6 +351,9 @@ void screen_navigation_go_to(screen_type_t screen) {
 }
 
 void screen_navigation_encoder_event_cb(uint8_t e) {
+    // Обновляем таймер активности при любом действии пользователя
+    access_control_update_activity_timer();
+    
     // Если мы в главном меню
     if (current_screen == SCREEN_MAIN_MENU) {
         // Передаем события в главное меню для обработки движения
@@ -310,9 +365,21 @@ void screen_navigation_encoder_event_cb(uint8_t e) {
             ESP_LOGI(TAG, "Click detected on menu item: %" PRIu32, menu_state->cursor_index);
             
             switch(menu_state->cursor_index) {
-                case 0: // "Открыть доступ"
-                    ESP_LOGI(TAG, "Navigating to password screen");
-                    screen_navigation_go_to(SCREEN_PASSWORD_INPUT);
+                case 0: // "Открыть доступ" / "Закрыть доступ"
+                    {
+                        if (access_control_is_unlocked()) {
+                            // Если доступ открыт - закрываем его
+                            ESP_LOGI(TAG, "Closing access");
+                            access_control_lock();
+                            // Обновляем отображение главного меню и экрана доступа
+                            main_menu_update_access_display();
+                            screen_Pass_update_display();
+                        } else {
+                            // Если доступ закрыт - открываем экран пароля
+                            ESP_LOGI(TAG, "Navigating to password screen");
+                            screen_navigation_go_to(SCREEN_PASSWORD_INPUT);
+                        }
+                    }
                     break;
                 case 1: // "ГВС"
                     ESP_LOGI(TAG, "Navigating to GVS screen");

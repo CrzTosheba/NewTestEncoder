@@ -8,12 +8,12 @@ static const char *TAG = "CO_DEV_ALARM_PARAMS";
 static const char *NVS_NAMESPACE = "co_dev_alarm";
 
 // Глобальные переменные для параметров аварийного отклонения
-int T1_EnDevAlarm = 0;
-int T1_EnHighAlarm = 0;
-int T1_EnLowAlarm = 0;
-int T1_DevAlarmDelay = 0;
-int T1_DevAlarmRType = 0;
-float T1_AlarmDev = 0.0f;
+int T1_EnDevAlarm = 0;           // По умолчанию НЕТ
+int T1_EnHighAlarm = 0;           // По умолчанию НЕТ
+int T1_EnLowAlarm = 0;           // По умолчанию НЕТ
+int T1_DevAlarmDelay = 600;      // По умолчанию 600 с
+int T1_DevAlarmRType = 4;        // По умолчанию РУЧН-3 (значение 4)
+float T1_AlarmDev = 20.0f;       // По умолчанию 20.0 °C
 
 /**
  * @brief Сохраняет параметры в NVS
@@ -64,7 +64,11 @@ void co_dev_alarm_params_load(void) {
     
     err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &nvs_handle);
     if (err != ESP_OK) {
-        ESP_LOGW(TAG, "Error opening NVS handle (namespace may not exist): %s", esp_err_to_name(err));
+        if (err == ESP_ERR_NVS_NOT_FOUND) {
+            ESP_LOGI(TAG, "NVS namespace not found, using default values");
+        } else {
+            ESP_LOGW(TAG, "Error opening NVS handle: %s", esp_err_to_name(err));
+        }
         return;
     }
     
@@ -95,6 +99,8 @@ void co_dev_alarm_params_load(void) {
  */
 void co_dev_alarm_params_init(void) {
     ESP_LOGI(TAG, "Initializing CO deviation alarm parameters");
-    co_dev_alarm_params_load();
+    // НЕ загружаем параметры из NVS (как в ГВС)
+    // Используем значения по умолчанию
+    ESP_LOGI(TAG, "CO deviation alarm parameters initialized with default values");
 }
 

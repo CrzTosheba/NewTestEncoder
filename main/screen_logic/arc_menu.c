@@ -25,6 +25,7 @@ void set_as_status_icon(lv_obj_t *obj) {
     
     // Инициализируем структуру
     data->is_status_icon = true;
+    data->is_param_value = false;
     
     // Устанавливаем пользовательские данные для объекта
     lv_obj_set_user_data(obj, data);
@@ -47,6 +48,58 @@ bool is_status_icon(lv_obj_t *obj) {
     
     custom_obj_data_t *data = (custom_obj_data_t*)lv_obj_get_user_data(obj);
     return (data != NULL && data->is_status_icon);
+}
+
+/**
+ * @brief Устанавливает объект как контейнер значения параметра
+ * @param obj Указатель на объект LVGL
+ */
+void set_as_param_value(lv_obj_t *obj) {
+    if (obj == NULL) {
+        ESP_LOGE(TAG_ARC, "Attempt to set NULL object as param value");
+        return;
+    }
+    
+    // Проверяем, есть ли уже пользовательские данные
+    custom_obj_data_t *data = (custom_obj_data_t*)lv_obj_get_user_data(obj);
+    
+    if (data == NULL) {
+        // Выделяем память для пользовательских данных с помощью LVGL
+        data = (custom_obj_data_t*)lv_malloc(sizeof(custom_obj_data_t));
+        if (data == NULL) {
+            ESP_LOGE(TAG_ARC, "Failed to allocate memory for custom_obj_data_t");
+            return;
+        }
+        
+        // Инициализируем структуру
+        data->is_status_icon = false;
+        data->is_param_value = true;
+        
+        // Устанавливаем пользовательские данные для объекта
+        lv_obj_set_user_data(obj, data);
+        
+        // Добавляем обработчик события DELETE для автоматической очистки памяти
+        lv_obj_add_event_cb(obj, free_custom_data, LV_EVENT_DELETE, NULL);
+    } else {
+        // Если данные уже есть, просто устанавливаем флаг
+        data->is_param_value = true;
+    }
+    
+    ESP_LOGD(TAG_ARC, "Object marked as param value container");
+}
+
+/**
+ * @brief Проверяет, является ли объект контейнером значения параметра
+ * @param obj Указатель на объект LVGL
+ * @return true если это контейнер значения параметра, иначе false
+ */
+bool is_param_value(lv_obj_t *obj) {
+    if (obj == NULL) {
+        return false;
+    }
+    
+    custom_obj_data_t *data = (custom_obj_data_t*)lv_obj_get_user_data(obj);
+    return (data != NULL && data->is_param_value);
 }
 
 /**
@@ -106,7 +159,7 @@ void arc_menu_update_slide(lv_obj_t *cont) {
         // Применяем вычисленное смещение к основному контейнеру
         lv_obj_set_style_translate_x(child, x, 0);
         
-        // ПРИМЕНЯЕМ КОМПЕНСАЦИЮ ТОЛЬКО К СТАТУСНЫМ ИКОНКАМ
+        // ПРИМЕНЯЕМ КОМПЕНСАЦИЮ К СТАТУСНЫМ ИКОНКАМ И КОНТЕЙНЕРАМ ЗНАЧЕНИЙ ПАРАМЕТРОВ
         uint32_t grand_child_cnt = lv_obj_get_child_cnt(child);
         for (uint32_t j = 0; j < grand_child_cnt; j++) {
             lv_obj_t *grand_child = lv_obj_get_child(child, j);
@@ -116,6 +169,12 @@ void arc_menu_update_slide(lv_obj_t *cont) {
                 // Применяем обратное смещение только к статусным иконкам
                 lv_obj_set_style_translate_x(grand_child, -x, 0);
                 ESP_LOGD(TAG_ARC, "Applied compensation to status icon, offset: %" PRId32, -x);
+            }
+            // Проверяем, является ли элемент контейнером значения параметра
+            else if (is_param_value(grand_child)) {
+                // Применяем обратное смещение к контейнерам значений параметров
+                lv_obj_set_style_translate_x(grand_child, -x, 0);
+                ESP_LOGD(TAG_ARC, "Applied compensation to param value container, offset: %" PRId32, -x);
             }
         }
         

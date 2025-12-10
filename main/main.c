@@ -19,9 +19,18 @@
 #include "menu_layer/CO_Menu/CO_ext_alarm_params.h"
 #include "menu_layer/CO_Menu/CO_sensor_break_params.h"
 #include "menu_layer/CO_Menu/CO_dev_alarm_params.h"
+#include "menu_layer/GVS_Menu/GVS_pumps_params.h"
+#include "menu_layer/GVS_Menu/GVS_valve_params.h"
+#include "menu_layer/GVS_Menu/GVS_manual_params.h"
+#include "menu_layer/GVS_Menu/GVS_schedule_params.h"
+#include "menu_layer/GVS_Menu/GVS_dry_run_params.h"
+#include "menu_layer/GVS_Menu/GVS_ext_alarm_params.h"
+#include "menu_layer/GVS_Menu/GVS_sensor_break_params.h"
+#include "menu_layer/GVS_Menu/GVS_dev_alarm_params.h"
 #include "esp_heap_caps.h"
 #include "encoder/encoder_manager.h"
 #include "screen_logic/screen_navigation.h"
+#include "screen_logic/access_control.h"
 #include "nvs_flash.h"
 
 /**
@@ -130,6 +139,10 @@ void app_main(void)
     // Создает очередь событий и регистрирует обработчик
     encoder_manager_init();
     ESP_LOGI(TAG, "Encoder manager initialized");
+    
+    // ========== Инициализация управления доступом ==========
+    access_control_init();
+    ESP_LOGI(TAG, "Access control initialized");
 
     // ========== Создание пользовательского интерфейса ==========
     // ВАЖНО: Все операции с LVGL должны выполняться с заблокированным мьютексом
@@ -169,6 +182,32 @@ void app_main(void)
     co_sensor_break_params_init();
     co_dev_alarm_params_init();
     ESP_LOGI(TAG, "CO alarms parameters initialized");
+    
+    // Инициализация параметров насосов ГВС
+    gvs_pumps_params_init();
+    ESP_LOGI(TAG, "GVS pumps parameters initialized");
+    
+    // Инициализация параметров клапан ГВС
+    gvs_valve_params_init();
+    ESP_LOGI(TAG, "GVS valve parameters initialized");
+
+    // Инициализация параметров ручной режим ГВС
+    gvs_manual_params_init();
+    ESP_LOGI(TAG, "GVS manual parameters initialized");
+
+    // Инициализация параметров расписания ГВС
+    gvs_schedule_params_init();
+    ESP_LOGI(TAG, "GVS schedule parameters initialized");
+
+    // Инициализация параметров сухого хода ГВС
+    gvs_dry_run_params_init();
+    ESP_LOGI(TAG, "GVS dry run parameters initialized");
+    
+    // Инициализация параметров аварий ГВС
+    gvs_ext_alarm_params_init();
+    gvs_sensor_break_params_init();
+    gvs_dev_alarm_params_init();
+    ESP_LOGI(TAG, "GVS alarms parameters initialized");
 
     // Разблокировка дисплея после завершения операций с LVGL
     bsp_display_unlock();

@@ -17,8 +17,9 @@ typedef enum {
 } manual_pump2_t;
 
 typedef enum {
-    MANUAL_VALVE_OFF = 0,
-    MANUAL_VALVE_ON = 1
+    MANUAL_VALVE_CLOSED = 0,  // ЗАКР
+    MANUAL_VALVE_OPEN = 1,    // ОТКР
+    MANUAL_VALVE_STOP = 2      // СТОП
 } manual_valve_t;
 
 // Глобальные переменные для параметров ручного режима

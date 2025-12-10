@@ -8,6 +8,7 @@
 #include "screen_logic/menu_config.h"
 #include "screen_logic/screen_navigation.h"
 #include "screen_logic/screen_container_manager.h"
+#include "screen_logic/access_control.h"
 #include "dialog_screen/screen_YES_NO/yes_no_screen.h"
 #include "CO_alarms_menu.h"
 #include <stdint.h>
@@ -23,6 +24,8 @@ static const char *TAG = "CO_DRY_RUN_MENU";
 
 // Forward declarations
 static void update_param_display(int param_index);
+static const char* get_enalarm_string(co_ps_enalarm_t value);
+static const char* get_alarm_rtype_string(co_ps_alarm_rtype_t value);
 
 // Структура элемента меню сухого хода
 typedef struct {
@@ -54,12 +57,40 @@ static int editing_param_index = -1;
 static int editing_int_value = 0;
 
 // Временные значения для отмены изменений
-static int temp_PS_EnAlarm = 0;
+static co_ps_enalarm_t temp_PS_EnAlarm = CO_PS_ENALARM_NO;
 static int temp_PS_AlarmDelay = 0;
-static int temp_PS_AlarmRType = 0;
+static co_ps_alarm_rtype_t temp_PS_AlarmRType = CO_PS_ALARM_RTYPE_MANUAL_3;
 
 static bool is_obj_valid(lv_obj_t *obj) {
     return obj != NULL && lv_obj_is_valid(obj);
+}
+
+/**
+ * @brief Преобразует enum активации в строку
+ */
+static const char* get_enalarm_string(co_ps_enalarm_t value) {
+    return (value == CO_PS_ENALARM_NO) ? "НЕТ" : "ДА";
+}
+
+/**
+ * @brief Преобразует enum сброса в строку
+ */
+static const char* get_alarm_rtype_string(co_ps_alarm_rtype_t value) {
+    switch(value) {
+        case CO_PS_ALARM_RTYPE_AUTO: return "АВТО";
+        case CO_PS_ALARM_RTYPE_MANUAL: return "РУЧН";
+        case CO_PS_ALARM_RTYPE_MANUAL_1: return "РУЧН-1";
+        case CO_PS_ALARM_RTYPE_MANUAL_2: return "РУЧН-2";
+        case CO_PS_ALARM_RTYPE_MANUAL_3: return "РУЧН-3";
+        case CO_PS_ALARM_RTYPE_MANUAL_4: return "РУЧН-4";
+        case CO_PS_ALARM_RTYPE_MANUAL_5: return "РУЧН-5";
+        case CO_PS_ALARM_RTYPE_MANUAL_6: return "РУЧН-6";
+        case CO_PS_ALARM_RTYPE_MANUAL_7: return "РУЧН-7";
+        case CO_PS_ALARM_RTYPE_MANUAL_8: return "РУЧН-8";
+        case CO_PS_ALARM_RTYPE_MANUAL_9: return "РУЧН-9";
+        case CO_PS_ALARM_RTYPE_MANUAL_10: return "РУЧН-10";
+        default: return "???";
+    }
 }
 
 static void co_dry_run_highlight_box(lv_obj_t *cont, uint32_t cursor_index) {
@@ -109,27 +140,29 @@ static void update_param_display(int param_index) {
     if (!is_obj_valid(value_labels[param_index])) return;
     
     char value_str[32];
-    bool is_enum = (param_index == 0 || param_index == 2);  // Активация и Сброс - enum
     
     if (edit_mode && editing_param_index == param_index) {
-        if (is_enum) {
+        // В режиме редактирования
+        if (param_index == 0) {
+            // Активация - enum НЕТ/ДА
             snprintf(value_str, sizeof(value_str), "%s", 
-                     editing_int_value == 0 ? "НЕТ" : "ДА");
-        } else {
+                     get_enalarm_string((co_ps_enalarm_t)editing_int_value));
+        } else if (param_index == 1) {
+            // Задержка - int
             snprintf(value_str, sizeof(value_str), "%d", editing_int_value);
+        } else if (param_index == 2) {
+            // Сброс - enum АВТО/РУЧН/РУЧН-1/.../РУЧН-10
+            snprintf(value_str, sizeof(value_str), "%s", 
+                     get_alarm_rtype_string((co_ps_alarm_rtype_t)editing_int_value));
         }
     } else {
-        int value;
-        switch(param_index) {
-            case 0: value = PS_EnAlarm; break;
-            case 1: value = PS_AlarmDelay; break;
-            case 2: value = PS_AlarmRType; break;
-            default: value = 0; break;
-        }
-        if (is_enum) {
-            snprintf(value_str, sizeof(value_str), "%s", value == 0 ? "НЕТ" : "ДА");
-        } else {
-            snprintf(value_str, sizeof(value_str), "%d", value);
+        // Обычный режим
+        if (param_index == 0) {
+            snprintf(value_str, sizeof(value_str), "%s", get_enalarm_string(PS_EnAlarm));
+        } else if (param_index == 1) {
+            snprintf(value_str, sizeof(value_str), "%d", PS_AlarmDelay);
+        } else if (param_index == 2) {
+            snprintf(value_str, sizeof(value_str), "%s", get_alarm_rtype_string(PS_AlarmRType));
         }
     }
     
@@ -164,12 +197,12 @@ static void save_param_changes(void) {
     int saved_index = editing_param_index;
     
     switch(editing_param_index) {
-        case 0: PS_EnAlarm = editing_int_value; break;
+        case 0: PS_EnAlarm = (co_ps_enalarm_t)editing_int_value; break;
         case 1: PS_AlarmDelay = editing_int_value; break;
-        case 2: PS_AlarmRType = editing_int_value; break;
+        case 2: PS_AlarmRType = (co_ps_alarm_rtype_t)editing_int_value; break;
     }
     
-    co_dry_run_params_save();
+    // НЕ сохраняем параметры в NVS (как в ГВС)
     
     edit_mode = false;
     editing_param_index = -1;
@@ -187,9 +220,9 @@ static void cancel_param_changes(void) {
     int saved_index = editing_param_index;
     
     switch(editing_param_index) {
-        case 0: editing_int_value = temp_PS_EnAlarm; break;
+        case 0: editing_int_value = (int)temp_PS_EnAlarm; break;
         case 1: editing_int_value = temp_PS_AlarmDelay; break;
-        case 2: editing_int_value = temp_PS_AlarmRType; break;
+        case 2: editing_int_value = (int)temp_PS_AlarmRType; break;
     }
     
     edit_mode = false;
@@ -205,6 +238,12 @@ static void cancel_param_changes(void) {
 static void enter_edit_mode(int param_index) {
     if (param_index < 0 || param_index >= 3) return;
     
+    // Проверяем доступ перед редактированием
+    if (!access_control_is_unlocked()) {
+        ESP_LOGW(TAG, "Access denied: cannot edit parameters when access is locked");
+        return;
+    }
+    
     ESP_LOGI(TAG, "Entering edit mode for parameter %d", param_index);
     
     edit_mode = true;
@@ -213,7 +252,7 @@ static void enter_edit_mode(int param_index) {
     switch(param_index) {
         case 0:
             temp_PS_EnAlarm = PS_EnAlarm;
-            editing_int_value = PS_EnAlarm;
+            editing_int_value = (int)PS_EnAlarm;
             break;
         case 1:
             temp_PS_AlarmDelay = PS_AlarmDelay;
@@ -221,7 +260,7 @@ static void enter_edit_mode(int param_index) {
             break;
         case 2:
             temp_PS_AlarmRType = PS_AlarmRType;
-            editing_int_value = PS_AlarmRType;
+            editing_int_value = (int)PS_AlarmRType;
             break;
     }
     
@@ -234,9 +273,9 @@ static void exit_edit_mode_with_confirmation(void) {
     bool value_changed = false;
     
     switch(editing_param_index) {
-        case 0: value_changed = (editing_int_value != temp_PS_EnAlarm); break;
+        case 0: value_changed = (editing_int_value != (int)temp_PS_EnAlarm); break;
         case 1: value_changed = (editing_int_value != temp_PS_AlarmDelay); break;
-        case 2: value_changed = (editing_int_value != temp_PS_AlarmRType); break;
+        case 2: value_changed = (editing_int_value != (int)temp_PS_AlarmRType); break;
     }
     
     if (value_changed) {
@@ -290,6 +329,9 @@ static void create_co_dry_run_menu_item(lv_obj_t *cont, const CoDryRunMenuItem *
             lv_obj_set_style_radius(value_container, 0, 0);
             lv_obj_set_style_pad_all(value_container, 0, 0);
             lv_obj_set_pos(value_container, 200, -23);
+            
+            // Помечаем контейнер значения параметра для компенсации движения по дуге
+            set_as_param_value(value_container);
             
             lv_obj_t *value_label = lv_label_create(value_container);
             if (is_obj_valid(value_label)) {
@@ -349,14 +391,24 @@ void co_dry_run_menu_encoder_event_cb(uint8_t e) {
             int step = co_dry_run_param_limits_int[editing_param_index].step;
             editing_int_value -= step;
             if (editing_int_value < co_dry_run_param_limits_int[editing_param_index].min) {
-                editing_int_value = co_dry_run_param_limits_int[editing_param_index].min;
+                // Для enum параметров делаем циклическое переключение
+                if (editing_param_index == 0 || editing_param_index == 2) {
+                    editing_int_value = co_dry_run_param_limits_int[editing_param_index].max;
+                } else {
+                    editing_int_value = co_dry_run_param_limits_int[editing_param_index].min;
+                }
             }
             update_param_display(editing_param_index);
         } else if (e & ENC_RIGHT) {
             int step = co_dry_run_param_limits_int[editing_param_index].step;
             editing_int_value += step;
             if (editing_int_value > co_dry_run_param_limits_int[editing_param_index].max) {
-                editing_int_value = co_dry_run_param_limits_int[editing_param_index].max;
+                // Для enum параметров делаем циклическое переключение
+                if (editing_param_index == 0 || editing_param_index == 2) {
+                    editing_int_value = co_dry_run_param_limits_int[editing_param_index].min;
+                } else {
+                    editing_int_value = co_dry_run_param_limits_int[editing_param_index].max;
+                }
             }
             update_param_display(editing_param_index);
         } else if (e & ENC_CLICK) {
@@ -496,4 +548,5 @@ void CO_Dry_Run_Menu_List(void) {
 
     ESP_LOGI(TAG, "Меню сухого хода успешно инициализировано");
 }
+
 

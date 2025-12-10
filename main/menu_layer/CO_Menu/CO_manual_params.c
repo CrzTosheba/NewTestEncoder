@@ -8,9 +8,9 @@ static const char *TAG = "CO_MANUAL_PARAMS";
 static const char *NVS_NAMESPACE = "co_manual";  // Максимум 15 символов для NVS
 
 // Глобальные переменные для параметров ручного режима
-manual_pump1_t N1_DControl = MANUAL_PUMP1_OFF;    // По умолчанию выкл
-manual_pump2_t N2_DControl = MANUAL_PUMP2_OFF;    // По умолчанию выкл
-manual_valve_t M_IControl = MANUAL_VALVE_OFF;     // По умолчанию выкл
+manual_pump1_t N1_DControl = MANUAL_PUMP1_OFF;    // По умолчанию ВЫКЛ
+manual_pump2_t N2_DControl = MANUAL_PUMP2_OFF;    // По умолчанию ВЫКЛ
+manual_valve_t M_IControl = MANUAL_VALVE_STOP;     // По умолчанию СТОП
 
 /**
  * @brief Сохраняет параметры в NVS
@@ -99,6 +99,8 @@ void co_manual_params_load(void) {
  */
 void co_manual_params_init(void) {
     ESP_LOGI(TAG, "Initializing CO manual parameters");
-    co_manual_params_load();
+    // НЕ загружаем параметры из NVS (как в ГВС)
+    // Используем значения по умолчанию
+    ESP_LOGI(TAG, "CO manual parameters initialized with default values");
 }
 

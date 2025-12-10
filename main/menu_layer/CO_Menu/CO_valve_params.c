@@ -8,14 +8,13 @@ static const char *TAG = "CO_VALVE_PARAMS";
 static const char *NVS_NAMESPACE = "co_valve";  // Максимум 15 символов для NVS
 
 // Глобальные переменные для параметров клапан
-int M_ControlType = 0;                    // По умолчанию 0
-int M_RegType = 0;                        // По умолчанию 0
-int M_Length = 100;                       // По умолчанию 100 мм
-float M_Speed = 1.0f;                     // По умолчанию 1.0 с/мм
-float M_PCoef = 1.0f;                     // По умолчанию 1.0
-float M_ICoef = 0.1f;                     // По умолчанию 0.1
-float M_Deadband = 1.0f;                  // По умолчанию 1.0°C
-int M_IControl_Min = 100;                 // По умолчанию 100 мс
+co_reg_type_t M_RegType = CO_REG_TYPE_PI;  // M-RegType: По умолчанию ПИ
+int M_Length = 10;                        // M-Length: По умолчанию 10 мм
+float M_Speed = 16.0f;                    // M-Speed: По умолчанию 16.0 с/мм
+float M_PCoef = 80.0f;                    // M-PCoef: По умолчанию 80.0
+float M_ICoef = 30.0f;                    // M-ICoef: По умолчанию 30.0
+float M_Deadband = 1.0f;                  // M-Deadband: По умолчанию 1.0°C
+int M_IControl_Min = 200;                 // M-IControl-Min: По умолчанию 200 мс
 
 /**
  * @brief Сохраняет параметры в NVS
@@ -34,10 +33,7 @@ void co_valve_params_save(void) {
     }
     
     // Сохраняем int параметры (как int32_t)
-    err = nvs_set_i32(nvs_handle, "M_ControlType", M_ControlType);
-    if (err != ESP_OK) ESP_LOGE(TAG, "Error saving M_ControlType: %s", esp_err_to_name(err));
-    
-    err = nvs_set_i32(nvs_handle, "M_RegType", M_RegType);
+    err = nvs_set_i32(nvs_handle, "M_RegType", (int32_t)M_RegType);
     if (err != ESP_OK) ESP_LOGE(TAG, "Error saving M_RegType: %s", esp_err_to_name(err));
     
     err = nvs_set_i32(nvs_handle, "M_Length", M_Length);
@@ -89,15 +85,9 @@ void co_valve_params_load(void) {
     // Загружаем int параметры
     int32_t int_val;
     
-    err = nvs_get_i32(nvs_handle, "M_ControlType", &int_val);
-    if (err == ESP_OK) {
-        M_ControlType = (int)int_val;
-        ESP_LOGI(TAG, "Loaded M_ControlType: %d", M_ControlType);
-    }
-    
     err = nvs_get_i32(nvs_handle, "M_RegType", &int_val);
     if (err == ESP_OK) {
-        M_RegType = (int)int_val;
+        M_RegType = (co_reg_type_t)int_val;
         ESP_LOGI(TAG, "Loaded M_RegType: %d", M_RegType);
     }
     
@@ -148,6 +138,8 @@ void co_valve_params_load(void) {
  */
 void co_valve_params_init(void) {
     ESP_LOGI(TAG, "Initializing CO valve parameters");
-    co_valve_params_load();
+    // НЕ загружаем параметры из NVS (как в ГВС)
+    // Используем значения по умолчанию
+    ESP_LOGI(TAG, "CO valve parameters initialized with default values");
 }
 

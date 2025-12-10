@@ -7,22 +7,23 @@ extern "C" {
 
 // Типы enum для насосов
 typedef enum {
-    PUMP_CHANGE_MODE_TIME = 0,      // По времени
-    PUMP_CHANGE_MODE_WORK = 1       // По наработке
+    PUMP_CHANGE_MODE_TIME = 0,      // ЧАСЫ
+    PUMP_CHANGE_MODE_WORK = 1       // ДЕНЬ
 } pump_change_mode_t;
 
 typedef enum {
-    PUMP_RESET_OFF = 0,             // Выкл
-    PUMP_RESET_ON = 1               // Вкл
+    PUMP_RESET_OFF = 0,             // НЕТ
+    PUMP_RESET_ON = 1               // ДА
 } pump_reset_t;
 
 typedef enum {
-    PUMP_TRAINING_OFF = 0,          // Выкл
-    PUMP_TRAINING_ON = 1            // Вкл
+    PUMP_TRAINING_OFF = 0,          // ВЫКЛ
+    PUMP_TRAINING_ON = 1            // ВКЛ
 } pump_training_t;
 
 // Глобальные переменные для параметров насосов
 extern int N_Number;                    // Количество насосов
+extern int N_BeforeStartPause;          // Пауза перед старт, с
 extern int N_BeforeStopPause;          // Пауза перед стоп, с
 extern int N_ChangeOverPause;          // Пауза переключ., с
 extern pump_change_mode_t N_ChangeMode; // Режим переключения

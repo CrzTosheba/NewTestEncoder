@@ -8,9 +8,9 @@ static const char *TAG = "CO_SENSOR_BREAK_PARAMS";
 static const char *NVS_NAMESPACE = "co_sens_brk";
 
 // Глобальные переменные для параметров обрыва датчика
-int T1_EnAlarm = 0;
-int AIAlarmDelay = 0;
-int T1_AlarmRType = 0;
+int T1_EnAlarm = 0;        // По умолчанию НЕТ
+int AIAlarmDelay = 15;     // По умолчанию 15 с
+int T1_AlarmRType = 4;     // По умолчанию РУЧН-3
 
 /**
  * @brief Сохраняет параметры в NVS
@@ -55,7 +55,11 @@ void co_sensor_break_params_load(void) {
     
     err = nvs_open(NVS_NAMESPACE, NVS_READONLY, &nvs_handle);
     if (err != ESP_OK) {
-        ESP_LOGW(TAG, "Error opening NVS handle (namespace may not exist): %s", esp_err_to_name(err));
+        if (err == ESP_ERR_NVS_NOT_FOUND) {
+            ESP_LOGI(TAG, "NVS namespace not found, using default values");
+        } else {
+            ESP_LOGW(TAG, "Error opening NVS handle: %s", esp_err_to_name(err));
+        }
         return;
     }
     
@@ -76,6 +80,10 @@ void co_sensor_break_params_load(void) {
  */
 void co_sensor_break_params_init(void) {
     ESP_LOGI(TAG, "Initializing CO sensor break parameters");
-    co_sensor_break_params_load();
+    // НЕ загружаем параметры из NVS (как в ГВС)
+    // Используем значения по умолчанию
+    ESP_LOGI(TAG, "CO sensor break parameters initialized with default values");
+    ESP_LOGI(TAG, "T1_EnAlarm=%d, AIAlarmDelay=%d, T1_AlarmRType=%d",
+             T1_EnAlarm, AIAlarmDelay, T1_AlarmRType);
 }
 

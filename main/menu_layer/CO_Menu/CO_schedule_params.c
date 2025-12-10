@@ -383,6 +383,8 @@ void co_schedule_params_load(void) {
  */
 void co_schedule_params_init(void) {
     ESP_LOGI(TAG, "Initializing CO schedule parameters");
-    co_schedule_params_load();
+    // НЕ загружаем параметры из NVS (как в ГВС)
+    // Используем значения по умолчанию
+    ESP_LOGI(TAG, "CO schedule parameters initialized with default values");
 }
 
