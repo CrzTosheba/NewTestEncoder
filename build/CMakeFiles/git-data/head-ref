@@ -1,1 +1,14 @@
-fefdbf2dc96d329cac1bbbc08cbe5ac302b4ec71
+886f84c54560713aebc158e7483c6abdcd8272f9 eda60d53a897b6c09098b42ea548e4bb2cce6776 RIDANCORP\RUCO1621 <simonov@ridan.ru> 1759400500 +0300	commit: добавлен гвс и шкала времени
+eda60d53a897b6c09098b42ea548e4bb2cce6776 b61379d23e74ba5fb787c7069faf78b27d56d48a RIDANCORP\RUCO1621 <simonov@ridan.ru> 1760615169 +0300	commit: переименовал виджеты
+b61379d23e74ba5fb787c7069faf78b27d56d48a f899965cc9ff6fd905dde6a272b08bfd870e5375 RIDANCORP\RUCO1621 <simonov@ridan.ru> 1761551824 +0300	commit: добавил окно пароля, пока что без логики
+f899965cc9ff6fd905dde6a272b08bfd870e5375 8a94b7f4c8a8dd18ebaaf59ec622a34f3c7c7775 RIDANCORP\RUCO1621 <simonov@ridan.ru> 1761740030 +0300	commit: обновил версию LVGL до 9.4.0
+8a94b7f4c8a8dd18ebaaf59ec622a34f3c7c7775 22b77f086dcc0ae8afd996e0a51ca42533c07ece RIDANCORP\RUCO1621 <simonov@ridan.ru> 1761827222 +0300	commit: обновил работу энкодера, вылетов нет, вроде.. обновил формат картинок
+22b77f086dcc0ae8afd996e0a51ca42533c07ece 7d670cccea14cc29225004d8264ac8e1b85c60b2 RIDANCORP\RUCO1621 <simonov@ridan.ru> 1763029877 +0300	commit: добавил подменю входы и выходы
+7d670cccea14cc29225004d8264ac8e1b85c60b2 1f70c0a0878487a15d7a74543f3c6f89e73f1d5a RIDANCORP\RUCO1621 <simonov@ridan.ru> 1763450102 +0300	commit: добавил проверку на валидность экранов, избавление от вылетов
+1f70c0a0878487a15d7a74543f3c6f89e73f1d5a 4188d2bcb7cef494e98cf4520279d4937c7e3955 RIDANCORP\RUCO1621 <simonov@ridan.ru> 1763462175 +0300	commit: входы выходы свел в один файл
+4188d2bcb7cef494e98cf4520279d4937c7e3955 2f38aa08d6177eda184610d94258354d4983d97e RIDANCORP\RUCO1621 <simonov@ridan.ru> 1763530614 +0300	commit: исправлен баг с контейнерами
+2f38aa08d6177eda184610d94258354d4983d97e 699ef2214cd0e2d56691213093cbc6857f7e6a76 RIDANCORP\RUCO1621 <simonov@ridan.ru> 1763624022 +0300	commit: добавлен Со подменю, пока ключит сипсок
+699ef2214cd0e2d56691213093cbc6857f7e6a76 38ab6af8467b8c2de2f617281f9fc1e7d2f1ba3f RIDANCORP\RUCO1621 <simonov@ridan.ru> 1764059755 +0300	commit: подобрал настройки для списков, вроде работает, бывают вылеты, но эт норм
+38ab6af8467b8c2de2f617281f9fc1e7d2f1ba3f e49014a583445f7cc21d777ebc62861a02d92abd RIDANCORP\RUCO1621 <simonov@ridan.ru> 1764067618 +0300	commit: вернул изгиб текста в контейнерах
+e49014a583445f7cc21d777ebc62861a02d92abd fefdbf2dc96d329cac1bbbc08cbe5ac302b4ec71 RIDANCORP\RUCO1621 <simonov@ridan.ru> 1764341329 +0300	commit: создано меню СО, избавился от вылетов
+fefdbf2dc96d329cac1bbbc08cbe5ac302b4ec71 167d061b4459e968f2546eb7adbde54ec06bb4a6 RIDANCORP\RUCO1621 <simonov@ridan.ru> 1765790104 +0300	commit: апдейт главного экрана СО
