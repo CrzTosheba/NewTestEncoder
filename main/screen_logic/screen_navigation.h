@@ -40,6 +40,15 @@ extern void password_encoder_event_cb(uint8_t e);
 extern void input_output_encoder_event_cb(uint8_t e);
 extern void co_menu_encoder_event_cb(uint8_t e);
 extern void co_general_menu_encoder_event_cb(uint8_t e);
+extern void gvs_menu_encoder_event_cb(uint8_t e);
+extern void gvs_general_menu_encoder_event_cb(uint8_t e);
+extern void gvs_pumps_menu_encoder_event_cb(uint8_t e);
+extern void gvs_valve_menu_encoder_event_cb(uint8_t e);
+extern void gvs_manual_menu_encoder_event_cb(uint8_t e);
+extern void gvs_schedule_menu_encoder_event_cb(uint8_t e);
+extern void gvs_schedule_day_menu_encoder_event_cb(uint8_t e);
+extern void gvs_alarms_menu_encoder_event_cb(uint8_t e);
+extern void gvs_dry_run_menu_encoder_event_cb(uint8_t e);
 
 // Функции управления видимостью меню
 extern void main_menu_show(void);
@@ -48,6 +57,24 @@ extern void input_output_menu_show(void);
 extern void input_output_menu_hide(void);
 extern void co_menu_show(void);
 extern void co_menu_hide(void);
+extern void gvs_menu_show(void);
+extern void gvs_menu_hide(void);
+extern void gvs_general_menu_show(void);
+extern void gvs_general_menu_hide(void);
+extern void gvs_pumps_menu_show(void);
+extern void gvs_pumps_menu_hide(void);
+extern void gvs_valve_menu_show(void);
+extern void gvs_valve_menu_hide(void);
+extern void gvs_manual_menu_show(void);
+extern void gvs_manual_menu_hide(void);
+extern void gvs_schedule_menu_show(void);
+extern void gvs_schedule_menu_hide(void);
+extern void gvs_schedule_day_menu_show(void);
+extern void gvs_schedule_day_menu_hide(void);
+extern void gvs_alarms_menu_show(void);
+extern void gvs_alarms_menu_hide(void);
+extern void gvs_dry_run_menu_show(void);
+extern void gvs_dry_run_menu_hide(void);
 
 #ifdef __cplusplus
 }

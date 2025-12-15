@@ -11,12 +11,18 @@ extern "C" {
 
 // Структура для пользовательских данных объекта
 typedef struct {
-    bool is_status_icon;  // Флаг, указывающий что это статусная иконка
+    bool is_status_icon;     // Флаг, указывающий что это статусная иконка
+    bool is_param_value;     // Флаг, указывающий что это контейнер значения параметра
 } custom_obj_data_t;
 
 // Функции для работы со статусными иконками
 void set_as_status_icon(lv_obj_t *obj);
 bool is_status_icon(lv_obj_t *obj);
+
+// Функции для работы с контейнерами значений параметров
+void set_as_param_value(lv_obj_t *obj);
+bool is_param_value(lv_obj_t *obj);
+
 void free_custom_data(lv_event_t *e);  // Функция для очистки памяти
 
 // Объявления функций дугового меню

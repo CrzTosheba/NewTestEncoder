@@ -37,17 +37,17 @@ menu_config_t menu_configs[MENU_TYPE_COUNT] = {
         .scroll_boundary = 4,   // Начальное значение, будет обновлено
         .visible_items = 10      // Начальное значение, будет обновлено
     },
-    // Меню насосов (17 элементов: Назад + 16 параметров)
+    // Меню насосов (18 элементов: Назад + 17 параметров)
     [MENU_TYPE_CO_PUMPS] = {
         .initial_index = 4,     // 4й элемент будет располагаться по центру
         .scroll_boundary = 4,   // Граница прокрутки
         .visible_items = 10      // Видно примерно 10 элементов
     },
-    // Меню клапан (9 элементов: Назад + 8 параметров)
+    // Меню клапан (8 элементов: Назад + 7 параметров)
     [MENU_TYPE_CO_VALVE] = {
         .initial_index = 4,     // 4й элемент будет располагаться по центру
         .scroll_boundary = 4,   // Граница прокрутки
-        .visible_items = 9      // Видно 9 элементов
+        .visible_items = 8      // Видно 8 элементов
     },
     // Меню ручной режим (4 элемента: Назад + 3 параметра)
     [MENU_TYPE_CO_MANUAL] = {
@@ -96,6 +96,78 @@ menu_config_t menu_configs[MENU_TYPE_COUNT] = {
         .initial_index = 4,     // 4й элемент будет располагаться по центру
         .scroll_boundary = 4,   // Граница прокрутки
         .visible_items = 7      // Видно 7 элементов
+    },
+    // Меню ГВС (7 элементов: Назад + 6 подменю, высота 40px)
+    [MENU_TYPE_GVS] = {
+        .initial_index = 4,     // 4й элемент будет располагаться по центру
+        .scroll_boundary = 4,   // Граница прокрутки сдвиг списка вниз когда курсор вверх
+        .visible_items = 7      // Видно 7 элементов
+    },
+    // Меню общие настройки ГВС (7 элементов: Назад + 6 параметров, высота 40px)
+    [MENU_TYPE_GVS_GENERAL] = {
+        .initial_index = 4,     // 4й элемент будет располагаться по центру
+        .scroll_boundary = 4,   // Граница прокрутки
+        .visible_items = 7      // Видно 7 элементов
+    },
+    // Меню насосов ГВС (18 элементов: Назад + 17 параметров)
+    [MENU_TYPE_GVS_PUMPS] = {
+        .initial_index = 4,     // 4й элемент будет располагаться по центру
+        .scroll_boundary = 4,   // Граница прокрутки
+        .visible_items = 10      // Видно примерно 10 элементов
+    },
+    // Меню клапан ГВС (8 элементов: Назад + 7 параметров)
+    [MENU_TYPE_GVS_VALVE] = {
+        .initial_index = 4,     // 4й элемент будет располагаться по центру
+        .scroll_boundary = 4,   // Граница прокрутки
+        .visible_items = 8      // Видно 8 элементов
+    },
+    // Меню ручной режим ГВС (4 элемента: Назад + 3 параметра)
+    [MENU_TYPE_GVS_MANUAL] = {
+        .initial_index = 3,     // 3й элемент будет располагаться по центру
+        .scroll_boundary = 4,   // Граница прокрутки
+        .visible_items = 4      // Видно 4 элемента
+    },
+    // Меню расписания ГВС (8 элементов: Назад + 7 дней недели)
+    [MENU_TYPE_GVS_SCHEDULE] = {
+        .initial_index = 4,     // 4й элемент будет располагаться по центру
+        .scroll_boundary = 4,   // Граница прокрутки
+        .visible_items = 8      // Видно 8 элементов
+    },
+    // Меню дня недели расписания ГВС (5 элементов: Назад + 4 параметра)
+    [MENU_TYPE_GVS_SCHEDULE_DAY] = {
+        .initial_index = 4,     // 2й элемент будет располагаться по центру
+        .scroll_boundary = 4,   // Граница прокрутки
+        .visible_items = 9      // Видно 5 элементов
+    },
+    // Меню аварий ГВС (5 элементов: Назад + 4 типа аварий)
+    [MENU_TYPE_GVS_ALARMS] = {
+        .initial_index = 3,     // 3й элемент будет располагаться по центру
+        .scroll_boundary = 3,   // Граница прокрутки
+        .visible_items = 5      // Видно 5 элементов
+    },
+    // Меню сухого хода ГВС (4 элемента: Назад + 3 параметра)
+    [MENU_TYPE_GVS_ALARMS_DRY_RUN] = {
+        .initial_index = 3,     // 3й элемент будет располагаться по центру
+        .scroll_boundary = 3,   // Граница прокрутки
+        .visible_items = 4      // Видно 4 элемента
+    },
+    // Меню внешней аварии ГВС (5 элементов: Назад + 4 параметра)
+    [MENU_TYPE_GVS_ALARMS_EXTERNAL] = {
+        .initial_index = 4,     // 4й элемент будет располагаться по центру
+        .scroll_boundary = 4,   // Граница прокрутки
+        .visible_items = 5      // Видно 5 элементов
+    },
+    // Меню обрыва датчика ГВС (4 элемента: Назад + 3 параметра)
+    [MENU_TYPE_GVS_ALARMS_SENSOR_BREAK] = {
+        .initial_index = 3,     // 3й элемент будет располагаться по центру
+        .scroll_boundary = 3,   // Граница прокрутки
+        .visible_items = 4      // Видно 4 элемента
+    },
+    // Меню аварийного отклонения ГВС (7 элементов: Назад + 6 параметров)
+    [MENU_TYPE_GVS_ALARMS_DEVIATION] = {
+        .initial_index = 4,     // 4й элемент будет располагаться по центру
+        .scroll_boundary = 4,   // Граница прокрутки
+        .visible_items = 7      // Видно 7 элементов
     }
 };
 
@@ -115,7 +187,19 @@ menu_state_t menu_states[MENU_TYPE_COUNT] = {
     [MENU_TYPE_CO_ALARMS_DRY_RUN] = {0},
     [MENU_TYPE_CO_ALARMS_EXTERNAL] = {0},
     [MENU_TYPE_CO_ALARMS_SENSOR_BREAK] = {0},
-    [MENU_TYPE_CO_ALARMS_DEVIATION] = {0}
+    [MENU_TYPE_CO_ALARMS_DEVIATION] = {0},
+    [MENU_TYPE_GVS] = {0},
+    [MENU_TYPE_GVS_GENERAL] = {0},
+    [MENU_TYPE_GVS_PUMPS] = {0},
+    [MENU_TYPE_GVS_VALVE] = {0},
+    [MENU_TYPE_GVS_MANUAL] = {0},
+    [MENU_TYPE_GVS_SCHEDULE] = {0},
+    [MENU_TYPE_GVS_SCHEDULE_DAY] = {0},
+    [MENU_TYPE_GVS_ALARMS] = {0},
+    [MENU_TYPE_GVS_ALARMS_DRY_RUN] = {0},
+    [MENU_TYPE_GVS_ALARMS_EXTERNAL] = {0},
+    [MENU_TYPE_GVS_ALARMS_SENSOR_BREAK] = {0},
+    [MENU_TYPE_GVS_ALARMS_DEVIATION] = {0}
 };
 
 /**

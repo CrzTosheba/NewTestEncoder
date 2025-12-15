@@ -8,6 +8,7 @@
 #include "screen_logic/menu_config.h"
 #include "screen_logic/screen_navigation.h"
 #include "screen_logic/screen_container_manager.h"
+#include "screen_logic/access_control.h"
 #include "dialog_screen/screen_YES_NO/yes_no_screen.h"
 #include <stdint.h>
 #include <inttypes.h>
@@ -33,14 +34,13 @@ typedef struct {
 // Элементы меню клапан
 static const CoValveMenuItem co_valve_menu_items[] = {
     {"                                Назад", &lv_im_arrow_right, -1},
-    {"Управл.сигнал", NULL, 0},                  // M-ControlType (int)
-    {"Тип регулятора", NULL, 1},                  // M-RegType (int)
-    {"Длина штока, мм", NULL, 2},                 // M-Length (int)
-    {"Скорость, с/мм", NULL, 3},                   // M-Speed (float)
-    {"П-коэффициент", NULL, 4},                    // M-PCoef (float)
-    {"И-коэффициент", NULL, 5},                    // M-ICoef (float)
-    {"Нейтральная зона, °C", NULL, 6},            // M-Deadband (float)
-    {"Мин. ширина ИМПС, мс", NULL, 7},            // M-IControl-Min (int)
+    {"Тип регулятора", NULL, 0},                  // M-RegType (int)
+    {"Длина штока, мм", NULL, 1},                 // M-Length (int)
+    {"Скорость, с/мм", NULL, 2},                   // M-Speed (float)
+    {"П-коэффициент", NULL, 3},                    // M-PCoef (float)
+    {"И-коэффициент", NULL, 4},                    // M-ICoef (float)
+    {"Нейтральная зона, °C", NULL, 5},            // M-Deadband (float)
+    {"Мин. ширина ИМПС, мс", NULL, 6},            // M-IControl-Min (int)
 };
 
 // Локальные переменные для меню клапан
@@ -49,24 +49,36 @@ static bool co_valve_menu_initialized = false;
 static bool co_valve_menu_creation_in_progress = false;
 static lv_obj_t *co_valve_mask = NULL;
 
-// Массив указателей на label для значений параметров (8 параметров)
-static lv_obj_t *value_labels[8] = {NULL};
+// Массив указателей на label для значений параметров (7 параметров)
+static lv_obj_t *value_labels[7] = {NULL};
 
 // Состояние редактирования
 static bool edit_mode = false;
 static int editing_param_index = -1;
 static int editing_int_value = 0;
 static float editing_float_value = 0.0f;
+static co_reg_type_t editing_reg_type_value = CO_REG_TYPE_PI;
 
 // Временные значения для отмены изменений
-static int temp_M_ControlType = 0;
-static int temp_M_RegType = 0;
+static co_reg_type_t temp_M_RegType = CO_REG_TYPE_PI;
 static int temp_M_Length = 0;
 static float temp_M_Speed = 0.0f;
 static float temp_M_PCoef = 0.0f;
 static float temp_M_ICoef = 0.0f;
 static float temp_M_Deadband = 0.0f;
 static int temp_M_IControl_Min = 0;
+
+/**
+ * @brief Получает строковое представление типа регулятора
+ */
+static const char* get_reg_type_string(co_reg_type_t reg_type) {
+    switch(reg_type) {
+        case CO_REG_TYPE_P: return "П";
+        case CO_REG_TYPE_PI: return "ПИ";
+        case CO_REG_TYPE_PID: return "ПИД";
+        default: return "???";
+    }
+}
 
 /**
  * @brief Проверяет, является ли объект валидным
@@ -98,36 +110,74 @@ static void co_valve_highlight_box(lv_obj_t *cont, uint32_t cursor_index) {
         lv_obj_t *child = lv_obj_get_child(cont, i);
         if (!is_obj_valid(child)) continue;
         
+        bool is_selected = (i == cursor_index);
+        bool is_editing_this = (edit_mode && editing_param_index == co_valve_menu_items[i].param_index);
+        
         uint32_t grand_child_cnt = lv_obj_get_child_cnt(child);
         
         for (uint32_t j = 0; j < grand_child_cnt; j++) {
             lv_obj_t *grand_child = lv_obj_get_child(child, j);
             if (!is_obj_valid(grand_child)) continue;
             
+            // Проверяем, является ли это контейнером значения параметра
+            bool is_value_container = false;
+            for (int k = 0; k < 7; k++) {
+                if (value_labels[k] != NULL && lv_obj_get_parent(value_labels[k]) == grand_child) {
+                    is_value_container = true;
+                    break;
+                }
+            }
+            
             if (lv_obj_check_type(grand_child, &lv_label_class)) {
-                if (i == cursor_index) {
-                    // В режиме редактирования не меняем цвет редактируемого параметра
-                    if (!(edit_mode && editing_param_index == co_valve_menu_items[i].param_index)) {
+                // Проверяем, является ли это label значения параметра
+                bool is_value_label = false;
+                for (int k = 0; k < 7; k++) {
+                    if (value_labels[k] == grand_child) {
+                        is_value_label = true;
+                        break;
+                    }
+                }
+                
+                if (is_selected) {
+                    if (is_value_label && is_editing_this) {
+                        // В режиме редактирования не меняем цвет редактируемого значения
+                        // (цвет устанавливается в update_param_display)
+                    } else {
+                        // НЕ в режиме редактирования - черный текст для всей строки (название + значение)
                         lv_obj_set_style_text_color(grand_child, lv_color_hex(0x000000), LV_PART_MAIN);
                     }
                 } else {
                     lv_obj_set_style_text_color(grand_child, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
                 }
             } else if (lv_obj_check_type(grand_child, &lv_image_class)) {
-                if (i == cursor_index) {
+                if (is_selected) {
                     lv_obj_set_style_img_recolor(grand_child, lv_color_hex(0x000000), 0);
                 } else {
                     lv_obj_set_style_img_recolor(grand_child, lv_color_hex(0xFFFFFF), 0);
                 }
+            } else if (is_value_container && is_selected && !is_editing_this) {
+                // НЕ в режиме редактирования - устанавливаем желтый фон для контейнера значения
+                lv_obj_set_style_bg_color(grand_child, lv_color_hex(0xFFCC00), LV_PART_MAIN);
+                // Устанавливаем черный цвет для текста значения параметра
+                lv_obj_t *value_label = lv_obj_get_child(grand_child, 0);
+                if (is_obj_valid(value_label) && lv_obj_check_type(value_label, &lv_label_class)) {
+                    lv_obj_set_style_text_color(value_label, lv_color_hex(0x000000), LV_PART_MAIN);
+                }
+            } else if (is_value_container && !is_selected) {
+                // Не выбранный элемент - обычный фон
+                lv_obj_set_style_bg_color(grand_child, lv_color_hex(0x2B3639), LV_PART_MAIN);
+                // Восстанавливаем белый цвет для текста значения параметра
+                lv_obj_t *value_label = lv_obj_get_child(grand_child, 0);
+                if (is_obj_valid(value_label) && lv_obj_check_type(value_label, &lv_label_class)) {
+                    lv_obj_set_style_text_color(value_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+                }
             }
         }
         
-        // Меняем фон контейнера
-        if (i == cursor_index) {
-            // В режиме редактирования фон уже установлен в update_param_display
-            if (!(edit_mode && editing_param_index == co_valve_menu_items[i].param_index)) {
-                lv_obj_set_style_bg_color(child, lv_color_hex(0xFFCC00), LV_PART_MAIN);
-            }
+        // Меняем фон контейнера строки
+        if (is_selected) {
+            // Всегда устанавливаем желтый фон для выбранной строки
+            lv_obj_set_style_bg_color(child, lv_color_hex(0xFFCC00), LV_PART_MAIN);
         } else {
             lv_obj_set_style_bg_color(child, lv_color_hex(0x2B3639), LV_PART_MAIN);
         }
@@ -138,17 +188,20 @@ static void co_valve_highlight_box(lv_obj_t *cont, uint32_t cursor_index) {
  * @brief Обновляет отображение значения параметра
  */
 static void update_param_display(int param_index) {
-    if (param_index < 0 || param_index >= 8) return;
+    if (param_index < 0 || param_index >= 7) return;
     if (!is_obj_valid(value_labels[param_index])) return;
     
     char value_str[32];
     
-    // Float параметры: индексы 3, 4, 5, 6
-    bool is_float = (param_index >= 3 && param_index <= 6);
+    // Float параметры: индексы 2, 3, 4, 5
+    bool is_float = (param_index >= 2 && param_index <= 5);
     
     if (edit_mode && editing_param_index == param_index) {
         // В режиме редактирования показываем временное значение
-        if (is_float) {
+        if (param_index == 0) {
+            // Тип регулятора (enum)
+            snprintf(value_str, sizeof(value_str), "%s", get_reg_type_string(editing_reg_type_value));
+        } else if (is_float) {
             format_float_value(value_str, sizeof(value_str), editing_float_value);
         } else {
             snprintf(value_str, sizeof(value_str), "%d", editing_int_value);
@@ -156,53 +209,32 @@ static void update_param_display(int param_index) {
     } else {
         // Обычный режим - показываем текущее значение
         switch(param_index) {
-            case 0: // M-ControlType
-                snprintf(value_str, sizeof(value_str), "%d", M_ControlType);
+            case 0: // M-RegType
+                snprintf(value_str, sizeof(value_str), "%s", get_reg_type_string(M_RegType));
                 break;
-            case 1: // M-RegType
-                snprintf(value_str, sizeof(value_str), "%d", M_RegType);
-                break;
-            case 2: // M-Length
+            case 1: // M-Length
                 snprintf(value_str, sizeof(value_str), "%d", M_Length);
                 break;
-            case 3: // M-Speed
+            case 2: // M-Speed
                 format_float_value(value_str, sizeof(value_str), M_Speed);
                 break;
-            case 4: // M-PCoef
+            case 3: // M-PCoef
                 format_float_value(value_str, sizeof(value_str), M_PCoef);
                 break;
-            case 5: // M-ICoef
+            case 4: // M-ICoef
                 format_float_value(value_str, sizeof(value_str), M_ICoef);
                 break;
-            case 6: // M-Deadband
+            case 5: // M-Deadband
                 format_float_value(value_str, sizeof(value_str), M_Deadband);
                 break;
-            case 7: // M-IControl-Min
+            case 6: // M-IControl-Min
                 snprintf(value_str, sizeof(value_str), "%d", M_IControl_Min);
                 break;
         }
     }
     
-    // Добавляем единицы измерения
-    char full_str[40];
-    if (param_index == 2) {
-        // Длина штока - миллиметры
-        snprintf(full_str, sizeof(full_str), "%s мм", value_str);
-    } else if (param_index == 3) {
-        // Скорость - с/мм
-        snprintf(full_str, sizeof(full_str), "%s с/мм", value_str);
-    } else if (param_index == 6) {
-        // Нейтральная зона - градусы Цельсия
-        snprintf(full_str, sizeof(full_str), "%s °C", value_str);
-    } else if (param_index == 7) {
-        // Мин. ширина ИМПС - миллисекунды
-        snprintf(full_str, sizeof(full_str), "%s мс", value_str);
-    } else {
-        // Для остальных параметров без единиц
-        snprintf(full_str, sizeof(full_str), "%s", value_str);
-    }
-    
-    lv_label_set_text(value_labels[param_index], full_str);
+    // Отображаем значение без единиц измерения
+    lv_label_set_text(value_labels[param_index], value_str);
     
     // Обновляем цвет в режиме редактирования
     if (!is_obj_valid(value_labels[param_index])) return;
@@ -235,18 +267,16 @@ static void save_param_changes(void) {
     
     // Сохраняем значение в зависимости от типа параметра
     switch(editing_param_index) {
-        case 0: M_ControlType = editing_int_value; break;
-        case 1: M_RegType = editing_int_value; break;
-        case 2: M_Length = editing_int_value; break;
-        case 3: M_Speed = editing_float_value; break;
-        case 4: M_PCoef = editing_float_value; break;
-        case 5: M_ICoef = editing_float_value; break;
-        case 6: M_Deadband = editing_float_value; break;
-        case 7: M_IControl_Min = editing_int_value; break;
+        case 0: M_RegType = editing_reg_type_value; break;
+        case 1: M_Length = editing_int_value; break;
+        case 2: M_Speed = editing_float_value; break;
+        case 3: M_PCoef = editing_float_value; break;
+        case 4: M_ICoef = editing_float_value; break;
+        case 5: M_Deadband = editing_float_value; break;
+        case 6: M_IControl_Min = editing_int_value; break;
     }
     
-    // Сохраняем параметры в NVS
-    co_valve_params_save();
+    // НЕ сохраняем параметры в NVS (как в ГВС)
     
     edit_mode = false;
     editing_param_index = -1;
@@ -269,14 +299,13 @@ static void cancel_param_changes(void) {
     
     // Восстанавливаем временные значения
     switch(editing_param_index) {
-        case 0: editing_int_value = temp_M_ControlType; break;
-        case 1: editing_int_value = temp_M_RegType; break;
-        case 2: editing_int_value = temp_M_Length; break;
-        case 3: editing_float_value = temp_M_Speed; break;
-        case 4: editing_float_value = temp_M_PCoef; break;
-        case 5: editing_float_value = temp_M_ICoef; break;
-        case 6: editing_float_value = temp_M_Deadband; break;
-        case 7: editing_int_value = temp_M_IControl_Min; break;
+        case 0: editing_reg_type_value = temp_M_RegType; break;
+        case 1: editing_int_value = temp_M_Length; break;
+        case 2: editing_float_value = temp_M_Speed; break;
+        case 3: editing_float_value = temp_M_PCoef; break;
+        case 4: editing_float_value = temp_M_ICoef; break;
+        case 5: editing_float_value = temp_M_Deadband; break;
+        case 6: editing_int_value = temp_M_IControl_Min; break;
     }
     
     edit_mode = false;
@@ -294,51 +323,53 @@ static void cancel_param_changes(void) {
  * @brief Входит в режим редактирования параметра
  */
 static void enter_edit_mode(int param_index) {
-    if (param_index < 0 || param_index >= 8) return;
+    if (param_index < 0 || param_index >= 7) return;
+    
+    // Проверяем доступ перед редактированием
+    if (!access_control_is_unlocked()) {
+        ESP_LOGW(TAG, "Access denied: cannot edit parameters when access is locked");
+        return;
+    }
     
     ESP_LOGI(TAG, "Entering edit mode for parameter %d", param_index);
     
     edit_mode = true;
     editing_param_index = param_index;
     
-    // Float параметры: индексы 3, 4, 5, 6
-    bool is_float = (param_index >= 3 && param_index <= 6);
+    // Float параметры: индексы 2, 3, 4, 5
+    bool is_float = (param_index >= 2 && param_index <= 5);
     
     // Сохраняем текущие значения как временные
-    if (is_float) {
+    if (param_index == 0) {
+        // Тип регулятора (enum)
+        temp_M_RegType = M_RegType;
+        editing_reg_type_value = M_RegType;
+    } else if (is_float) {
         switch(param_index) {
-            case 3:
+            case 2:
                 temp_M_Speed = M_Speed;
                 editing_float_value = M_Speed;
                 break;
-            case 4:
+            case 3:
                 temp_M_PCoef = M_PCoef;
                 editing_float_value = M_PCoef;
                 break;
-            case 5:
+            case 4:
                 temp_M_ICoef = M_ICoef;
                 editing_float_value = M_ICoef;
                 break;
-            case 6:
+            case 5:
                 temp_M_Deadband = M_Deadband;
                 editing_float_value = M_Deadband;
                 break;
         }
     } else {
         switch(param_index) {
-            case 0:
-                temp_M_ControlType = M_ControlType;
-                editing_int_value = M_ControlType;
-                break;
             case 1:
-                temp_M_RegType = M_RegType;
-                editing_int_value = M_RegType;
-                break;
-            case 2:
                 temp_M_Length = M_Length;
                 editing_int_value = M_Length;
                 break;
-            case 7:
+            case 6:
                 temp_M_IControl_Min = M_IControl_Min;
                 editing_int_value = M_IControl_Min;
                 break;
@@ -356,23 +387,24 @@ static void exit_edit_mode_with_confirmation(void) {
     
     bool value_changed = false;
     
-    // Float параметры: индексы 3, 4, 5, 6
-    bool is_float = (editing_param_index >= 3 && editing_param_index <= 6);
+    // Float параметры: индексы 2, 3, 4, 5
+    bool is_float = (editing_param_index >= 2 && editing_param_index <= 5);
     
     // Проверяем, изменилось ли значение
-    if (is_float) {
+    if (editing_param_index == 0) {
+        // Тип регулятора (enum)
+        value_changed = (editing_reg_type_value != temp_M_RegType);
+    } else if (is_float) {
         switch(editing_param_index) {
-            case 3: value_changed = (fabs(editing_float_value - temp_M_Speed) > 0.01f); break;
-            case 4: value_changed = (fabs(editing_float_value - temp_M_PCoef) > 0.01f); break;
-            case 5: value_changed = (fabs(editing_float_value - temp_M_ICoef) > 0.01f); break;
-            case 6: value_changed = (fabs(editing_float_value - temp_M_Deadband) > 0.01f); break;
+            case 2: value_changed = (fabs(editing_float_value - temp_M_Speed) > 0.01f); break;
+            case 3: value_changed = (fabs(editing_float_value - temp_M_PCoef) > 0.01f); break;
+            case 4: value_changed = (fabs(editing_float_value - temp_M_ICoef) > 0.01f); break;
+            case 5: value_changed = (fabs(editing_float_value - temp_M_Deadband) > 0.01f); break;
         }
     } else {
         switch(editing_param_index) {
-            case 0: value_changed = (editing_int_value != temp_M_ControlType); break;
-            case 1: value_changed = (editing_int_value != temp_M_RegType); break;
-            case 2: value_changed = (editing_int_value != temp_M_Length); break;
-            case 7: value_changed = (editing_int_value != temp_M_IControl_Min); break;
+            case 1: value_changed = (editing_int_value != temp_M_Length); break;
+            case 6: value_changed = (editing_int_value != temp_M_IControl_Min); break;
         }
     }
     
@@ -403,6 +435,7 @@ static void create_co_valve_menu_item(lv_obj_t *cont, const CoValveMenuItem *ite
     
     lv_obj_set_size(box, 462, 40);
     lv_obj_set_style_border_color(box, lv_color_hex(0x2B3639), 0);
+    lv_obj_set_style_border_width(box, 0, 0);
     lv_obj_set_style_bg_color(box, lv_color_hex(0x2B3639), 0);
     lv_obj_set_style_radius(box, 0, 0);
     
@@ -412,7 +445,7 @@ static void create_co_valve_menu_item(lv_obj_t *cont, const CoValveMenuItem *ite
         lv_obj_set_style_text_color(label, lv_color_hex(0xffffff), LV_PART_MAIN);
         lv_obj_set_style_text_font(label, &Roboto_bold_24, 0);
         lv_label_set_text(label, item->label_text);
-        lv_obj_align(label, LV_ALIGN_LEFT_MID, 10, 0);
+        lv_obj_align(label, LV_ALIGN_LEFT_MID, -5, 0);
     }
     
     // Иконка (только для "Назад")
@@ -431,20 +464,24 @@ static void create_co_valve_menu_item(lv_obj_t *cont, const CoValveMenuItem *ite
         // Создаем контейнер для значения параметра
         lv_obj_t *value_container = lv_obj_create(box);
         if (is_obj_valid(value_container)) {
-            lv_obj_set_size(value_container, 150, 40);
+            lv_obj_set_size(value_container, 83, 40);
             lv_obj_set_style_bg_color(value_container, lv_color_hex(0x2B3639), LV_PART_MAIN);
             lv_obj_set_style_border_color(value_container, lv_color_hex(0x2B3639), LV_PART_MAIN);
+            lv_obj_set_style_border_width(value_container, 0, 0);
             lv_obj_set_style_radius(value_container, 0, 0);
             lv_obj_set_style_pad_all(value_container, 0, 0);
-            // Выравниваем контейнер значения относительно названия параметра (смещение 200px от левого края)
-            lv_obj_set_pos(value_container, 200, -23);
+            // Выравниваем контейнер значения относительно названия параметра (смещение 240px от левого края)
+            lv_obj_set_pos(value_container, 240, -23);
+            
+            // Помечаем контейнер значения параметра для компенсации движения по дуге
+            set_as_param_value(value_container);
             
             lv_obj_t *value_label = lv_label_create(value_container);
             if (is_obj_valid(value_label)) {
                 value_labels[item->param_index] = value_label;
                 lv_obj_set_style_text_color(value_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
                 lv_obj_set_style_text_font(value_label, &Roboto_bold_24, 0);
-                lv_obj_align(value_label, LV_ALIGN_CENTER, 0, 0);
+                lv_obj_align(value_label, LV_ALIGN_BOTTOM_RIGHT, 0, -2);
                 update_param_display(item->param_index);
             }
         }
@@ -504,13 +541,20 @@ void co_valve_menu_encoder_event_cb(uint8_t e) {
     
     // Если в режиме редактирования
     if (edit_mode && editing_param_index >= 0) {
-        // Float параметры: индексы 3, 4, 5, 6
-        bool is_float = (editing_param_index >= 3 && editing_param_index <= 6);
+        // Float параметры: индексы 2, 3, 4, 5
+        bool is_float = (editing_param_index >= 2 && editing_param_index <= 5);
         
         if (e & ENC_LEFT) {
-            if (is_float) {
+            if (editing_param_index == 0) {
+                // Тип регулятора (enum) - циклическое переключение П -> ПИ -> ПИД -> П
+                if (editing_reg_type_value == CO_REG_TYPE_P) {
+                    editing_reg_type_value = CO_REG_TYPE_PID;
+                } else {
+                    editing_reg_type_value = (co_reg_type_t)((int)editing_reg_type_value - 1);
+                }
+            } else if (is_float) {
                 // Float параметры - уменьшаем на step
-                int float_index = editing_param_index - 3; // Маппинг: 3->0, 4->1, 5->2, 6->3
+                int float_index = editing_param_index - 2; // Маппинг: 2->0, 3->1, 4->2, 5->3
                 float step = co_valve_param_limits_float[float_index].step;
                 editing_float_value -= step;
                 if (editing_float_value < co_valve_param_limits_float[float_index].min) {
@@ -518,8 +562,13 @@ void co_valve_menu_encoder_event_cb(uint8_t e) {
                 }
             } else {
                 // Int параметры - уменьшаем на step
-                // Маппинг: 0->0, 1->1, 2->2, 7->3
-                int int_index = (editing_param_index < 3) ? editing_param_index : 3;
+                // Маппинг: 1->1, 6->2
+                int int_index;
+                if (editing_param_index == 1) {
+                    int_index = 1;  // M_Length
+                } else { // editing_param_index == 6
+                    int_index = 2;  // M_IControl_Min
+                }
                 if (int_index >= 0 && int_index < PARAM_LIMITS_VALVE_INT_COUNT) {
                     int step = co_valve_param_limits_int[int_index].step;
                     editing_int_value -= step;
@@ -530,9 +579,16 @@ void co_valve_menu_encoder_event_cb(uint8_t e) {
             }
             update_param_display(editing_param_index);
         } else if (e & ENC_RIGHT) {
-            if (is_float) {
+            if (editing_param_index == 0) {
+                // Тип регулятора (enum) - циклическое переключение П -> ПИ -> ПИД -> П
+                if (editing_reg_type_value == CO_REG_TYPE_PID) {
+                    editing_reg_type_value = CO_REG_TYPE_P;
+                } else {
+                    editing_reg_type_value = (co_reg_type_t)((int)editing_reg_type_value + 1);
+                }
+            } else if (is_float) {
                 // Float параметры - увеличиваем на step
-                int float_index = editing_param_index - 3; // Маппинг: 3->0, 4->1, 5->2, 6->3
+                int float_index = editing_param_index - 2; // Маппинг: 2->0, 3->1, 4->2, 5->3
                 float step = co_valve_param_limits_float[float_index].step;
                 editing_float_value += step;
                 if (editing_float_value > co_valve_param_limits_float[float_index].max) {
@@ -540,8 +596,13 @@ void co_valve_menu_encoder_event_cb(uint8_t e) {
                 }
             } else {
                 // Int параметры - увеличиваем на step
-                // Маппинг: 0->0, 1->1, 2->2, 7->3
-                int int_index = (editing_param_index < 3) ? editing_param_index : 3;
+                // Маппинг: 1->1, 6->2
+                int int_index;
+                if (editing_param_index == 1) {
+                    int_index = 1;  // M_Length
+                } else { // editing_param_index == 6
+                    int_index = 2;  // M_IControl_Min
+                }
                 if (int_index >= 0 && int_index < PARAM_LIMITS_VALVE_INT_COUNT) {
                     int step = co_valve_param_limits_int[int_index].step;
                     editing_int_value += step;
@@ -599,7 +660,7 @@ void co_valve_menu_cleanup(void) {
     editing_param_index = -1;
     
     // Очищаем массив указателей на labels
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 7; i++) {
         value_labels[i] = NULL;
     }
     

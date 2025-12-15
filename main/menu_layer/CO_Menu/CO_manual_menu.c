@@ -8,6 +8,7 @@
 #include "screen_logic/menu_config.h"
 #include "screen_logic/screen_navigation.h"
 #include "screen_logic/screen_container_manager.h"
+#include "screen_logic/access_control.h"
 #include "dialog_screen/screen_YES_NO/yes_no_screen.h"
 #include <stdint.h>
 #include <inttypes.h>
@@ -52,12 +53,12 @@ static bool edit_mode = false;
 static int editing_param_index = -1;
 static manual_pump1_t editing_pump1_value = MANUAL_PUMP1_OFF;
 static manual_pump2_t editing_pump2_value = MANUAL_PUMP2_OFF;
-static manual_valve_t editing_valve_value = MANUAL_VALVE_OFF;
+static manual_valve_t editing_valve_value = MANUAL_VALVE_STOP;
 
 // Временные значения для отмены изменений
 static manual_pump1_t temp_N1_DControl = MANUAL_PUMP1_OFF;
 static manual_pump2_t temp_N2_DControl = MANUAL_PUMP2_OFF;
-static manual_valve_t temp_M_IControl = MANUAL_VALVE_OFF;
+static manual_valve_t temp_M_IControl = MANUAL_VALVE_STOP;
 
 /**
  * @brief Проверяет, является ли объект валидным
@@ -70,21 +71,26 @@ static bool is_obj_valid(lv_obj_t *obj) {
  * @brief Получает строковое представление состояния насоса 1
  */
 static const char* get_pump1_string(manual_pump1_t pump) {
-    return (pump == MANUAL_PUMP1_OFF) ? "Выкл" : "Вкл";
+    return (pump == MANUAL_PUMP1_OFF) ? "ВЫКЛ" : "ВКЛ";
 }
 
 /**
  * @brief Получает строковое представление состояния насоса 2
  */
 static const char* get_pump2_string(manual_pump2_t pump) {
-    return (pump == MANUAL_PUMP2_OFF) ? "Выкл" : "Вкл";
+    return (pump == MANUAL_PUMP2_OFF) ? "ВЫКЛ" : "ВКЛ";
 }
 
 /**
  * @brief Получает строковое представление состояния клапана
  */
 static const char* get_valve_string(manual_valve_t valve) {
-    return (valve == MANUAL_VALVE_OFF) ? "Выкл" : "Вкл";
+    switch(valve) {
+        case MANUAL_VALVE_CLOSED: return "ЗАКР";
+        case MANUAL_VALVE_OPEN: return "ОТКР";
+        case MANUAL_VALVE_STOP: return "СТОП";
+        default: return "???";
+    }
 }
 
 /**
@@ -99,36 +105,74 @@ static void co_manual_highlight_box(lv_obj_t *cont, uint32_t cursor_index) {
         lv_obj_t *child = lv_obj_get_child(cont, i);
         if (!is_obj_valid(child)) continue;
         
+        bool is_selected = (i == cursor_index);
+        bool is_editing_this = (edit_mode && editing_param_index == co_manual_menu_items[i].param_index);
+        
         uint32_t grand_child_cnt = lv_obj_get_child_cnt(child);
         
         for (uint32_t j = 0; j < grand_child_cnt; j++) {
             lv_obj_t *grand_child = lv_obj_get_child(child, j);
             if (!is_obj_valid(grand_child)) continue;
             
+            // Проверяем, является ли это контейнером значения параметра
+            bool is_value_container = false;
+            for (int k = 0; k < 3; k++) {
+                if (value_labels[k] != NULL && lv_obj_get_parent(value_labels[k]) == grand_child) {
+                    is_value_container = true;
+                    break;
+                }
+            }
+            
             if (lv_obj_check_type(grand_child, &lv_label_class)) {
-                if (i == cursor_index) {
-                    // В режиме редактирования не меняем цвет редактируемого параметра
-                    if (!(edit_mode && editing_param_index == co_manual_menu_items[i].param_index)) {
+                // Проверяем, является ли это label значения параметра
+                bool is_value_label = false;
+                for (int k = 0; k < 3; k++) {
+                    if (value_labels[k] == grand_child) {
+                        is_value_label = true;
+                        break;
+                    }
+                }
+                
+                if (is_selected) {
+                    if (is_value_label && is_editing_this) {
+                        // В режиме редактирования не меняем цвет редактируемого значения
+                        // (цвет устанавливается в update_param_display)
+                    } else {
+                        // НЕ в режиме редактирования - черный текст для всей строки (название + значение)
                         lv_obj_set_style_text_color(grand_child, lv_color_hex(0x000000), LV_PART_MAIN);
                     }
                 } else {
                     lv_obj_set_style_text_color(grand_child, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
                 }
             } else if (lv_obj_check_type(grand_child, &lv_image_class)) {
-                if (i == cursor_index) {
+                if (is_selected) {
                     lv_obj_set_style_img_recolor(grand_child, lv_color_hex(0x000000), 0);
                 } else {
                     lv_obj_set_style_img_recolor(grand_child, lv_color_hex(0xFFFFFF), 0);
                 }
+            } else if (is_value_container && is_selected && !is_editing_this) {
+                // НЕ в режиме редактирования - устанавливаем желтый фон для контейнера значения
+                lv_obj_set_style_bg_color(grand_child, lv_color_hex(0xFFCC00), LV_PART_MAIN);
+                // Устанавливаем черный цвет для текста значения параметра
+                lv_obj_t *value_label = lv_obj_get_child(grand_child, 0);
+                if (is_obj_valid(value_label) && lv_obj_check_type(value_label, &lv_label_class)) {
+                    lv_obj_set_style_text_color(value_label, lv_color_hex(0x000000), LV_PART_MAIN);
+                }
+            } else if (is_value_container && !is_selected) {
+                // Не выбранный элемент - обычный фон
+                lv_obj_set_style_bg_color(grand_child, lv_color_hex(0x2B3639), LV_PART_MAIN);
+                // Восстанавливаем белый цвет для текста значения параметра
+                lv_obj_t *value_label = lv_obj_get_child(grand_child, 0);
+                if (is_obj_valid(value_label) && lv_obj_check_type(value_label, &lv_label_class)) {
+                    lv_obj_set_style_text_color(value_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+                }
             }
         }
         
-        // Меняем фон контейнера
-        if (i == cursor_index) {
-            // В режиме редактирования фон уже установлен в update_param_display
-            if (!(edit_mode && editing_param_index == co_manual_menu_items[i].param_index)) {
-                lv_obj_set_style_bg_color(child, lv_color_hex(0xFFCC00), LV_PART_MAIN);
-            }
+        // Меняем фон контейнера строки
+        if (is_selected) {
+            // Всегда устанавливаем желтый фон для выбранной строки
+            lv_obj_set_style_bg_color(child, lv_color_hex(0xFFCC00), LV_PART_MAIN);
         } else {
             lv_obj_set_style_bg_color(child, lv_color_hex(0x2B3639), LV_PART_MAIN);
         }
@@ -210,8 +254,7 @@ static void save_param_changes(void) {
         case 2: M_IControl = editing_valve_value; break;
     }
     
-    // Сохраняем параметры в NVS
-    co_manual_params_save();
+    // НЕ сохраняем параметры в NVS (как в ГВС)
     
     edit_mode = false;
     editing_param_index = -1;
@@ -255,6 +298,12 @@ static void cancel_param_changes(void) {
  */
 static void enter_edit_mode(int param_index) {
     if (param_index < 0 || param_index >= 3) return;
+    
+    // Проверяем доступ перед редактированием
+    if (!access_control_is_unlocked()) {
+        ESP_LOGW(TAG, "Access denied: cannot edit parameters when access is locked");
+        return;
+    }
     
     ESP_LOGI(TAG, "Entering edit mode for parameter %d", param_index);
     
@@ -328,6 +377,7 @@ static void create_co_manual_menu_item(lv_obj_t *cont, const CoManualMenuItem *i
     
     lv_obj_set_size(box, 462, 40);
     lv_obj_set_style_border_color(box, lv_color_hex(0x2B3639), 0);
+    lv_obj_set_style_border_width(box, 0, 0);
     lv_obj_set_style_bg_color(box, lv_color_hex(0x2B3639), 0);
     lv_obj_set_style_radius(box, 0, 0);
     
@@ -337,7 +387,7 @@ static void create_co_manual_menu_item(lv_obj_t *cont, const CoManualMenuItem *i
         lv_obj_set_style_text_color(label, lv_color_hex(0xffffff), LV_PART_MAIN);
         lv_obj_set_style_text_font(label, &Roboto_bold_24, 0);
         lv_label_set_text(label, item->label_text);
-        lv_obj_align(label, LV_ALIGN_LEFT_MID, 10, 0);
+        lv_obj_align(label, LV_ALIGN_LEFT_MID, -5, 0);
     }
     
     // Иконка (только для "Назад")
@@ -356,20 +406,24 @@ static void create_co_manual_menu_item(lv_obj_t *cont, const CoManualMenuItem *i
         // Создаем контейнер для значения параметра
         lv_obj_t *value_container = lv_obj_create(box);
         if (is_obj_valid(value_container)) {
-            lv_obj_set_size(value_container, 150, 40);
+            lv_obj_set_size(value_container, 83, 40);
             lv_obj_set_style_bg_color(value_container, lv_color_hex(0x2B3639), LV_PART_MAIN);
             lv_obj_set_style_border_color(value_container, lv_color_hex(0x2B3639), LV_PART_MAIN);
+            lv_obj_set_style_border_width(value_container, 0, 0);
             lv_obj_set_style_radius(value_container, 0, 0);
             lv_obj_set_style_pad_all(value_container, 0, 0);
-            // Выравниваем контейнер значения относительно названия параметра (смещение 200px от левого края)
-            lv_obj_set_pos(value_container, 200, -23);
+            // Выравниваем контейнер значения относительно названия параметра (смещение 240px от левого края)
+            lv_obj_set_pos(value_container, 240, -23);
+            
+            // Помечаем контейнер значения параметра для компенсации движения по дуге
+            set_as_param_value(value_container);
             
             lv_obj_t *value_label = lv_label_create(value_container);
             if (is_obj_valid(value_label)) {
                 value_labels[item->param_index] = value_label;
                 lv_obj_set_style_text_color(value_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
                 lv_obj_set_style_text_font(value_label, &Roboto_bold_24, 0);
-                lv_obj_align(value_label, LV_ALIGN_CENTER, 0, 0);
+                lv_obj_align(value_label, LV_ALIGN_BOTTOM_RIGHT, 0, -2);
                 update_param_display(item->param_index);
             }
         }
@@ -441,8 +495,20 @@ void co_manual_menu_encoder_event_cb(uint8_t e) {
                                          MANUAL_PUMP2_ON : MANUAL_PUMP2_OFF;
                     break;
                 case 2: // M-IControl
-                    editing_valve_value = (editing_valve_value == MANUAL_VALVE_OFF) ? 
-                                        MANUAL_VALVE_ON : MANUAL_VALVE_OFF;
+                    // Циклическое переключение: ЗАКР -> ОТКР -> СТОП -> ЗАКР
+                    if (e & ENC_RIGHT) {
+                        if (editing_valve_value == MANUAL_VALVE_STOP) {
+                            editing_valve_value = MANUAL_VALVE_CLOSED;
+                        } else {
+                            editing_valve_value = (manual_valve_t)((int)editing_valve_value + 1);
+                        }
+                    } else { // ENC_LEFT
+                        if (editing_valve_value == MANUAL_VALVE_CLOSED) {
+                            editing_valve_value = MANUAL_VALVE_STOP;
+                        } else {
+                            editing_valve_value = (manual_valve_t)((int)editing_valve_value - 1);
+                        }
+                    }
                     break;
             }
             update_param_display(editing_param_index);

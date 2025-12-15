@@ -9,22 +9,24 @@ static const char *NVS_NAMESPACE = "co_heat_graph";  // Максимум 15 си
 
 // Глобальные переменные для параметров графика отопления
 heating_graph_type_t C1_Type = HEATING_GRAPH_TYPE_POINTS;  // По умолчанию по точкам
-float C1_Slope = 45.0f;                                    // По умолчанию 45.0°
+float C1_Slope = 1.0f;                                    // По умолчанию 1.0°
 int C1_Number = 6;                                         // По умолчанию 6 точек
-float C1_T0_1 = -20.0f;                                    // По умолчанию -20.0°C
-float C1_T1_Desired_1 = 30.0f;                            // По умолчанию 30.0°C
-float C1_T0_2 = -10.0f;                                   // По умолчанию -10.0°C
-float C1_T1_Desired_2 = 40.0f;                            // По умолчанию 40.0°C
-float C1_T0_3 = 0.0f;                                     // По умолчанию 0.0°C
-float C1_T1_Desired_3 = 50.0f;                            // По умолчанию 50.0°C
-float C1_T0_4 = 10.0f;                                    // По умолчанию 10.0°C
-float C1_T1_Desired_4 = 60.0f;                            // По умолчанию 60.0°C
-float C1_T0_5 = 20.0f;                                    // По умолчанию 20.0°C
-float C1_T1_Desired_5 = 70.0f;                            // По умолчанию 70.0°C
-float C1_T0_6 = 30.0f;                                    // По умолчанию 30.0°C
-float C1_T1_Desired_6 = 75.0f;                            // По умолчанию 75.0°C
+float C1_T0_1 = -30.0f;                                    // По умолчанию -30.0°C
+float C1_T1_Desired_1 = 87.0f;                            // По умолчанию 87.0°C
+float C1_T0_2 = -15.0f;                                   // По умолчанию -15.0°C
+float C1_T1_Desired_2 = 78.0f;                            // По умолчанию 40.0°C
+float C1_T0_3 = -5.0f;                                     // По умолчанию 0.0°C
+float C1_T1_Desired_3 = 66.0f;                            // По умолчанию 50.0°C
+float C1_T0_4 = 0.0f;                                    // По умолчанию 10.0°C
+float C1_T1_Desired_4 = 58.0f;                            // По умолчанию 60.0°C
+float C1_T0_5 = 5.0f;                                    // По умолчанию 20.0°C
+float C1_T1_Desired_5 = 52.0f;                            // По умолчанию 70.0°C
+float C1_T0_6 = 15.0f;                                    // По умолчанию 30.0°C
+float C1_T1_Desired_6 = 43.0f;                            // По умолчанию 75.0°C
 float C3_T1_6 = 70.0f;                                    // По умолчанию 70.0°C
 float C3_T1_Desired_6 = 75.0f;                            // По умолчанию 75.0°C
+
+
 
 /**
  * @brief Сохраняет параметры в NVS
@@ -186,10 +188,9 @@ void co_heating_graph_params_load(void) {
 
 // Функция инициализации параметров
 void co_heating_graph_params_init(void) {
-    // Сначала пытаемся загрузить из NVS
-    co_heating_graph_params_load();
-    
-    // Если загрузка не удалась, используем значения по умолчанию
+    // НЕ загружаем параметры из NVS (как в ГВС)
+    // Используем значения по умолчанию
     // (они уже установлены при объявлении переменных)
+    ESP_LOGI(TAG, "CO heating graph parameters initialized with default values");
 }
 

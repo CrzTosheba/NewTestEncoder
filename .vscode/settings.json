@@ -45,8 +45,9 @@
         "interrupts.h": "c",
         "co_main_menu.h": "c",
         "inttypes.h": "c",
-        "menu_config.h": "c"
+        "menu_config.h": "c",
+        "co_params_limits.h": "c"
     },
     "idf.flashType": "UART",
-    "idf.portWin": "COM10"
+    "idf.portWin": "COM13"
 }

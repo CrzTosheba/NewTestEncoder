@@ -266,6 +266,7 @@ static void create_co_schedule_menu_item(lv_obj_t *cont, const CoScheduleMenuIte
     
     lv_obj_set_size(box, 462, 40);
     lv_obj_set_style_border_color(box, lv_color_hex(0x2B3639), 0);
+    lv_obj_set_style_border_width(box, 0, 0);
     lv_obj_set_style_bg_color(box, lv_color_hex(0x2B3639), 0);
     lv_obj_set_style_radius(box, 0, 0);
     
@@ -274,7 +275,7 @@ static void create_co_schedule_menu_item(lv_obj_t *cont, const CoScheduleMenuIte
         lv_obj_set_style_text_color(label, lv_color_hex(0xffffff), LV_PART_MAIN);
         lv_obj_set_style_text_font(label, &Roboto_bold_24, 0);
         lv_label_set_text(label, item->label_text);
-        lv_obj_align(label, LV_ALIGN_LEFT_MID, 10, 0);
+        lv_obj_align(label, LV_ALIGN_LEFT_MID, -5, 0);
     }
     
     if (item->img_src != NULL) {
@@ -484,33 +485,73 @@ static void co_schedule_day_highlight_box(lv_obj_t *cont, uint32_t cursor_index)
         lv_obj_t *child = lv_obj_get_child(cont, i);
         if (!is_obj_valid(child)) continue;
         
+        bool is_selected = (i == cursor_index);
+        bool is_editing_this = (edit_mode && editing_param_index == co_schedule_day_menu_items[i].param_index);
+        
         uint32_t grand_child_cnt = lv_obj_get_child_cnt(child);
         
         for (uint32_t j = 0; j < grand_child_cnt; j++) {
             lv_obj_t *grand_child = lv_obj_get_child(child, j);
             if (!is_obj_valid(grand_child)) continue;
             
+            // Проверяем, является ли это контейнером значения параметра
+            bool is_value_container = false;
+            for (int k = 0; k < 4; k++) {
+                if (day_value_labels[k] != NULL && lv_obj_get_parent(day_value_labels[k]) == grand_child) {
+                    is_value_container = true;
+                    break;
+                }
+            }
+            
             if (lv_obj_check_type(grand_child, &lv_label_class)) {
-                if (i == cursor_index) {
-                    if (!(edit_mode && editing_param_index == co_schedule_day_menu_items[i].param_index)) {
+                // Проверяем, является ли это label значения параметра
+                bool is_value_label = false;
+                for (int k = 0; k < 4; k++) {
+                    if (day_value_labels[k] == grand_child) {
+                        is_value_label = true;
+                        break;
+                    }
+                }
+                
+                if (is_selected) {
+                    if (is_value_label && is_editing_this) {
+                        // В режиме редактирования не меняем цвет редактируемого значения
+                        // (цвет устанавливается в update_day_param_display)
+                    } else {
+                        // НЕ в режиме редактирования - черный текст для всей строки (название + значение)
                         lv_obj_set_style_text_color(grand_child, lv_color_hex(0x000000), LV_PART_MAIN);
                     }
                 } else {
                     lv_obj_set_style_text_color(grand_child, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
                 }
             } else if (lv_obj_check_type(grand_child, &lv_image_class)) {
-                if (i == cursor_index) {
+                if (is_selected) {
                     lv_obj_set_style_img_recolor(grand_child, lv_color_hex(0x000000), 0);
                 } else {
                     lv_obj_set_style_img_recolor(grand_child, lv_color_hex(0xFFFFFF), 0);
                 }
+            } else if (is_value_container && is_selected && !is_editing_this) {
+                // НЕ в режиме редактирования - устанавливаем желтый фон для контейнера значения
+                lv_obj_set_style_bg_color(grand_child, lv_color_hex(0xFFCC00), LV_PART_MAIN);
+                // Устанавливаем черный цвет для текста значения параметра
+                lv_obj_t *value_label = lv_obj_get_child(grand_child, 0);
+                if (is_obj_valid(value_label) && lv_obj_check_type(value_label, &lv_label_class)) {
+                    lv_obj_set_style_text_color(value_label, lv_color_hex(0x000000), LV_PART_MAIN);
+                }
+            } else if (is_value_container && !is_selected) {
+                // Не выбранный элемент - обычный фон
+                lv_obj_set_style_bg_color(grand_child, lv_color_hex(0x2B3639), LV_PART_MAIN);
+                // Восстанавливаем белый цвет для текста значения параметра
+                lv_obj_t *value_label = lv_obj_get_child(grand_child, 0);
+                if (is_obj_valid(value_label) && lv_obj_check_type(value_label, &lv_label_class)) {
+                    lv_obj_set_style_text_color(value_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+                }
             }
         }
         
-        if (i == cursor_index) {
-            if (!(edit_mode && editing_param_index == co_schedule_day_menu_items[i].param_index)) {
-                lv_obj_set_style_bg_color(child, lv_color_hex(0xFFCC00), LV_PART_MAIN);
-            }
+        if (is_selected) {
+            // Всегда устанавливаем желтый фон для выбранной строки
+            lv_obj_set_style_bg_color(child, lv_color_hex(0xFFCC00), LV_PART_MAIN);
         } else {
             lv_obj_set_style_bg_color(child, lv_color_hex(0x2B3639), LV_PART_MAIN);
         }
@@ -534,6 +575,7 @@ static void create_co_schedule_day_menu_item(lv_obj_t *cont, const CoScheduleDay
     
     lv_obj_set_size(box, 462, 40);
     lv_obj_set_style_border_color(box, lv_color_hex(0x2B3639), 0);
+    lv_obj_set_style_border_width(box, 0, 0);
     lv_obj_set_style_bg_color(box, lv_color_hex(0x2B3639), 0);
     lv_obj_set_style_radius(box, 0, 0);
     
@@ -542,7 +584,7 @@ static void create_co_schedule_day_menu_item(lv_obj_t *cont, const CoScheduleDay
         lv_obj_set_style_text_color(label, lv_color_hex(0xffffff), LV_PART_MAIN);
         lv_obj_set_style_text_font(label, &Roboto_bold_24, 0);
         lv_label_set_text(label, item->label_text);
-        lv_obj_align(label, LV_ALIGN_LEFT_MID, 10, 0);
+        lv_obj_align(label, LV_ALIGN_LEFT_MID, -5, 0);
     }
     
     if (item->img_src != NULL) {
@@ -559,19 +601,23 @@ static void create_co_schedule_day_menu_item(lv_obj_t *cont, const CoScheduleDay
     if (item->param_index >= 0) {
         lv_obj_t *value_container = lv_obj_create(box);
         if (is_obj_valid(value_container)) {
-            lv_obj_set_size(value_container, 150, 40);
+            lv_obj_set_size(value_container, 83, 40);
             lv_obj_set_style_bg_color(value_container, lv_color_hex(0x2B3639), LV_PART_MAIN);
             lv_obj_set_style_border_color(value_container, lv_color_hex(0x2B3639), LV_PART_MAIN);
+            lv_obj_set_style_border_width(value_container, 0, 0);
             lv_obj_set_style_radius(value_container, 0, 0);
             lv_obj_set_style_pad_all(value_container, 0, 0);
-            lv_obj_set_pos(value_container, 200, -23);
+            lv_obj_set_pos(value_container, 240, -23);
+            
+            // Помечаем контейнер значения параметра для компенсации движения по дуге
+            set_as_param_value(value_container);
             
             lv_obj_t *value_label = lv_label_create(value_container);
             if (is_obj_valid(value_label)) {
                 day_value_labels[item->param_index] = value_label;
                 lv_obj_set_style_text_color(value_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
                 lv_obj_set_style_text_font(value_label, &Roboto_bold_24, 0);
-                lv_obj_align(value_label, LV_ALIGN_CENTER, 0, 0);
+                lv_obj_align(value_label, LV_ALIGN_BOTTOM_RIGHT, 0, -2);
                 update_schedule_day_param_display(item->param_index);
             }
         }
@@ -599,8 +645,7 @@ static void save_day_param_changes(void) {
         *minutes_ptr = editing_minutes_value;
     }
     
-    // Сохраняем параметры в NVS
-    co_schedule_params_save();
+    // НЕ сохраняем параметры в NVS (как в ГВС)
     
     edit_mode = false;
     editing_param_index = -1;

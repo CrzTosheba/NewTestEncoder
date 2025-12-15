@@ -8,6 +8,7 @@
 #include "screen_logic/menu_config.h"
 #include "screen_logic/screen_navigation.h"
 #include "screen_logic/screen_container_manager.h"
+#include "screen_logic/access_control.h"
 #include "dialog_screen/screen_YES_NO/yes_no_screen.h"
 #include "CO_alarms_menu.h"
 #include <stdint.h>
@@ -22,6 +23,27 @@
 static const char *TAG = "CO_DEV_ALARM_MENU";
 
 static void update_param_display(int param_index);
+
+/**
+ * @brief Преобразует enum сброса в строку
+ */
+static const char* get_dev_alarm_rtype_string(int value) {
+    switch(value) {
+        case 0: return "АВТО";
+        case 1: return "РУЧН";
+        case 2: return "РУЧН-1";
+        case 3: return "РУЧН-2";
+        case 4: return "РУЧН-3";
+        case 5: return "РУЧН-4";
+        case 6: return "РУЧН-5";
+        case 7: return "РУЧН-6";
+        case 8: return "РУЧН-7";
+        case 9: return "РУЧН-8";
+        case 10: return "РУЧН-9";
+        case 11: return "РУЧН-10";
+        default: return "???";
+    }
+}
 
 typedef struct {
     const char *label_text;
@@ -79,33 +101,74 @@ static void co_dev_alarm_highlight_box(lv_obj_t *cont, uint32_t cursor_index) {
         lv_obj_t *child = lv_obj_get_child(cont, i);
         if (!is_obj_valid(child)) continue;
         
+        bool is_selected = (i == cursor_index);
+        bool is_editing_this = (edit_mode && editing_param_index == co_dev_alarm_menu_items[i].param_index);
+        
         uint32_t grand_child_cnt = lv_obj_get_child_cnt(child);
         
         for (uint32_t j = 0; j < grand_child_cnt; j++) {
             lv_obj_t *grand_child = lv_obj_get_child(child, j);
             if (!is_obj_valid(grand_child)) continue;
             
+            // Проверяем, является ли это контейнером значения параметра
+            bool is_value_container = false;
+            for (int k = 0; k < 6; k++) {
+                if (value_labels[k] != NULL && lv_obj_get_parent(value_labels[k]) == grand_child) {
+                    is_value_container = true;
+                    break;
+                }
+            }
+            
             if (lv_obj_check_type(grand_child, &lv_label_class)) {
-                if (i == cursor_index) {
-                    if (!(edit_mode && editing_param_index == co_dev_alarm_menu_items[i].param_index)) {
+                // Проверяем, является ли это label значения параметра
+                bool is_value_label = false;
+                for (int k = 0; k < 6; k++) {
+                    if (value_labels[k] == grand_child) {
+                        is_value_label = true;
+                        break;
+                    }
+                }
+                
+                if (is_selected) {
+                    if (is_value_label && is_editing_this) {
+                        // В режиме редактирования не меняем цвет редактируемого значения
+                        // (цвет устанавливается в update_param_display)
+                    } else {
+                        // НЕ в режиме редактирования - черный текст для всей строки (название + значение)
                         lv_obj_set_style_text_color(grand_child, lv_color_hex(0x000000), LV_PART_MAIN);
                     }
                 } else {
                     lv_obj_set_style_text_color(grand_child, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
                 }
             } else if (lv_obj_check_type(grand_child, &lv_image_class)) {
-                if (i == cursor_index) {
+                if (is_selected) {
                     lv_obj_set_style_img_recolor(grand_child, lv_color_hex(0x000000), 0);
                 } else {
                     lv_obj_set_style_img_recolor(grand_child, lv_color_hex(0xFFFFFF), 0);
                 }
+            } else if (is_value_container && is_selected && !is_editing_this) {
+                // НЕ в режиме редактирования - устанавливаем желтый фон для контейнера значения
+                lv_obj_set_style_bg_color(grand_child, lv_color_hex(0xFFCC00), LV_PART_MAIN);
+                // Устанавливаем черный цвет для текста значения параметра
+                lv_obj_t *value_label = lv_obj_get_child(grand_child, 0);
+                if (is_obj_valid(value_label) && lv_obj_check_type(value_label, &lv_label_class)) {
+                    lv_obj_set_style_text_color(value_label, lv_color_hex(0x000000), LV_PART_MAIN);
+                }
+            } else if (is_value_container && !is_selected) {
+                // Не выбранный элемент - обычный фон
+                lv_obj_set_style_bg_color(grand_child, lv_color_hex(0x2B3639), LV_PART_MAIN);
+                // Восстанавливаем белый цвет для текста значения параметра
+                lv_obj_t *value_label = lv_obj_get_child(grand_child, 0);
+                if (is_obj_valid(value_label) && lv_obj_check_type(value_label, &lv_label_class)) {
+                    lv_obj_set_style_text_color(value_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
+                }
             }
         }
         
-        if (i == cursor_index) {
-            if (!(edit_mode && editing_param_index == co_dev_alarm_menu_items[i].param_index)) {
-                lv_obj_set_style_bg_color(child, lv_color_hex(0xFFCC00), LV_PART_MAIN);
-            }
+        // Меняем фон контейнера строки
+        if (is_selected) {
+            // Всегда устанавливаем желтый фон для выбранной строки
+            lv_obj_set_style_bg_color(child, lv_color_hex(0xFFCC00), LV_PART_MAIN);
         } else {
             lv_obj_set_style_bg_color(child, lv_color_hex(0x2B3639), LV_PART_MAIN);
         }
@@ -119,70 +182,49 @@ static void update_param_display(int param_index) {
     char value_str[32];
     bool is_float = (param_index == 5);
     
-    bool is_enum = (param_index == 0 || param_index == 1 || param_index == 2 || param_index == 4);  // Enum параметры
-    
     if (edit_mode && editing_param_index == param_index) {
         if (is_float) {
             format_float_value(value_str, sizeof(value_str), editing_float_value);
-        } else if (is_enum) {
+        } else if (param_index == 0 || param_index == 1 || param_index == 2) {
+            // Enum НЕТ/ДА
             snprintf(value_str, sizeof(value_str), "%s", 
                      editing_int_value == 0 ? "НЕТ" : "ДА");
-        } else {
+        } else if (param_index == 3) {
+            // Задержка - int
             snprintf(value_str, sizeof(value_str), "%d", editing_int_value);
+        } else if (param_index == 4) {
+            // Сброс - enum АВТО/РУЧН/РУЧН-1/.../РУЧН-10
+            snprintf(value_str, sizeof(value_str), "%s", 
+                     get_dev_alarm_rtype_string(editing_int_value));
         }
     } else {
         switch(param_index) {
             case 0: {
                 int value = T1_EnDevAlarm;
-                if (is_enum) {
-                    snprintf(value_str, sizeof(value_str), "%s", value == 0 ? "НЕТ" : "ДА");
-                } else {
-                    snprintf(value_str, sizeof(value_str), "%d", value);
-                }
+                snprintf(value_str, sizeof(value_str), "%s", value == 0 ? "НЕТ" : "ДА");
                 break;
             }
             case 1: {
                 int value = T1_EnHighAlarm;
-                if (is_enum) {
-                    snprintf(value_str, sizeof(value_str), "%s", value == 0 ? "НЕТ" : "ДА");
-                } else {
-                    snprintf(value_str, sizeof(value_str), "%d", value);
-                }
+                snprintf(value_str, sizeof(value_str), "%s", value == 0 ? "НЕТ" : "ДА");
                 break;
             }
             case 2: {
                 int value = T1_EnLowAlarm;
-                if (is_enum) {
-                    snprintf(value_str, sizeof(value_str), "%s", value == 0 ? "НЕТ" : "ДА");
-                } else {
-                    snprintf(value_str, sizeof(value_str), "%d", value);
-                }
+                snprintf(value_str, sizeof(value_str), "%s", value == 0 ? "НЕТ" : "ДА");
                 break;
             }
             case 3: snprintf(value_str, sizeof(value_str), "%d", T1_DevAlarmDelay); break;
             case 4: {
-                int value = T1_DevAlarmRType;
-                if (is_enum) {
-                    snprintf(value_str, sizeof(value_str), "%s", value == 0 ? "НЕТ" : "ДА");
-                } else {
-                    snprintf(value_str, sizeof(value_str), "%d", value);
-                }
+                snprintf(value_str, sizeof(value_str), "%s", get_dev_alarm_rtype_string(T1_DevAlarmRType));
                 break;
             }
             case 5: format_float_value(value_str, sizeof(value_str), T1_AlarmDev); break;
         }
     }
     
-    char full_str[40];
-    if (param_index == 3) {
-        snprintf(full_str, sizeof(full_str), "%s с", value_str);
-    } else if (param_index == 5) {
-        snprintf(full_str, sizeof(full_str), "%s °C", value_str);
-    } else {
-        snprintf(full_str, sizeof(full_str), "%s", value_str);
-    }
-    
-    lv_label_set_text(value_labels[param_index], full_str);
+    // Отображаем значение без единиц измерения
+    lv_label_set_text(value_labels[param_index], value_str);
     
     if (!is_obj_valid(value_labels[param_index])) return;
     
@@ -214,7 +256,7 @@ static void save_param_changes(void) {
         case 5: T1_AlarmDev = editing_float_value; break;
     }
     
-    co_dev_alarm_params_save();
+    // НЕ сохраняем параметры в NVS (как в ГВС)
     
     edit_mode = false;
     editing_param_index = -1;
@@ -252,6 +294,12 @@ static void cancel_param_changes(void) {
 
 static void enter_edit_mode(int param_index) {
     if (param_index < 0 || param_index >= 6) return;
+    
+    // Проверяем доступ перед редактированием
+    if (!access_control_is_unlocked()) {
+        ESP_LOGW(TAG, "Access denied: cannot edit parameters when access is locked");
+        return;
+    }
     
     ESP_LOGI(TAG, "Entering edit mode for parameter %d", param_index);
     
@@ -326,6 +374,7 @@ static void create_co_dev_alarm_menu_item(lv_obj_t *cont, const CoDevAlarmMenuIt
     
     lv_obj_set_size(box, 462, 40);
     lv_obj_set_style_border_color(box, lv_color_hex(0x2B3639), 0);
+    lv_obj_set_style_border_width(box, 0, 0);
     lv_obj_set_style_bg_color(box, lv_color_hex(0x2B3639), 0);
     lv_obj_set_style_radius(box, 0, 0);
     
@@ -334,7 +383,7 @@ static void create_co_dev_alarm_menu_item(lv_obj_t *cont, const CoDevAlarmMenuIt
         lv_obj_set_style_text_color(label, lv_color_hex(0xffffff), LV_PART_MAIN);
         lv_obj_set_style_text_font(label, &Roboto_bold_24, 0);
         lv_label_set_text(label, item->label_text);
-        lv_obj_align(label, LV_ALIGN_LEFT_MID, 10, 0);
+        lv_obj_align(label, LV_ALIGN_LEFT_MID, -5, 0);
     }
     
     if (item->img_src != NULL) {
@@ -350,19 +399,23 @@ static void create_co_dev_alarm_menu_item(lv_obj_t *cont, const CoDevAlarmMenuIt
     if (item->param_index >= 0) {
         lv_obj_t *value_container = lv_obj_create(box);
         if (is_obj_valid(value_container)) {
-            lv_obj_set_size(value_container, 150, 40);
+            lv_obj_set_size(value_container, 83, 40);
             lv_obj_set_style_bg_color(value_container, lv_color_hex(0x2B3639), LV_PART_MAIN);
             lv_obj_set_style_border_color(value_container, lv_color_hex(0x2B3639), LV_PART_MAIN);
+            lv_obj_set_style_border_width(value_container, 0, 0);
             lv_obj_set_style_radius(value_container, 0, 0);
             lv_obj_set_style_pad_all(value_container, 0, 0);
-            lv_obj_set_pos(value_container, 200, -23);
+            lv_obj_set_pos(value_container, 240, -23);
+            
+            // Помечаем контейнер значения параметра для компенсации движения по дуге
+            set_as_param_value(value_container);
             
             lv_obj_t *value_label = lv_label_create(value_container);
             if (is_obj_valid(value_label)) {
                 value_labels[item->param_index] = value_label;
                 lv_obj_set_style_text_color(value_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
                 lv_obj_set_style_text_font(value_label, &Roboto_bold_24, 0);
-                lv_obj_align(value_label, LV_ALIGN_CENTER, 0, 0);
+                lv_obj_align(value_label, LV_ALIGN_BOTTOM_RIGHT, 0, -2);
                 update_param_display(item->param_index);
             }
         }
@@ -422,7 +475,12 @@ void co_dev_alarm_menu_encoder_event_cb(uint8_t e) {
                 int step = co_dev_alarm_param_limits_int[editing_param_index].step;
                 editing_int_value -= step;
                 if (editing_int_value < co_dev_alarm_param_limits_int[editing_param_index].min) {
-                    editing_int_value = co_dev_alarm_param_limits_int[editing_param_index].min;
+                    // Для enum параметров делаем циклическое переключение
+                    if (editing_param_index == 0 || editing_param_index == 1 || editing_param_index == 2 || editing_param_index == 4) {
+                        editing_int_value = co_dev_alarm_param_limits_int[editing_param_index].max;
+                    } else {
+                        editing_int_value = co_dev_alarm_param_limits_int[editing_param_index].min;
+                    }
                 }
             }
             update_param_display(editing_param_index);
@@ -437,7 +495,12 @@ void co_dev_alarm_menu_encoder_event_cb(uint8_t e) {
                 int step = co_dev_alarm_param_limits_int[editing_param_index].step;
                 editing_int_value += step;
                 if (editing_int_value > co_dev_alarm_param_limits_int[editing_param_index].max) {
-                    editing_int_value = co_dev_alarm_param_limits_int[editing_param_index].max;
+                    // Для enum параметров делаем циклическое переключение
+                    if (editing_param_index == 0 || editing_param_index == 1 || editing_param_index == 2 || editing_param_index == 4) {
+                        editing_int_value = co_dev_alarm_param_limits_int[editing_param_index].min;
+                    } else {
+                        editing_int_value = co_dev_alarm_param_limits_int[editing_param_index].max;
+                    }
                 }
             }
             update_param_display(editing_param_index);

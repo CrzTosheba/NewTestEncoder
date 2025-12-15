@@ -18,6 +18,7 @@ LV_FONT_DECLARE(Roboto_bold_24);
 // Объявления изображений
 LV_IMG_DECLARE(lv_im_module_hotwater);
 LV_IMG_DECLARE(lv_im_module_lock);
+LV_IMG_DECLARE(lv_im_module_unlock);
 LV_IMG_DECLARE(lv_im_module_heat);
 LV_IMG_DECLARE(lv_im_module_podp);
 LV_IMG_DECLARE(lv_im_module_input_output);
@@ -44,6 +45,7 @@ void screen_service_create(lv_obj_t *parent);
 void Main_Menu_List(void);
 void main_menu_encoder_event_cb(uint8_t e);
 void main_menu_update_display(void);
+void main_menu_update_access_display(void);
 
 // Функции управления видимостью главного меню
 void main_menu_show(void);

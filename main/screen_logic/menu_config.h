@@ -25,6 +25,18 @@ typedef enum {
     MENU_TYPE_CO_ALARMS_EXTERNAL,     // Меню внешней аварии
     MENU_TYPE_CO_ALARMS_SENSOR_BREAK, // Меню обрыва датчика
     MENU_TYPE_CO_ALARMS_DEVIATION,     // Меню аварийного отклонения
+    MENU_TYPE_GVS,                // Меню ГВС
+    MENU_TYPE_GVS_GENERAL,        // Меню общие настройки ГВС
+    MENU_TYPE_GVS_PUMPS,          // Меню насосов ГВС
+    MENU_TYPE_GVS_VALVE,          // Меню клапан ГВС
+    MENU_TYPE_GVS_MANUAL,         // Меню ручной режим ГВС
+    MENU_TYPE_GVS_SCHEDULE,       // Меню расписания ГВС
+    MENU_TYPE_GVS_SCHEDULE_DAY,   // Меню дня недели расписания ГВС
+    MENU_TYPE_GVS_ALARMS,         // Меню аварий ГВС
+    MENU_TYPE_GVS_ALARMS_DRY_RUN, // Меню сухого хода ГВС
+    MENU_TYPE_GVS_ALARMS_EXTERNAL, // Меню внешней аварии ГВС
+    MENU_TYPE_GVS_ALARMS_SENSOR_BREAK, // Меню обрыва датчика ГВС
+    MENU_TYPE_GVS_ALARMS_DEVIATION,     // Меню аварийного отклонения ГВС
     MENU_TYPE_COUNT              // Количество типов меню
 } menu_type_t;
 

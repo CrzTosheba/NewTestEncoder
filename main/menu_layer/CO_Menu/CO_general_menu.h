@@ -13,8 +13,11 @@ LV_IMG_DECLARE(lv_im_arrow_right);
 
 // Тип режима отопления
 typedef enum {
-    MODE_COMF = 0,  // КОМФ
-    MODE_ECON = 1   // ЭКОН
+    MODE_MANUAL = 0,  // РУЧН
+    MODE_SCHEDULE = 1, // РАСП
+    MODE_ECON = 2,     // ЭКОН
+    MODE_COMF = 3,     // КОМФ
+    MODE_ALARM = 4     // АВАР
 } heating_mode_t;
 
 // Функции меню общие настройки отопления

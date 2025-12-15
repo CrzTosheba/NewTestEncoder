@@ -5,6 +5,8 @@
 #include "encoder/encoder_manager.h"
 #include "screen_logic/screen_navigation.h"
 #include "screen_logic/screen_container_manager.h"
+#include "screen_logic/access_control.h"
+#include "screens/S_Pass/screen_Pass.h"
 #include <stdint.h>
 #include "esp_log.h"
 #include "freertos/task.h"
@@ -32,6 +34,10 @@ lv_obj_t *content_container = NULL;
 
 // Указатель на радиальную маску главного меню
 static lv_obj_t *main_mask = NULL;
+
+// Указатели на элементы первого пункта меню (доступ) для динамического обновления
+static lv_obj_t *access_label = NULL;
+static lv_obj_t *access_icon = NULL;
 
 // Тип для функций создания экранов
 typedef void (*screen_create_func_t)(lv_obj_t*);
@@ -118,6 +124,39 @@ void main_menu_cleanup(void) {
 }
 
 /**
+ * @brief Обновляет отображение пункта меню "Доступ" в зависимости от состояния
+ */
+void main_menu_update_access_display(void) {
+    if (_cont == NULL || !lv_obj_is_valid(_cont)) {
+        return;
+    }
+    
+    // Получаем первый элемент меню (индекс 0)
+    lv_obj_t *access_item = lv_obj_get_child(_cont, 0);
+    if (access_item == NULL || !lv_obj_is_valid(access_item)) {
+        return;
+    }
+    
+    bool is_unlocked = access_control_is_unlocked();
+    
+    // Находим метку (первый дочерний элемент)
+    access_label = lv_obj_get_child(access_item, 0);
+    if (access_label && lv_obj_is_valid(access_label)) {
+        lv_label_set_text(access_label, is_unlocked ? "Закрыть доступ" : "Открыть доступ");
+    }
+    
+    // Находим иконку (третий дочерний элемент, индекс 2)
+    access_icon = lv_obj_get_child(access_item, 2);
+    if (access_icon && lv_obj_is_valid(access_icon)) {
+        if (is_unlocked) {
+            lv_img_set_src(access_icon, &lv_im_module_unlock);
+        } else {
+            lv_img_set_src(access_icon, &lv_im_module_lock);
+        }
+    }
+}
+
+/**
  * @brief Обновляет отображение главного меню в соответствии с текущим положением курсора
  */
 void main_menu_update_display(void) {
@@ -143,6 +182,9 @@ void main_menu_update_display(void) {
     
     // Обновляем подсветку
     highlight_box(_cont, menu_state->cursor_index);
+    
+    // Обновляем отображение пункта "Доступ"
+    main_menu_update_access_display();
     
     // Управление видимостью шкалы времени
     if (menu_state->cursor_index == 1 || menu_state->cursor_index == 2) {

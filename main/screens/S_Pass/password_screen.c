@@ -7,6 +7,10 @@
 #include <math.h>
 #include <stdlib.h>
 #include "screen_logic/screen_navigation.h"
+#include "screen_logic/access_control.h"
+#include "dialog_screen/screen_YES_NO/yes_no_screen.h"
+#include "screens/S_Pass/screen_Pass.h"
+#include "menu_layer/main_menu/main_menu.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -24,6 +28,8 @@ static uint8_t current_digit_index = 0;
 static const uint8_t central_digit_index = VISIBLE_DIGITS / 2;
 // Флаг завершения ввода пароля
 static bool password_input_complete = false;
+// Флаг активности диалога неправильного пароля
+static bool wrong_password_dialog_active = false;
 
 // Экран для ввода пароля
 static lv_obj_t *password_screen_obj = NULL;
@@ -50,6 +56,9 @@ static void update_digit_display(void);
 static void update_roller_images(void);
 static void cleanup_password_objects(void);
 static bool is_obj_valid_safe(lv_obj_t *obj);
+static void password_retry_callback(void);
+static void password_cancel_callback(void);
+static void create_wrong_password_dialog(void);
 
 /**
  * @brief Безопасная проверка объекта LVGL
@@ -202,8 +211,8 @@ static void update_digit_positions(void) {
             int32_t x = center_x + radius * cos(angle);
             int32_t y = center_y - radius * sin(angle);
             
-            // Устанавливаем позицию
-            lv_obj_set_pos(digit_labels[row][col], x - 15, y - 15);
+            // Устанавливаем позицию (центрируем метку размером 50x50)
+            lv_obj_set_pos(digit_labels[row][col], x - 25, y - 25);
             
             // Рассчитываем прозрачность для эффекта перспективы
             uint8_t opacity = 255 - abs(row - central_digit_index) * OPACITY_STEP;
@@ -216,9 +225,81 @@ static void update_digit_positions(void) {
 }
 
 /**
+ * @brief Callback для повторного ввода пароля (ДА)
+ */
+static void password_retry_callback(void) {
+    ESP_LOGI(TAG, "User chose to retry password input");
+    wrong_password_dialog_active = false;
+    
+    // Сбрасываем значения цифр в 0
+    digit_values[0] = 0;
+    digit_values[1] = 0;
+    digit_values[2] = 0;
+    current_digit_index = 0;
+    password_input_complete = false;
+    
+    // Обновляем отображение
+    update_digit_display();
+    update_roller_images();
+}
+
+/**
+ * @brief Callback для отмены ввода пароля (НЕТ)
+ */
+static void password_cancel_callback(void) {
+    ESP_LOGI(TAG, "User chose to cancel password input");
+    wrong_password_dialog_active = false;
+    
+    // Сбрасываем флаг активности
+    password_screen_active = false;
+    
+    // Возвращаемся в главное меню
+    screen_navigation_go_to(SCREEN_MAIN_MENU);
+}
+
+/**
+ * @brief Создание диалога неправильного пароля
+ */
+static void create_wrong_password_dialog(void) {
+    wrong_password_dialog_active = true;
+    
+    // Создаем диалог с callback функциями
+    create_yes_no_screen_with_callbacks(
+        password_retry_callback,  // ДА - повторить ввод
+        password_cancel_callback  // НЕТ - выйти в главное меню
+    );
+    
+    // Обновляем заголовок диалога
+    extern lv_obj_t *confirm_win;
+    if (confirm_win && lv_obj_is_valid(confirm_win)) {
+        // Ищем заголовок среди дочерних элементов
+        uint32_t child_cnt = lv_obj_get_child_cnt(confirm_win);
+        for (uint32_t i = 0; i < child_cnt; i++) {
+            lv_obj_t *child = lv_obj_get_child(confirm_win, i);
+            if (child && lv_obj_is_valid(child)) {
+                // Проверяем, является ли это меткой (label)
+                if (lv_obj_check_type(child, &lv_label_class)) {
+                    lv_label_set_text(child, "Неверный пароль. Продолжить?"); // перевод строки рушит логику, контроллер уходит в перезагрузку
+                    break;
+                }
+            }
+        }
+    }
+}
+
+/**
  * @brief Обработчик событий энкодера для экрана пароля
  */
 void password_encoder_event_cb(uint8_t e) {
+    // Обновляем таймер активности при любом действии пользователя
+    access_control_update_activity_timer();
+    
+    // Если активен диалог неправильного пароля, передаем управление ему
+    if (wrong_password_dialog_active) {
+        yes_no_menu_encoder_event_cb(e);
+        return;
+    }
+    
     // Если экран пароля не активен или пароль уже введен, игнорируем события
     if (!password_screen_active || password_input_complete) {
         return;
@@ -260,17 +341,33 @@ void password_encoder_event_cb(uint8_t e) {
         // Если дошли до конца (вернулись к первому роллеру), завершаем ввод
         if (current_digit_index == 0) {
             password_input_complete = true;
-            ESP_LOGI(TAG, "Password input complete: %d%d%d", 
-                    digit_values[0], digit_values[1], digit_values[2]);
+            uint16_t entered_password = digit_values[0] * 100 + digit_values[1] * 10 + digit_values[2];
+            ESP_LOGI(TAG, "Password input complete: %d%d%d (value: %d)", 
+                    digit_values[0], digit_values[1], digit_values[2], entered_password);
             
-            // TODO: Проверить пароль здесь
-            
-            // Сбрасываем флаг активности ПЕРЕД переходом, чтобы предотвратить дальнейшие события
-            password_screen_active = false;
-            
-            // Возвращаемся в главное меню
-            screen_navigation_go_to(SCREEN_MAIN_MENU);
-            return;
+            // Проверяем пароль
+            if (entered_password == ACCESS_PASSWORD) {
+                ESP_LOGI(TAG, "Password correct, unlocking access");
+                access_control_unlock();
+                
+                // Сбрасываем флаг активности ПЕРЕД переходом
+                password_screen_active = false;
+                
+                // Возвращаемся в главное меню
+                screen_navigation_go_to(SCREEN_MAIN_MENU);
+                
+                // Обновляем отображение экрана доступа и главного меню
+                screen_Pass_update_display();
+                main_menu_update_access_display();
+                
+                return;
+            } else {
+                ESP_LOGW(TAG, "Password incorrect: %d (expected: %d)", entered_password, ACCESS_PASSWORD);
+                
+                // Показываем диалог неправильного пароля
+                create_wrong_password_dialog();
+                return;
+            }
         }
         
         // Делаем новый роллер активным
@@ -304,6 +401,12 @@ void password_screen(void) {
     // Сбрасываем флаги состояния
     password_input_complete = false;
     current_digit_index = 0;
+    wrong_password_dialog_active = false;
+    
+    // Инициализируем все цифры в 0
+    digit_values[0] = 0;
+    digit_values[1] = 0;
+    digit_values[2] = 0;
     
     // Проверяем, что количество видимых цифр нечетное
     if (VISIBLE_DIGITS % 2 == 0) {
@@ -421,7 +524,13 @@ void password_screen(void) {
                 continue;
             }
             
-            lv_obj_set_size(digit_labels[row][col], 30, 30);
+            // Увеличиваем размер метки для шрифта Roboto_bold_36, чтобы цифры не обрезались
+            lv_obj_set_size(digit_labels[row][col], 50, 50);
+            // Отключаем обрезку контента, чтобы цифры отображались полностью
+            lv_obj_set_style_clip_corner(digit_labels[row][col], false, 0);
+            lv_obj_add_flag(digit_labels[row][col], LV_OBJ_FLAG_OVERFLOW_VISIBLE);
+            // Выравниваем текст по центру метки
+            lv_obj_set_style_text_align(digit_labels[row][col], LV_TEXT_ALIGN_CENTER, 0);
             lv_obj_add_style(digit_labels[row][col], &style_transparent_bg, 0);
             
             if (col == current_digit_index) {
