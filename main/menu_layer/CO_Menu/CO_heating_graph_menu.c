@@ -1,15 +1,17 @@
 #include "CO_heating_graph_menu.h"
 #include "CO_heating_graph_params.h"
 #include "co_params_limits.h"
+#include "co_heating_graph_display.h"
 #include "encoder/encoder.h"
 #include "encoder/encoder_manager.h"
 #include "my_widgets/w_rad_mask.h"
 #include "screen_logic/arc_menu.h"
+#include "screen_logic/access_control.h"
 #include "screen_logic/menu_config.h"
 #include "screen_logic/screen_navigation.h"
 #include "screen_logic/screen_container_manager.h"
-#include "screen_logic/access_control.h"
 #include "dialog_screen/screen_YES_NO/yes_no_screen.h"
+#include "scale_logic_time/time_scale.h"
 #include <stdint.h>
 #include <inttypes.h>
 #include <stdio.h>
@@ -49,8 +51,6 @@ static const CoHeatingGraphMenuItem co_heating_graph_menu_items[] = {
     {"Точка 5. Тпод_CO", NULL, 12},                 // C1-T1-Desired-5 (float)
     {"Точка 6. Тнв", NULL, 13},                     // C1-T0-6 (float)
     {"Точка 6. Тпод_CO", NULL, 14},                 // C1-T1-Desired-6 (float)
-    {"Точка 6. Тпод.тс", NULL, 15},                 // C3-T1-6 (float)
-    {"Точка 6. Тпод_CO", NULL, 16},                 // C3-T1-Desired-6 (float)
 };
 
 // Локальные переменные для меню графика отопления
@@ -59,8 +59,8 @@ static bool co_heating_graph_menu_initialized = false;
 static bool co_heating_graph_menu_creation_in_progress = false;
 static lv_obj_t *co_heating_graph_mask = NULL;
 
-// Массив указателей на label для значений параметров (17 параметров)
-static lv_obj_t *value_labels[17] = {NULL};
+// Массив указателей на label для значений параметров (15 параметров)
+static lv_obj_t *value_labels[15] = {NULL};
 
 // Состояние редактирования
 static bool edit_mode = false;
@@ -84,8 +84,6 @@ static float temp_C1_T0_5 = 0.0f;
 static float temp_C1_T1_Desired_5 = 0.0f;
 static float temp_C1_T0_6 = 0.0f;
 static float temp_C1_T1_Desired_6 = 0.0f;
-static float temp_C3_T1_6 = 0.0f;
-static float temp_C3_T1_Desired_6 = 0.0f;
 static heating_graph_type_t temp_C1_Type = HEATING_GRAPH_TYPE_POINTS;
 
 /**
@@ -93,6 +91,100 @@ static heating_graph_type_t temp_C1_Type = HEATING_GRAPH_TYPE_POINTS;
  */
 static bool is_obj_valid(lv_obj_t *obj) {
     return obj != NULL && lv_obj_is_valid(obj);
+}
+
+/**
+ * @brief Преобразует param_index в номер точки и ось
+ * param_index 3 -> point 0, axis 0 (X)
+ * param_index 4 -> point 0, axis 1 (Y)
+ * param_index 5 -> point 1, axis 0 (X)
+ * и т.д.
+ */
+static void param_index_to_point_axis(int param_index, int *point_idx, int *axis) {
+    if (param_index >= 3 && param_index <= 14) {
+        *point_idx = (param_index - 3) / 2;
+        *axis = (param_index - 3) % 2;
+    } else {
+        *point_idx = -1;
+        *axis = -1;
+    }
+}
+
+/**
+ * @brief Получает значение координаты X точки (Тнв)
+ * @param point_idx Индекс точки (0-5)
+ * @return Значение координаты X
+ */
+static float get_point_x_value(int point_idx) {
+    switch(point_idx) {
+        case 0: return C1_T0_1;
+        case 1: return C1_T0_2;
+        case 2: return C1_T0_3;
+        case 3: return C1_T0_4;
+        case 4: return C1_T0_5;
+        case 5: return C1_T0_6;
+        default: return 0.0f;
+    }
+}
+
+/**
+ * @brief Получает значение координаты X соседней точки с учетом текущего редактирования
+ * @param neighbor_idx Индекс соседней точки
+ * @param editing_point_idx Индекс редактируемой точки (-1 если не редактируется точка X)
+ * @param editing_x_value Текущее редактируемое значение X
+ * @return Значение координаты X соседней точки
+ */
+static float get_neighbor_x_value(int neighbor_idx, int editing_point_idx, float editing_x_value) {
+    if (editing_point_idx == neighbor_idx) {
+        return editing_x_value;
+    }
+    return get_point_x_value(neighbor_idx);
+}
+
+/**
+ * @brief Получает динамические ограничения для координаты X точки (Тнв)
+ * @param point_idx Индекс точки (0-5)
+ * @param editing_point_idx Индекс редактируемой точки (-1 если не редактируется точка X)
+ * @param editing_x_value Текущее редактируемое значение X (используется только если editing_point_idx == point_idx)
+ * @param min_x Указатель на переменную для минимального значения X
+ * @param max_x Указатель на переменную для максимального значения X
+ */
+static void get_point_x_limits(int point_idx, int editing_point_idx, float editing_x_value, float *min_x, float *max_x) {
+    const float chart_min_x = (float)GRAPH_CHART_MIN_X;
+    const float chart_max_x = (float)GRAPH_CHART_MAX_X;
+    
+    if (point_idx == 0) {
+        // Первая точка: минимум - левая граница, максимум - точка 2 (если есть)
+        *min_x = chart_min_x;
+        if (C1_Number > 1) {
+            *max_x = get_neighbor_x_value(1, editing_point_idx, editing_x_value);
+        } else {
+            *max_x = chart_max_x;
+        }
+    } else if (point_idx == C1_Number - 1) {
+        // Последняя точка: минимум - предыдущая точка, максимум - правая граница
+        *min_x = get_neighbor_x_value(point_idx - 1, editing_point_idx, editing_x_value);
+        *max_x = chart_max_x;
+    } else {
+        // Промежуточная точка: минимум - предыдущая точка, максимум - следующая точка
+        *min_x = get_neighbor_x_value(point_idx - 1, editing_point_idx, editing_x_value);
+        if (point_idx + 1 < C1_Number) {
+            *max_x = get_neighbor_x_value(point_idx + 1, editing_point_idx, editing_x_value);
+        } else {
+            *max_x = chart_max_x;
+        }
+    }
+}
+
+/**
+ * @brief Получает динамические ограничения для координаты Y точки (Тпод_CO)
+ * @param min_y Указатель на переменную для минимального значения Y
+ * @param max_y Указатель на переменную для максимального значения Y
+ */
+static void get_point_y_limits(float *min_y, float *max_y) {
+    // По вертикали для всех точек ограничение - границы графика
+    *min_y = (float)GRAPH_CHART_MIN_Y;
+    *max_y = (float)GRAPH_CHART_MAX_Y;
 }
 
 /**
@@ -136,7 +228,7 @@ static void co_heating_graph_highlight_box(lv_obj_t *cont, uint32_t cursor_index
             
             // Проверяем, является ли это контейнером значения параметра
             bool is_value_container = false;
-            for (int k = 0; k < 17; k++) {
+            for (int k = 0; k < 15; k++) {
                 if (value_labels[k] != NULL && lv_obj_get_parent(value_labels[k]) == grand_child) {
                     is_value_container = true;
                     break;
@@ -146,7 +238,7 @@ static void co_heating_graph_highlight_box(lv_obj_t *cont, uint32_t cursor_index
             if (lv_obj_check_type(grand_child, &lv_label_class)) {
                 // Проверяем, является ли это label значения параметра
                 bool is_value_label = false;
-                for (int k = 0; k < 17; k++) {
+                for (int k = 0; k < 15; k++) {
                     if (value_labels[k] == grand_child) {
                         is_value_label = true;
                         break;
@@ -203,7 +295,7 @@ static void co_heating_graph_highlight_box(lv_obj_t *cont, uint32_t cursor_index
  * @brief Обновляет отображение значения параметра
  */
 static void update_param_display(int param_index) {
-    if (param_index < 0 || param_index >= 17) return;
+    if (param_index < 0 || param_index >= 15) return;
     if (!is_obj_valid(value_labels[param_index])) return;
     
     char value_str[32];
@@ -268,12 +360,6 @@ static void update_param_display(int param_index) {
             case 14: // C1-T1-Desired-6
                 format_float_value(value_str, sizeof(value_str), C1_T1_Desired_6);
                 break;
-            case 15: // C3-T1-6
-                format_float_value(value_str, sizeof(value_str), C3_T1_6);
-                break;
-            case 16: // C3-T1-Desired-6
-                format_float_value(value_str, sizeof(value_str), C3_T1_Desired_6);
-                break;
         }
     }
     
@@ -335,8 +421,6 @@ static void save_param_changes(void) {
             case 12: old_value = C1_T1_Desired_5; C1_T1_Desired_5 = editing_float_value; break;
             case 13: old_value = C1_T0_6; C1_T0_6 = editing_float_value; break;
             case 14: old_value = C1_T1_Desired_6; C1_T1_Desired_6 = editing_float_value; break;
-            case 15: old_value = C3_T1_6; C3_T1_6 = editing_float_value; break;
-            case 16: old_value = C3_T1_Desired_6; C3_T1_Desired_6 = editing_float_value; break;
         }
         ESP_LOGI(TAG, "Saving float param %d: %.1f -> %.1f", editing_param_index, old_value, editing_float_value);
     }
@@ -347,10 +431,14 @@ static void save_param_changes(void) {
     editing_param_index = -1;
     update_param_display(saved_index);
     
+    // Обновляем график после сохранения изменений
+    co_heating_graph_display_update_points();
+    
     // Восстанавливаем подсветку текущего элемента
     menu_state_t *menu_state = get_menu_state(MENU_TYPE_CO_HEATING_GRAPH);
     if (menu_state) {
         co_heating_graph_highlight_box(co_heating_graph_cont, menu_state->cursor_index);
+        co_heating_graph_display_update_cursor(menu_state->cursor_index, false, -1);
     }
 }
 
@@ -382,8 +470,6 @@ static void cancel_param_changes(void) {
             case 12: editing_float_value = temp_C1_T1_Desired_5; break;
             case 13: editing_float_value = temp_C1_T0_6; break;
             case 14: editing_float_value = temp_C1_T1_Desired_6; break;
-            case 15: editing_float_value = temp_C3_T1_6; break;
-            case 16: editing_float_value = temp_C3_T1_Desired_6; break;
         }
     }
     
@@ -391,10 +477,14 @@ static void cancel_param_changes(void) {
     editing_param_index = -1;
     update_param_display(saved_index);
     
+    // Обновляем график после сохранения изменений
+    co_heating_graph_display_update_points();
+    
     // Восстанавливаем подсветку текущего элемента
     menu_state_t *menu_state = get_menu_state(MENU_TYPE_CO_HEATING_GRAPH);
     if (menu_state) {
         co_heating_graph_highlight_box(co_heating_graph_cont, menu_state->cursor_index);
+        co_heating_graph_display_update_cursor(menu_state->cursor_index, false, -1);
     }
 }
 
@@ -402,7 +492,7 @@ static void cancel_param_changes(void) {
  * @brief Входит в режим редактирования параметра
  */
 static void enter_edit_mode(int param_index) {
-    if (param_index < 0 || param_index >= 17) return;
+    if (param_index < 0 || param_index >= 15) return;
     
     // Проверяем доступ перед редактированием
     if (!access_control_is_unlocked()) {
@@ -476,18 +566,16 @@ static void enter_edit_mode(int param_index) {
                 temp_C1_T1_Desired_6 = C1_T1_Desired_6;
                 editing_float_value = C1_T1_Desired_6;
                 break;
-            case 15:
-                temp_C3_T1_6 = C3_T1_6;
-                editing_float_value = C3_T1_6;
-                break;
-            case 16:
-                temp_C3_T1_Desired_6 = C3_T1_Desired_6;
-                editing_float_value = C3_T1_Desired_6;
-                break;
         }
     }
     
     update_param_display(param_index);
+    
+    // Обновляем график при входе в режим редактирования
+    menu_state_t *menu_state = get_menu_state(MENU_TYPE_CO_HEATING_GRAPH);
+    if (menu_state) {
+        co_heating_graph_display_update_cursor(menu_state->cursor_index, true, param_index);
+    }
 }
 
 /**
@@ -515,7 +603,7 @@ static void exit_edit_mode_with_confirmation(void) {
             NULL, &temp_C1_Slope, NULL, &temp_C1_T0_1, &temp_C1_T1_Desired_1,
             &temp_C1_T0_2, &temp_C1_T1_Desired_2, &temp_C1_T0_3, &temp_C1_T1_Desired_3,
             &temp_C1_T0_4, &temp_C1_T1_Desired_4, &temp_C1_T0_5, &temp_C1_T1_Desired_5,
-            &temp_C1_T0_6, &temp_C1_T1_Desired_6, &temp_C3_T1_6, &temp_C3_T1_Desired_6
+            &temp_C1_T0_6, &temp_C1_T1_Desired_6
         };
         if (temp_values[editing_param_index] != NULL) {
             float diff = fabs(editing_float_value - *temp_values[editing_param_index]);
@@ -630,6 +718,16 @@ void co_heating_graph_menu_show(void) {
     } else {
         lv_obj_clear_flag(co_heating_graph_mask, LV_OBJ_FLAG_HIDDEN);
     }
+    // Инициализируем график если его еще нет (например, после cleanup)
+    co_heating_graph_display_init();
+    // Показываем график
+    co_heating_graph_display_show();
+    
+    // Скрываем экран отопления (screen_CO), чтобы он не мешал графику
+    screen_navigation_hide_co_content_container();
+    
+    // Скрываем шкалу времени
+    show_time_scale(false);
 }
 
 /**
@@ -644,12 +742,23 @@ void co_heating_graph_menu_hide(void) {
         lv_obj_del(co_heating_graph_mask);
         co_heating_graph_mask = NULL;
     }
+    // Удаляем график полностью (cleanup, а не hide)
+    co_heating_graph_display_cleanup();
+    
+    // Показываем экран отопления обратно
+    screen_navigation_show_co_content_container();
+    
+    // Показываем шкалу времени обратно (если мы все еще в меню отопления)
+    show_time_scale(true);
 }
 
 /**
  * @brief Обработчик событий энкодера для меню графика отопления
  */
 void co_heating_graph_menu_encoder_event_cb(uint8_t e) {
+    // Обновляем таймер активности при любом действии пользователя
+    access_control_update_activity_timer();
+    
     // Если активно окно подтверждения, передаем события ему
     extern bool confirmation_active;
     if (confirmation_active) {
@@ -683,12 +792,48 @@ void co_heating_graph_menu_encoder_event_cb(uint8_t e) {
                 if (float_index >= 0 && float_index < PARAM_LIMITS_HEATING_GRAPH_COUNT) {
                     float step = co_heating_graph_param_limits_float[float_index].step;
                     editing_float_value -= step;
-                    if (editing_float_value < co_heating_graph_param_limits_float[float_index].min) {
-                        editing_float_value = co_heating_graph_param_limits_float[float_index].min;
+                    
+                    // Применяем динамические ограничения для точек графика
+                    if (editing_param_index >= 3 && editing_param_index <= 14) {
+                        int point_idx, axis;
+                        param_index_to_point_axis(editing_param_index, &point_idx, &axis);
+                        if (point_idx >= 0 && point_idx < C1_Number) {
+                            if (axis == 0) {
+                                // Ось X (Тнв) - динамические ограничения
+                                float min_x, max_x;
+                                get_point_x_limits(point_idx, point_idx, editing_float_value, &min_x, &max_x);
+                                if (editing_float_value < min_x) {
+                                    editing_float_value = min_x;
+                                }
+                                if (editing_float_value > max_x) {
+                                    editing_float_value = max_x;
+                                }
+                            } else {
+                                // Ось Y (Тпод_CO) - ограничения графика
+                                float min_y, max_y;
+                                get_point_y_limits(&min_y, &max_y);
+                                if (editing_float_value < min_y) {
+                                    editing_float_value = min_y;
+                                }
+                                if (editing_float_value > max_y) {
+                                    editing_float_value = max_y;
+                                }
+                            }
+                        }
+                    } else {
+                        // Для других float параметров (например, C1_Slope) используем статические пределы
+                        if (editing_float_value < co_heating_graph_param_limits_float[float_index].min) {
+                            editing_float_value = co_heating_graph_param_limits_float[float_index].min;
+                        }
+                        if (editing_float_value > co_heating_graph_param_limits_float[float_index].max) {
+                            editing_float_value = co_heating_graph_param_limits_float[float_index].max;
+                        }
                     }
                 }
             }
             update_param_display(editing_param_index);
+            // Обновляем график при изменении значения
+            co_heating_graph_display_update_points();
         } else if (e & ENC_RIGHT) {
             if (editing_param_index == 0) {
                 // Способ задания - переключаем между вариантами
@@ -708,12 +853,48 @@ void co_heating_graph_menu_encoder_event_cb(uint8_t e) {
                 if (float_index >= 0 && float_index < PARAM_LIMITS_HEATING_GRAPH_COUNT) {
                     float step = co_heating_graph_param_limits_float[float_index].step;
                     editing_float_value += step;
-                    if (editing_float_value > co_heating_graph_param_limits_float[float_index].max) {
-                        editing_float_value = co_heating_graph_param_limits_float[float_index].max;
+                    
+                    // Применяем динамические ограничения для точек графика
+                    if (editing_param_index >= 3 && editing_param_index <= 14) {
+                        int point_idx, axis;
+                        param_index_to_point_axis(editing_param_index, &point_idx, &axis);
+                        if (point_idx >= 0 && point_idx < C1_Number) {
+                            if (axis == 0) {
+                                // Ось X (Тнв) - динамические ограничения
+                                float min_x, max_x;
+                                get_point_x_limits(point_idx, point_idx, editing_float_value, &min_x, &max_x);
+                                if (editing_float_value < min_x) {
+                                    editing_float_value = min_x;
+                                }
+                                if (editing_float_value > max_x) {
+                                    editing_float_value = max_x;
+                                }
+                            } else {
+                                // Ось Y (Тпод_CO) - ограничения графика
+                                float min_y, max_y;
+                                get_point_y_limits(&min_y, &max_y);
+                                if (editing_float_value < min_y) {
+                                    editing_float_value = min_y;
+                                }
+                                if (editing_float_value > max_y) {
+                                    editing_float_value = max_y;
+                                }
+                            }
+                        }
+                    } else {
+                        // Для других float параметров (например, C1_Slope) используем статические пределы
+                        if (editing_float_value > co_heating_graph_param_limits_float[float_index].max) {
+                            editing_float_value = co_heating_graph_param_limits_float[float_index].max;
+                        }
+                        if (editing_float_value < co_heating_graph_param_limits_float[float_index].min) {
+                            editing_float_value = co_heating_graph_param_limits_float[float_index].min;
+                        }
                     }
                 }
             }
             update_param_display(editing_param_index);
+            // Обновляем график при изменении значения
+            co_heating_graph_display_update_points();
         } else if (e & ENC_CLICK) {
             // Выходим из режима редактирования
             exit_edit_mode_with_confirmation();
@@ -727,6 +908,9 @@ void co_heating_graph_menu_encoder_event_cb(uint8_t e) {
     
     // Обновляем подсветку
     co_heating_graph_highlight_box(co_heating_graph_cont, menu_state->cursor_index);
+    
+    // Обновляем график при изменении курсора
+    co_heating_graph_display_update_cursor(menu_state->cursor_index, edit_mode, editing_param_index);
     
     // Обработка нажатия кнопки
     if (e & ENC_CLICK) {
@@ -759,8 +943,11 @@ void co_heating_graph_menu_cleanup(void) {
     edit_mode = false;
     editing_param_index = -1;
     
+    // Очищаем график
+    co_heating_graph_display_cleanup();
+    
     // Очищаем массив указателей на labels
-    for (int i = 0; i < 17; i++) {
+    for (int i = 0; i < 15; i++) {
         value_labels[i] = NULL;
     }
     
@@ -858,9 +1045,34 @@ void CO_Heating_Graph_Menu_List(void) {
     co_heating_graph_highlight_box(co_heating_graph_cont, menu_state->cursor_index);
     arc_menu_update_slide(co_heating_graph_cont);
     
+    // Инициализируем и показываем график
+    co_heating_graph_display_init();
+    co_heating_graph_display_update_cursor(menu_state->cursor_index, false, -1);
+    
     co_heating_graph_menu_initialized = true;
     co_heating_graph_menu_creation_in_progress = false;
 
     ESP_LOGI(TAG, "Меню графика отопления успешно инициализировано");
+}
+
+/**
+ * @brief Получает состояние режима редактирования
+ */
+bool co_heating_graph_menu_get_edit_mode(void) {
+    return edit_mode;
+}
+
+/**
+ * @brief Получает индекс редактируемого параметра
+ */
+int co_heating_graph_menu_get_editing_param_index(void) {
+    return editing_param_index;
+}
+
+/**
+ * @brief Получает текущее значение редактируемого float параметра
+ */
+float co_heating_graph_menu_get_editing_float_value(void) {
+    return editing_float_value;
 }
 

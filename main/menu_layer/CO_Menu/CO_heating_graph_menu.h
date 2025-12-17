@@ -24,6 +24,11 @@ void co_heating_graph_menu_cleanup(void);
 void co_heating_graph_menu_show(void);
 void co_heating_graph_menu_hide(void);
 
+// Функции для получения состояния редактирования (для графика)
+bool co_heating_graph_menu_get_edit_mode(void);
+int co_heating_graph_menu_get_editing_param_index(void);
+float co_heating_graph_menu_get_editing_float_value(void);
+
 // Объявляем глобальную переменную для доступа из других файлов
 extern lv_obj_t *co_heating_graph_cont;
 

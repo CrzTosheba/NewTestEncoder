@@ -412,3 +412,21 @@ void screen_navigation_encoder_event_cb(uint8_t e) {
 screen_type_t screen_navigation_get_current_screen(void) {
     return current_screen;
 }
+
+/**
+ * @brief Скрывает контейнер контента экрана CO
+ */
+void screen_navigation_hide_co_content_container(void) {
+    if (current_content_container && lv_obj_is_valid(current_content_container)) {
+        screen_container_hide(current_content_container);
+    }
+}
+
+/**
+ * @brief Показывает контейнер контента экрана CO
+ */
+void screen_navigation_show_co_content_container(void) {
+    if (current_content_container && lv_obj_is_valid(current_content_container)) {
+        screen_container_show(current_content_container);
+    }
+}

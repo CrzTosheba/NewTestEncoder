@@ -8,6 +8,7 @@
 #include "screen_logic/menu_config.h"
 #include "screen_logic/screen_navigation.h"
 #include "screen_logic/screen_container_manager.h"
+#include "screen_logic/access_control.h"
 #include "dialog_screen/screen_YES_NO/yes_no_screen.h"
 #include <stdint.h>
 #include <inttypes.h>
@@ -327,6 +328,9 @@ void co_schedule_menu_hide(void) {
  * @brief Обработчик событий энкодера для главного меню расписания
  */
 void co_schedule_menu_encoder_event_cb(uint8_t e) {
+    // Обновляем таймер активности при любом действии пользователя
+    access_control_update_activity_timer();
+    
     if (!is_obj_valid(co_schedule_cont)) {
         ESP_LOGE(TAG, "Контейнер меню расписания не инициализирован");
         return;
@@ -796,6 +800,9 @@ void co_schedule_day_menu_hide(void) {
  * @brief Обработчик событий энкодера для подменю дня
  */
 void co_schedule_day_menu_encoder_event_cb(uint8_t e) {
+    // Обновляем таймер активности при любом действии пользователя
+    access_control_update_activity_timer();
+    
     extern bool confirmation_active;
     if (confirmation_active) {
         yes_no_menu_encoder_event_cb(e);

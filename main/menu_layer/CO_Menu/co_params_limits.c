@@ -26,8 +26,6 @@ const param_limits_t co_heating_graph_param_limits_float[PARAM_LIMITS_HEATING_GR
     {0.0f, 100.0f, 0.1f},    // C1-T1-Desired-5 (Точка 5. Тпод_CO)
     {-50.0f, 50.0f, 0.1f},   // C1-T0-6 (Точка 6. Тнв)
     {0.0f, 100.0f, 0.1f},    // C1-T1-Desired-6 (Точка 6. Тпод_CO)
-    {0.0f, 100.0f, 0.1f},    // C3-T1-6 (Точка 6. Тпод.тс)
-    {0.0f, 100.0f, 0.1f},    // C3-T1-Desired-6 (Точка 6. Тпод_CO)
 };
 
 // Пределы для int параметров меню "График отопления"

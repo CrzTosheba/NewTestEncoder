@@ -49,5 +49,5 @@
         "co_params_limits.h": "c"
     },
     "idf.flashType": "UART",
-    "idf.portWin": "COM10"
+    "idf.portWin": "COM5"
 }

@@ -528,6 +528,9 @@ void gvs_valve_menu_hide(void) {
  * @brief Обработчик событий энкодера для меню клапан ГВС
  */
 void gvs_valve_menu_encoder_event_cb(uint8_t e) {
+    // Обновляем таймер активности при любом действии пользователя
+    access_control_update_activity_timer();
+    
     // Если активно окно подтверждения, передаем события ему
     extern bool confirmation_active;
     if (confirmation_active) {

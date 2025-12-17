@@ -258,6 +258,9 @@ static void highlight_box(lv_obj_t *cont, uint32_t cursor_index) {
  * @param e Событие энкодера
  */
 void main_menu_encoder_event_cb(uint8_t e) {
+    // Обновляем таймер активности при любом действии пользователя
+    access_control_update_activity_timer();
+    
     if (_cont == NULL) {
         ESP_LOGE(TAG, "Контейнер меню не инициализирован");
         return;

@@ -418,6 +418,9 @@ void gvs_dry_run_menu_hide(void) {
 }
 
 void gvs_dry_run_menu_encoder_event_cb(uint8_t e) {
+    // Обновляем таймер активности при любом действии пользователя
+    access_control_update_activity_timer();
+    
     extern bool confirmation_active;
     if (confirmation_active) {
         yes_no_menu_encoder_event_cb(e);

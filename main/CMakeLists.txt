@@ -128,6 +128,7 @@ idf_component_register(
     "menu_layer/CO_Menu/CO_general_menu.c"
     "menu_layer/CO_Menu/CO_general_params.c"
     "menu_layer/CO_Menu/CO_heating_graph_menu.c"
+    "menu_layer/CO_Menu/co_heating_graph_display.c"
     "menu_layer/CO_Menu/CO_heating_graph_params.c"
     "menu_layer/CO_Menu/CO_pumps_menu.c"
     "menu_layer/CO_Menu/CO_pumps_params.c"

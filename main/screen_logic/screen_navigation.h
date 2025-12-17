@@ -76,6 +76,10 @@ extern void gvs_alarms_menu_hide(void);
 extern void gvs_dry_run_menu_show(void);
 extern void gvs_dry_run_menu_hide(void);
 
+// Функции для управления контейнером экрана CO
+void screen_navigation_hide_co_content_container(void);
+void screen_navigation_show_co_content_container(void);
+
 #ifdef __cplusplus
 }
 #endif

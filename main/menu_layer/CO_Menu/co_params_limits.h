@@ -26,7 +26,7 @@ typedef struct {
 extern const param_limits_t co_general_param_limits[PARAM_LIMITS_GENERAL_COUNT];
 
 // Пределы для параметров меню "График отопления"
-#define PARAM_LIMITS_HEATING_GRAPH_COUNT 16
+#define PARAM_LIMITS_HEATING_GRAPH_COUNT 14
 extern const param_limits_t co_heating_graph_param_limits_float[PARAM_LIMITS_HEATING_GRAPH_COUNT];
 extern const param_limits_int_t co_heating_graph_param_limits_int[1]; // Для C1-Number
 

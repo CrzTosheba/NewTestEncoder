@@ -11,6 +11,7 @@
 #include "screen_logic/arc_menu.h"
 #include "screen_logic/screen_navigation.h"
 #include "screen_logic/screen_container_manager.h"
+#include "screen_logic/access_control.h"
 #include "encoder/encoder_manager.h"
 #include <stdint.h>
 #include <inttypes.h>
@@ -185,6 +186,9 @@ void co_menu_hide(void) {
  * @brief Обработчик событий энкодера для меню отопления
  */
 void co_menu_encoder_event_cb(uint8_t e) {
+    // Обновляем таймер активности при любом действии пользователя
+    access_control_update_activity_timer();
+    
     if (!is_obj_valid(co_cont)) {
         ESP_LOGE(TAG, "Контейнер меню отопления не инициализирован");
         return;

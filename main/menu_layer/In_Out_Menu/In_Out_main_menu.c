@@ -3,6 +3,7 @@
 #include "my_widgets/w_rad_mask.h"
 #include "screen_logic/arc_menu.h"
 #include "screen_logic/screen_navigation.h"
+#include "screen_logic/access_control.h"
 #include "screens/S_In_Out/1_layer/screen_In_Out.h"
 #include <stdint.h>
 #include <inttypes.h>
@@ -152,6 +153,9 @@ void input_output_menu_hide(void) {
  * @brief Обработчик событий энкодера для меню входов/выходов
  */
 void input_output_encoder_event_cb(uint8_t e) {
+    // Обновляем таймер активности при любом действии пользователя
+    access_control_update_activity_timer();
+    
     if (!is_obj_valid(io_cont)) {
         ESP_LOGE(TAG, "Контейнер меню входов/выходов не инициализирован");
         return;
