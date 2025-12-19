@@ -1,8 +1,11 @@
 #include "co_heating_graph_display.h"
 #include "CO_heating_graph_params.h"
 #include "CO_heating_graph_menu.h"
+#include "CO_general_params.h"
 #include "esp_log.h"
 #include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
 
 // Используем функции API для работы с данными серий вместо прямого доступа к полям
 
@@ -19,9 +22,12 @@ static lv_obj_t *x_label = NULL;
 static lv_obj_t *y_label = NULL;
 static lv_obj_t *x_tick_labels[6] = {NULL};  // Метки для цифр на делениях оси X (максимум 6)
 static lv_obj_t *y_tick_labels[6] = {NULL};  // Метки для цифр на делениях оси Y (максимум 6)
+static lv_obj_t *slope_label = NULL;  // Метка для отображения C1_Slope в правом верхнем углу
 static lv_obj_t *dashed_line_x = NULL;
 static lv_obj_t *dashed_line_y = NULL;
 static lv_obj_t *right_border_line = NULL;  // Правая граница графика (серая)
+static lv_obj_t *limit_line_min = NULL;     // Пунктирная линия для T1_DesiredMin
+static lv_obj_t *limit_line_max = NULL;     // Пунктирная линия для T1_DesiredMax
 static lv_chart_series_t *ser_red_line_left = NULL;
 static lv_chart_series_t *ser_red_line_right = NULL;
 static lv_obj_t *title_container = NULL;
@@ -214,6 +220,90 @@ static void update_dashed_lines(void) {
 }
 
 /**
+ * @brief Обновляет позиции линий пользовательских пределов (T1_DesiredMin и T1_DesiredMax)
+ */
+static void update_limit_lines(void) {
+    if (!chart) return;
+    
+    // Обновляем линию для T1_DesiredMin
+    if (limit_line_min && is_obj_valid(limit_line_min)) {
+        // Преобразуем значение T1_DesiredMin в позицию на графике (инвертируем, так как Y растет вниз)
+        float normalized_y_min = (float)(T1_DesiredMin - GRAPH_CHART_MIN_Y) / (float)(GRAPH_CHART_MAX_Y - GRAPH_CHART_MIN_Y);
+        int calculated_y_min = (int)((1.0f - normalized_y_min) * GRAPH_CHART_HEIGHT);
+        
+        // Создаем горизонтальную линию через весь график
+        static lv_point_precise_t points_min[2];
+        points_min[0].x = 0.0f;
+        points_min[0].y = (float)calculated_y_min;
+        points_min[1].x = (float)GRAPH_CHART_WIDTH;
+        points_min[1].y = (float)calculated_y_min;
+        
+        lv_line_set_points(limit_line_min, points_min, 2);
+        lv_obj_set_style_line_color(limit_line_min, lv_color_hex(GRAPH_LIMIT_LINE_COLOR), 0);
+        lv_obj_set_style_line_dash_width(limit_line_min, GRAPH_LIMIT_LINE_WIDTH, 0);
+        lv_obj_set_style_line_dash_gap(limit_line_min, GRAPH_LIMIT_LINE_GAP, 0);
+        lv_obj_set_style_line_width(limit_line_min, GRAPH_LIMIT_LINE_THICKNESS, 0);
+        
+        // Показываем линию только если значение в пределах графика
+        if (T1_DesiredMin >= GRAPH_CHART_MIN_Y && T1_DesiredMin <= GRAPH_CHART_MAX_Y) {
+            lv_obj_clear_flag(limit_line_min, LV_OBJ_FLAG_HIDDEN);
+        } else {
+            lv_obj_add_flag(limit_line_min, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+    
+    // Обновляем линию для T1_DesiredMax
+    if (limit_line_max && is_obj_valid(limit_line_max)) {
+        // Преобразуем значение T1_DesiredMax в позицию на графике (инвертируем, так как Y растет вниз)
+        float normalized_y_max = (float)(T1_DesiredMax - GRAPH_CHART_MIN_Y) / (float)(GRAPH_CHART_MAX_Y - GRAPH_CHART_MIN_Y);
+        int calculated_y_max = (int)((1.0f - normalized_y_max) * GRAPH_CHART_HEIGHT);
+        
+        // Создаем горизонтальную линию через весь график
+        static lv_point_precise_t points_max[2];
+        points_max[0].x = 0.0f;
+        points_max[0].y = (float)calculated_y_max;
+        points_max[1].x = (float)GRAPH_CHART_WIDTH;
+        points_max[1].y = (float)calculated_y_max;
+        
+        lv_line_set_points(limit_line_max, points_max, 2);
+        lv_obj_set_style_line_color(limit_line_max, lv_color_hex(GRAPH_LIMIT_LINE_COLOR), 0);
+        lv_obj_set_style_line_dash_width(limit_line_max, GRAPH_LIMIT_LINE_WIDTH, 0);
+        lv_obj_set_style_line_dash_gap(limit_line_max, GRAPH_LIMIT_LINE_GAP, 0);
+        lv_obj_set_style_line_width(limit_line_max, GRAPH_LIMIT_LINE_THICKNESS, 0);
+        
+        // Показываем линию только если значение в пределах графика
+        if (T1_DesiredMax >= GRAPH_CHART_MIN_Y && T1_DesiredMax <= GRAPH_CHART_MAX_Y) {
+            lv_obj_clear_flag(limit_line_max, LV_OBJ_FLAG_HIDDEN);
+        } else {
+            lv_obj_add_flag(limit_line_max, LV_OBJ_FLAG_HIDDEN);
+        }
+    }
+}
+
+/**
+ * @brief Обновляет значение и видимость метки C1_Slope
+ */
+static void update_slope_label(void) {
+    if (!slope_label || !is_obj_valid(slope_label)) return;
+    
+    // Отображаем только если C1_Type = 0 (HEATING_GRAPH_TYPE_POINTS)
+    if (C1_Type == HEATING_GRAPH_TYPE_POINTS) {
+        // Форматируем значение C1_Slope с одним знаком после запятой
+        char slope_str[32];
+        if (C1_Slope < 0.0f) {
+            snprintf(slope_str, sizeof(slope_str), "-%.1f", -C1_Slope);
+        } else {
+            snprintf(slope_str, sizeof(slope_str), "%.1f", C1_Slope);
+        }
+        lv_label_set_text(slope_label, slope_str);
+        lv_obj_clear_flag(slope_label, LV_OBJ_FLAG_HIDDEN);
+    } else {
+        // Скрываем метку, если C1_Type != 0
+        lv_obj_add_flag(slope_label, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
+/**
  * @brief Создает оси графика и подписи
  */
 static void create_chart_axes(void) {
@@ -223,33 +313,6 @@ static void create_chart_axes(void) {
     lv_obj_set_style_line_color(chart, lv_color_hex(GRAPH_CHART_LINE_COLOR), LV_PART_MAIN);
     lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_X, GRAPH_CHART_MIN_X, GRAPH_CHART_MAX_X);
     lv_chart_set_range(chart, LV_CHART_AXIS_PRIMARY_Y, GRAPH_CHART_MIN_Y, GRAPH_CHART_MAX_Y);
-    // Проблема: количество линий сетки должно совпадать с количеством промежуточных меток
-    // Для оси X: 5 меток всего (-50, -30, -10, 10, 30), 3 промежуточные (-30, -10, 10) -> нужно 3 вертикальные линии
-    // Для оси Y: 6 меток всего (0, 20, 40, 60, 80, 100), 4 промежуточные (20, 40, 60, 80) -> нужно 4 горизонтальные линии
-    // LVGL рисует линии по формуле: позиция = (размер * i) / (count - 1), где i от i_start до i_end-1
-    // LVGL пропускает первую линию (i=0) если есть border слева/сверху и padding=0
-    // LVGL пропускает последнюю линию (i=count-1) если есть border справа/снизу и padding=0
-    // Чтобы получить нужное количество линий на промежуточных метках, нужно установить count = количество_промежуточных_меток + 2
-    // Но промежуточные метки = общее_количество - 2 (без граничных)
-    // Поэтому: count = (общее_количество - 2) + 2 = общее_количество
-    // Но тогда получим линии на всех метках включая граничные, которые будут пропущены -> останутся только на промежуточных
-    // Для оси X: vdiv_cnt = 5 (3 промежуточные линии после пропуска граничных)
-    // Для оси Y: hdiv_cnt = 6 (4 промежуточные линии после пропуска граничных)
-    // НЕТ, это не работает правильно. Попробуем другой подход:
-    // Для оси X: нужно 3 линии на -30, -10, 10. Если vdiv_cnt=4, линии будут на: 0, w/3, 2w/3, w
-    //   После пропуска первой (border слева): w/3, 2w/3, w - НЕ СОВПАДАЕТ с метками
-    // Если vdiv_cnt=5, линии будут на: 0, w/4, w/2, 3w/4, w
-    //   После пропуска первой: w/4, w/2, 3w/4, w - НЕ СОВПАДАЕТ (метки на w/4, w/2, 3w/4, но линия на w лишняя)
-    // Для совпадения количества линий с промежуточными метками:
-    // Ось X: 3 промежуточные метки (-30, -10, 10) -> используем vdiv_cnt = количество меток (5)
-    //   LVGL пропустит первую линию (border слева), останется 4 линии на позициях w/4, w/2, 3w/4, w
-    //   Но метки на позициях w/4, w/2, 3w/4, w - значит линия на w лишняя!
-    //   Используем vdiv_cnt = 4, линии на: 0, w/3, 2w/3, w -> после пропуска первой: w/3, 2w/3, w - НЕ СОВПАДАЕТ
-    // Правильное решение: использовать vdiv_cnt = количество меток, но тогда будет лишняя линия на правой границе
-    // Ось Y: 4 промежуточные метки (20, 40, 60, 80) -> используем hdiv_cnt = количество меток (6)
-    //   LVGL пропустит последнюю линию (border снизу), останется 5 линий на позициях 0, h/5, 2h/5, 3h/5, 4h/5
-    //   Но метки на позициях h, 4h/5, 3h/5, 2h/5, h/5, 0 - значит линия на 0 (верхняя граница) лишняя!
-    // Используем количество меток для правильного позиционирования, лишние линии на границах будут пропущены
     lv_chart_set_div_line_count(chart, GRAPH_AXIS_TICK_COUNT_X, GRAPH_AXIS_TICK_COUNT_Y);
     
     // Удаление старых меток если есть
@@ -300,14 +363,17 @@ static void create_chart_axes(void) {
     lv_obj_set_style_text_font(y_label, &Roboto_bold_18, 0);
     
     // Создание меток для цифр на делениях оси X
-    int32_t x_range = GRAPH_CHART_MAX_X - GRAPH_CHART_MIN_X;
-    for (int i = 0; i < GRAPH_AXIS_TICK_COUNT_X; i++) {
-        int32_t tick_value = GRAPH_CHART_MIN_X + (x_range * i) / (GRAPH_AXIS_TICK_COUNT_X - 1);
+    // Используем фиксированные значения: -50, -30, -10, 10, 30
+    static const int32_t x_tick_values[] = {-50, -30, -10, 10, 30};
+    const int x_tick_count = sizeof(x_tick_values) / sizeof(x_tick_values[0]);
+    for (int i = 0; i < x_tick_count; i++) {
+        int32_t tick_value = x_tick_values[i];
         x_tick_labels[i] = lv_label_create(lv_scr_act());
         lv_label_set_text_fmt(x_tick_labels[i], "%d", (int)tick_value);
-        // Позиционируем под графиком, равномерно распределяя по ширине
-        // Для последней метки не вычитаем CENTER_OFFSET полностью, чтобы она не перекрывалась
-        int calculated_x = (GRAPH_CHART_WIDTH * i) / (GRAPH_AXIS_TICK_COUNT_X - 1);
+        // Позиционируем под графиком, вычисляя позицию на основе значения
+        // Преобразуем значение в позицию на графике
+        float normalized_x = (float)(tick_value - GRAPH_CHART_MIN_X) / (float)(GRAPH_CHART_MAX_X - GRAPH_CHART_MIN_X);
+        int calculated_x = (int)(normalized_x * GRAPH_CHART_WIDTH);
         int center_offset = (i == GRAPH_AXIS_TICK_COUNT_X - 1) ? GRAPH_X_TICK_LABEL_CENTER_OFFSET / 2 : GRAPH_X_TICK_LABEL_CENTER_OFFSET;
         int x_pos = GRAPH_CHART_X_POS + calculated_x - center_offset;
         int y_pos = GRAPH_CHART_Y_POS + GRAPH_CHART_HEIGHT + GRAPH_X_TICK_LABEL_OFFSET_Y;
@@ -317,19 +383,124 @@ static void create_chart_axes(void) {
     }
     
     // Создание меток для цифр на делениях оси Y
-    int32_t y_range = GRAPH_CHART_MAX_Y - GRAPH_CHART_MIN_Y;
-    for (int i = 0; i < GRAPH_AXIS_TICK_COUNT_Y; i++) {
-        int32_t tick_value = GRAPH_CHART_MIN_Y + (y_range * i) / (GRAPH_AXIS_TICK_COUNT_Y - 1);
+    // Используем фиксированные значения: 0, 20, 40, 60, 80, 100
+    // Количество меток (6) может отличаться от количества линий сетки (GRAPH_AXIS_TICK_COUNT_Y = 5)
+    static const int32_t y_tick_values[] = {0, 20, 40, 60, 80, 100};
+    const int y_tick_count = sizeof(y_tick_values) / sizeof(y_tick_values[0]);
+    
+    // Сначала создаем все метки и настраиваем стили
+    for (int i = 0; i < y_tick_count; i++) {
+        int32_t tick_value = y_tick_values[i];
         y_tick_labels[i] = lv_label_create(lv_scr_act());
         lv_label_set_text_fmt(y_tick_labels[i], "%d", (int)tick_value);
-        // Позиционируем слева от графика, равномерно распределяя по высоте
-        int x_pos = GRAPH_CHART_X_POS + GRAPH_Y_TICK_LABEL_OFFSET_X;
-        int calculated_y_in_chart = (GRAPH_CHART_HEIGHT * (GRAPH_AXIS_TICK_COUNT_Y - 1 - i)) / (GRAPH_AXIS_TICK_COUNT_Y - 1);
-        int y_pos = GRAPH_CHART_Y_POS + calculated_y_in_chart - GRAPH_Y_TICK_LABEL_CENTER_OFFSET;
-        lv_obj_set_pos(y_tick_labels[i], x_pos, y_pos);
         lv_obj_set_style_text_color(y_tick_labels[i], lv_color_hex(GRAPH_AXIS_TICK_COLOR), 0);
         lv_obj_set_style_text_font(y_tick_labels[i], &Roboto_bold_18, 0);
+        // Выравниваем текст по правому краю внутри объекта
+        lv_obj_set_style_text_align(y_tick_labels[i], LV_TEXT_ALIGN_RIGHT, 0);
     }
+    
+    // Принудительно обновляем layout для всех меток, чтобы получить их реальные размеры
+    for (int i = 0; i < y_tick_count; i++) {
+        lv_obj_update_layout(y_tick_labels[i]);
+    }
+    
+    // Находим максимальную ширину метки (скорее всего у "100" - 3 символа)
+    int max_label_width = 0;
+    for (int i = 0; i < y_tick_count; i++) {
+        int label_width = lv_obj_get_width(y_tick_labels[i]);
+        if (label_width > max_label_width) {
+            max_label_width = label_width;
+        }
+    }
+    
+    // Устанавливаем фиксированную ширину для всех меток, равную максимальной
+    // Это обеспечит выравнивание по правому краю внутри объекта одинаковой ширины
+    for (int i = 0; i < y_tick_count; i++) {
+        lv_obj_set_width(y_tick_labels[i], max_label_width);
+    }
+    
+    // Позиционируем все метки на одну и ту же позицию X
+    // Поскольку все метки имеют одинаковую ширину и выравнивание по правому краю,
+    // их правые края будут выровнены
+    // GRAPH_Y_TICK_LABEL_OFFSET_X определяет, насколько левее левого края графика должен быть правый край меток
+    // Но нужно учесть, что метки не должны выходить за левую границу экрана
+    // Уменьшаем отрицательное смещение, чтобы метки были ближе к графику
+    // Используем половину от GRAPH_Y_TICK_LABEL_OFFSET_X для более близкого расположения
+    int desired_right_x = GRAPH_CHART_X_POS + (GRAPH_Y_TICK_LABEL_OFFSET_X / 2);
+    int x_pos = desired_right_x - max_label_width;
+    // Ограничиваем позицию X, чтобы метки не выходили за левую границу экрана (минимум 0)
+    // Если пришлось ограничить, правый край будет ближе к графику, чем планировалось
+    if (x_pos < 0) {
+        x_pos = 0;
+    }
+    
+    for (int i = 0; i < y_tick_count; i++) {
+        int32_t tick_value = y_tick_values[i];
+        // Преобразуем значение в позицию на графике (инвертируем, так как Y растет вниз)
+        float normalized_y = (float)(tick_value - GRAPH_CHART_MIN_Y) / (float)(GRAPH_CHART_MAX_Y - GRAPH_CHART_MIN_Y);
+        int calculated_y_in_chart = (int)((1.0f - normalized_y) * GRAPH_CHART_HEIGHT);
+        
+        // Для верхней метки (100) добавляем дополнительное смещение вверх, чтобы она не скрывалась за заголовком
+        int y_offset = (tick_value == 100) ? -5 : 0;  // Дополнительное смещение вверх для метки 100
+        int y_pos = GRAPH_CHART_Y_POS + calculated_y_in_chart - GRAPH_Y_TICK_LABEL_CENTER_OFFSET + y_offset;
+        
+        lv_obj_set_pos(y_tick_labels[i], x_pos, y_pos);
+    }
+    
+    // Создание метки для отображения C1_Slope в правом верхнем углу графика
+    // Отображается только если C1_Type = 0 (HEATING_GRAPH_TYPE_POINTS)
+    // Позиционируется по X как метка "30", по Y как метка "100"
+    slope_label = lv_label_create(lv_scr_act());
+    lv_obj_set_style_text_color(slope_label, lv_color_hex(GRAPH_AXIS_TICK_COLOR), 0);
+    lv_obj_set_style_text_font(slope_label, &Roboto_bold_18, 0);
+    // Выравниваем текст по правому краю
+    lv_obj_set_style_text_align(slope_label, LV_TEXT_ALIGN_RIGHT, 0);
+    
+    // Находим позицию правого края метки "30" по X для выравнивания
+    int slope_x_pos = 0;
+    for (int i = 0; i < x_tick_count; i++) {
+        if (x_tick_values[i] == 30) {
+            float normalized_x = (float)(30 - GRAPH_CHART_MIN_X) / (float)(GRAPH_CHART_MAX_X - GRAPH_CHART_MIN_X);
+            int calculated_x = (int)(normalized_x * GRAPH_CHART_WIDTH);
+            int center_offset = GRAPH_X_TICK_LABEL_CENTER_OFFSET / 2;  // Для последней метки
+            int tick_x_pos = GRAPH_CHART_X_POS + calculated_x - center_offset;
+            // Получаем правый край метки "30"
+            if (x_tick_labels[i]) {
+                lv_obj_update_layout(x_tick_labels[i]);
+                int tick_width = lv_obj_get_width(x_tick_labels[i]);
+                slope_x_pos = tick_x_pos + tick_width;  // Правый край метки "30"
+            } else {
+                slope_x_pos = tick_x_pos;  // Fallback, если метка еще не создана
+            }
+            break;
+        }
+    }
+    
+    // Находим позицию метки "100" по Y (первая метка в массиве y_tick_values со значением 100)
+    int slope_y_pos = 0;
+    for (int i = 0; i < y_tick_count; i++) {
+        if (y_tick_values[i] == 100) {
+            float normalized_y = (float)(100 - GRAPH_CHART_MIN_Y) / (float)(GRAPH_CHART_MAX_Y - GRAPH_CHART_MIN_Y);
+            int calculated_y_in_chart = (int)((1.0f - normalized_y) * GRAPH_CHART_HEIGHT);
+            int y_offset = -5;  // Дополнительное смещение вверх для метки 100
+            slope_y_pos = GRAPH_CHART_Y_POS + calculated_y_in_chart - GRAPH_Y_TICK_LABEL_CENTER_OFFSET + y_offset;
+            break;
+        }
+    }
+    
+    // Устанавливаем временный текст для получения ширины метки
+    lv_label_set_text(slope_label, "0.0");
+    lv_obj_update_layout(slope_label);
+    
+    // Корректируем позицию X: вычитаем ширину метки, чтобы правый край совпал с правым краем метки "30"
+    int slope_label_width = lv_obj_get_width(slope_label);
+    slope_x_pos = slope_x_pos - slope_label_width;
+    
+    // Устанавливаем позицию метки (левый верхний угол, но правый край текста будет выровнен)
+    lv_obj_set_pos(slope_label, slope_x_pos, slope_y_pos);
+    
+    // Обновляем значение и видимость
+    update_slope_label();
 }
 
 /**
@@ -421,9 +592,27 @@ static void update_chart_points(void) {
     }
     
     // Обновляем красные линии (горизонтальные продолжения от первой и до последней точки)
+    // Используем ту же логику получения координат, что и для точек, чтобы учитывать редактирование
     if (ser_red_line_left && C1_Number > 0) {
         float first_x, first_y;
-        get_point_coords(0, &first_x, &first_y);
+        // Проверяем, редактируется ли первая точка
+        if (current_is_editing && current_editing_param_index >= 3 && current_editing_param_index <= 14) {
+            int edit_point_idx, edit_axis;
+            param_index_to_point_axis(current_editing_param_index, &edit_point_idx, &edit_axis);
+            if (edit_point_idx == 0) {
+                // Редактируется первая точка - используем редактируемые значения
+                if (co_heating_graph_menu_get_edit_mode()) {
+                    float editing_value = co_heating_graph_menu_get_editing_float_value();
+                    get_editing_point_coords(0, edit_axis, &first_x, &first_y, editing_value);
+                } else {
+                    get_point_coords(0, &first_x, &first_y);
+                }
+            } else {
+                get_point_coords(0, &first_x, &first_y);
+            }
+        } else {
+            get_point_coords(0, &first_x, &first_y);
+        }
         lv_chart_set_series_value_by_id2(chart, ser_red_line_left, 0, GRAPH_CHART_MIN_X, (int32_t)first_y);
         lv_chart_set_series_value_by_id2(chart, ser_red_line_left, 1, (int32_t)first_x, (int32_t)first_y);
     }
@@ -431,13 +620,32 @@ static void update_chart_points(void) {
     if (ser_red_line_right && C1_Number > 0) {
         int last_idx = C1_Number - 1;
         float last_x, last_y;
-        get_point_coords(last_idx, &last_x, &last_y);
+        // Проверяем, редактируется ли последняя точка
+        if (current_is_editing && current_editing_param_index >= 3 && current_editing_param_index <= 14) {
+            int edit_point_idx, edit_axis;
+            param_index_to_point_axis(current_editing_param_index, &edit_point_idx, &edit_axis);
+            if (edit_point_idx == last_idx) {
+                // Редактируется последняя точка - используем редактируемые значения
+                if (co_heating_graph_menu_get_edit_mode()) {
+                    float editing_value = co_heating_graph_menu_get_editing_float_value();
+                    get_editing_point_coords(last_idx, edit_axis, &last_x, &last_y, editing_value);
+                } else {
+                    get_point_coords(last_idx, &last_x, &last_y);
+                }
+            } else {
+                get_point_coords(last_idx, &last_x, &last_y);
+            }
+        } else {
+            get_point_coords(last_idx, &last_x, &last_y);
+        }
         lv_chart_set_series_value_by_id2(chart, ser_red_line_right, 0, (int32_t)last_x, (int32_t)last_y);
         lv_chart_set_series_value_by_id2(chart, ser_red_line_right, 1, GRAPH_CHART_MAX_X, (int32_t)last_y);
     }
     
     lv_chart_refresh(chart);
     update_markers();
+    update_slope_label();
+    update_limit_lines();
 }
 
 /**
@@ -506,6 +714,19 @@ void co_heating_graph_display_init(void) {
     lv_obj_set_style_line_width(dashed_line_y, 2, 0);
     lv_obj_add_flag(dashed_line_y, LV_OBJ_FLAG_HIDDEN);
     
+    // Создание пунктирных линий пользовательских пределов (T1_DesiredMin и T1_DesiredMax)
+    limit_line_min = lv_line_create(chart);
+    lv_obj_set_style_line_dash_width(limit_line_min, GRAPH_LIMIT_LINE_WIDTH, 0);
+    lv_obj_set_style_line_dash_gap(limit_line_min, GRAPH_LIMIT_LINE_GAP, 0);
+    lv_obj_set_style_line_color(limit_line_min, lv_color_hex(GRAPH_LIMIT_LINE_COLOR), 0);
+    lv_obj_set_style_line_width(limit_line_min, GRAPH_LIMIT_LINE_THICKNESS, 0);
+    
+    limit_line_max = lv_line_create(chart);
+    lv_obj_set_style_line_dash_width(limit_line_max, GRAPH_LIMIT_LINE_WIDTH, 0);
+    lv_obj_set_style_line_dash_gap(limit_line_max, GRAPH_LIMIT_LINE_GAP, 0);
+    lv_obj_set_style_line_color(limit_line_max, lv_color_hex(GRAPH_LIMIT_LINE_COLOR), 0);
+    lv_obj_set_style_line_width(limit_line_max, GRAPH_LIMIT_LINE_THICKNESS, 0);
+    
     // Создание контейнера для заголовка
     title_container = lv_obj_create(lv_scr_act());
     lv_obj_remove_style_all(title_container);
@@ -571,6 +792,9 @@ void co_heating_graph_display_init(void) {
     // Обновляем точки и маркеры
     update_chart_points();
     
+    // Обновляем линии пределов
+    update_limit_lines();
+    
     ESP_LOGI(TAG, "Heating graph display initialized");
 }
 
@@ -601,6 +825,14 @@ void co_heating_graph_display_cleanup(void) {
         lv_obj_del(right_border_line);
         right_border_line = NULL;
     }
+    if (limit_line_min && is_obj_valid(limit_line_min)) {
+        lv_obj_del(limit_line_min);
+        limit_line_min = NULL;
+    }
+    if (limit_line_max && is_obj_valid(limit_line_max)) {
+        lv_obj_del(limit_line_max);
+        limit_line_max = NULL;
+    }
     
     // Удаление контейнера заголовка
     if (title_container && is_obj_valid(title_container)) {
@@ -630,6 +862,12 @@ void co_heating_graph_display_cleanup(void) {
             lv_obj_del(y_tick_labels[i]);
             y_tick_labels[i] = NULL;
         }
+    }
+    
+    // Удаление метки C1_Slope
+    if (slope_label && is_obj_valid(slope_label)) {
+        lv_obj_del(slope_label);
+        slope_label = NULL;
     }
     
     // Удаление графика (должно быть последним, так как линии являются дочерними и удалятся автоматически)
@@ -733,6 +971,7 @@ void co_heating_graph_display_update_cursor(int cursor_index, bool is_editing, i
     // Важно: сначала обновляем координаты точек, потом маркеры и линии
     update_chart_points();
     update_markers();
+    update_slope_label();
 }
 
 /**

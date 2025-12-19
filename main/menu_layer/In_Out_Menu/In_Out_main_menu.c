@@ -54,7 +54,7 @@ static void create_io_menu_item(lv_obj_t *cont, const IoMenuItem *item) {
     lv_obj_set_style_text_color(label, lv_color_hex(0xffffff), LV_PART_MAIN);
     lv_obj_set_style_text_font(label, &Roboto_bold_24, 0);
     lv_label_set_text(label, item->label_text);
-    lv_obj_align(label, LV_ALIGN_LEFT_MID, 10, 0);
+    lv_obj_align(label, LV_ALIGN_LEFT_MID, -5, 0);
     
     // Иконка (только для "Назад")
     if (item->img_src != NULL) {

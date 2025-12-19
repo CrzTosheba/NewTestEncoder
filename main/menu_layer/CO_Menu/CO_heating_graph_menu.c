@@ -202,7 +202,7 @@ static void format_float_value(char *buf, size_t buf_size, float value) {
  * @brief Получает строковое представление способа задания
  */
 static const char* get_type_string(heating_graph_type_t type) {
-    return (type == HEATING_GRAPH_TYPE_POINTS) ? "По точкам" : "По углу";
+    return (type == HEATING_GRAPH_TYPE_POINTS) ? "ГРАФ" : "УГОЛ";
 }
 
 /**

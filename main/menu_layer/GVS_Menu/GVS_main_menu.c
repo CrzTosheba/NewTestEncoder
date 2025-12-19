@@ -78,7 +78,7 @@ static void create_gvs_menu_item(lv_obj_t *cont, const GvsMenuItem *item) {
         lv_obj_set_style_text_color(label, lv_color_hex(0xffffff), LV_PART_MAIN);
         lv_obj_set_style_text_font(label, &Roboto_bold_24, 0);
         lv_label_set_text(label, item->label_text);
-        lv_obj_align(label, LV_ALIGN_LEFT_MID, 10, 0);
+        lv_obj_align(label, LV_ALIGN_LEFT_MID, -5, 0); // было 10, изменил на -5 для сдвига списка левее
     }
     
     // Иконка (только для "Назад")
